@@ -1,4 +1,5 @@
-🚔 Generator Dosare & Amenzi
+🚔 Generator Dosare & Amenzi & Better look Police Helper
+
 
 Generator Dosare & Amenzi este o aplicație creată pentru a simplifica și accelera procesul de întocmire a dosarelor și amenzilor în cadrul unui server de tip Roleplay. Scopul aplicației este de a reduce timpul necesar completării documentelor și de a elimina erorile apărute la redactarea manuală.
 
