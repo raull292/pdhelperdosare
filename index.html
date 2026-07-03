@@ -282,161 +282,99 @@
 
 <div class="toast" id="toast">Copiat!</div>
 
-<!-- ========== CODURI RADIO ========== -->
-<button id="radioToggle" title="Afișează/ascunde codurile radio">📻 Coduri Radio</button>
+<!-- ========== OVERLAY CODURI 10 (doar în aplicație) ========== -->
+<button id="ovBtn" title="Overlay coduri 10 peste joc">📡 Coduri 10</button>
 
-<div id="radioHud">
-  <div id="radioHudHead"><span>CODURI RADIO</span><button id="radioGear" title="Setări">⚙</button></div>
-  <div id="radioCs">CALLSIGN: —</div>
-  <div id="radioList"></div>
-</div>
-
-<div id="radioSettings">
-  <div class="rs-title">Setări Coduri Radio</div>
-  <label class="rs-row"><span>Callsign</span><input type="text" id="rsCall" placeholder="537 / 116" maxlength="24"></label>
-  <label class="rs-row"><span>Culoare cod</span><input type="color" id="rsCode"></label>
-  <label class="rs-row"><span>Culoare text</span><input type="color" id="rsText"></label>
-  <label class="rs-row"><span>Mărime text</span><input type="range" id="rsSize" min="11" max="26"></label>
-  <label class="rs-row"><span>Fundal (în app)</span><input type="checkbox" id="rsBg"></label>
-  <div id="rsOverlayBox">
-    <div class="rs-sep">Overlay peste joc</div>
-    <div class="rs-btns"><button id="rsOverlay">🎮 Pornește overlay</button></div>
-    <div class="rs-btns" id="rsOvCtrls" style="display:none">
-      <button id="rsOvMove">🔓 Mută</button>
-      <button id="rsOvReset">Reset poziție</button>
-    </div>
-    <div class="rs-hint">Overlay transparent, mereu deasupra jocului. „Mută” îl deblochează ca să-l tragi peste GTA, apoi apeși iar ca să-l blochezi (click-through).</div>
+<div id="ovPanel">
+  <div class="ov-title">Overlay Coduri 10</div>
+  <div class="ov-btns"><button id="ovStart">🎮 Pornește overlay</button></div>
+  <div class="ov-btns" id="ovCtrls" style="display:none">
+    <button id="ovMove">🔓 Mută</button>
+    <button id="ovReset">Reset poziție</button>
   </div>
-  <div class="rs-btns"><button id="rsReset">Reset poziție (app)</button><button id="rsClose">Închide</button></div>
+  <div class="ov-sep">Personalizare</div>
+  <label class="ov-row"><span>Callsign</span><input type="text" id="ovCall" placeholder="537 / 116" maxlength="24"></label>
+  <label class="ov-row"><span>Culoare cod</span><input type="color" id="ovCode"></label>
+  <label class="ov-row"><span>Culoare text</span><input type="color" id="ovText"></label>
+  <label class="ov-row"><span>Mărime text</span><input type="range" id="ovSize" min="11" max="28"></label>
+  <div class="ov-hint">Overlay transparent, doar text, mereu deasupra jocului. „Mută” îl deblochează ca să-l tragi peste GTA, apoi apeși din nou ca să-l blochezi (click-through).</div>
+  <div class="ov-btns"><button id="ovClose">Închide</button></div>
 </div>
 
 <style>
-  #radioToggle{position:fixed;right:16px;bottom:16px;z-index:9998;
+  #ovBtn{position:fixed;right:16px;bottom:16px;z-index:9998;display:none;
     background:linear-gradient(180deg,#1c7a51,#12633f);color:#eafff5;border:1px solid #26c281;
-    border-radius:11px;padding:11px 15px;font-weight:700;cursor:pointer;font-size:13px;
+    border-radius:11px;padding:9px 13px;font-weight:700;cursor:pointer;font-size:12.5px;
     font-family:-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 6px 18px #0008}
-  #radioToggle:hover{filter:brightness(1.12)}
-  #radioToggle.active{background:linear-gradient(180deg,#2f6fed,#1d3f7a);border-color:#3f7bff}
+  #ovBtn:hover{filter:brightness(1.12)}
+  #ovBtn.active{background:linear-gradient(180deg,#2f6fed,#1d3f7a);border-color:#3f7bff}
+  .isapp #ovBtn{display:block}
 
-  #radioHud{position:fixed;left:20px;top:130px;z-index:9997;display:none;
-    font-family:Consolas,"SFMono-Regular",monospace;min-width:210px;padding:9px 12px;border-radius:8px}
-  #radioHud.on{display:block}
-  #radioHud.bg{background:rgba(8,15,30,.72);border:1px solid #ffffff1f}
-  #radioHudHead{display:flex;align-items:center;justify-content:space-between;gap:12px;
-    font-size:10.5px;letter-spacing:1.5px;margin-bottom:6px;cursor:move;opacity:.7;color:#cfe0f7}
-  #radioGear{background:transparent;border:0;color:inherit;cursor:pointer;font-size:13px;padding:0 2px}
-  #radioGear:hover{opacity:.7}
-  #radioCs{font-weight:700;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,.85)}
-  .rc-line{white-space:nowrap;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.85)}
-  .rc-code{font-weight:700;margin-right:2px}
-
-  #radioSettings{position:fixed;right:16px;bottom:66px;z-index:9999;display:none;width:258px;
+  #ovPanel{position:fixed;right:16px;bottom:62px;z-index:9999;display:none;width:262px;
     background:#101f38;border:1px solid #2c4778;border-radius:12px;padding:14px;box-shadow:0 12px 34px #000a;
     font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:#eaf1fb}
-  #radioSettings.on{display:block}
-  #radioSettings .rs-title{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:12px}
-  #radioSettings .rs-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px}
-  #radioSettings .rs-row input[type=text]{width:120px;padding:6px 8px;border-radius:6px;border:1px solid #2c4778;background:#0a1830;color:#eaf1fb;font-size:12.5px;font-family:inherit}
-  #radioSettings .rs-row input[type=color]{width:44px;height:26px;border:1px solid #2c4778;border-radius:6px;background:#0a1830;cursor:pointer;padding:2px}
-  #radioSettings .rs-row input[type=range]{width:130px;accent-color:#2f6fed}
-  #radioSettings .rs-row input[type=checkbox]{width:17px;height:17px;accent-color:#2f6fed;cursor:pointer}
-  #radioSettings .rs-sep{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin:12px 0 8px;border-top:1px solid #22375f;padding-top:12px}
-  #radioSettings .rs-hint{font-size:11px;color:#5f759c;line-height:1.4;margin:8px 0 12px}
-  #radioSettings .rs-btns{display:flex;gap:8px;margin-bottom:4px}
-  #radioSettings .rs-btns button{flex:1;padding:8px;border-radius:8px;border:1px solid #2c4778;background:#0e2247;color:#bcd0f0;cursor:pointer;font-size:12.5px;font-weight:600;font-family:inherit}
-  #radioSettings .rs-btns button:hover{border-color:#3f7bff;color:#fff}
+  #ovPanel.on{display:block}
+  #ovPanel .ov-title{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:12px}
+  #ovPanel .ov-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px}
+  #ovPanel .ov-row input[type=text]{width:120px;padding:6px 8px;border-radius:6px;border:1px solid #2c4778;background:#0a1830;color:#eaf1fb;font-size:12.5px;font-family:inherit}
+  #ovPanel .ov-row input[type=color]{width:44px;height:26px;border:1px solid #2c4778;border-radius:6px;background:#0a1830;cursor:pointer;padding:2px}
+  #ovPanel .ov-row input[type=range]{width:130px;accent-color:#2f6fed}
+  #ovPanel .ov-sep{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin:12px 0 8px;border-top:1px solid #22375f;padding-top:12px}
+  #ovPanel .ov-hint{font-size:11px;color:#5f759c;line-height:1.4;margin:8px 0 12px}
+  #ovPanel .ov-btns{display:flex;gap:8px;margin-bottom:6px}
+  #ovPanel .ov-btns button{flex:1;padding:8px;border-radius:8px;border:1px solid #2c4778;background:#0e2247;color:#bcd0f0;cursor:pointer;font-size:12.5px;font-weight:600;font-family:inherit}
+  #ovPanel .ov-btns button:hover{border-color:#3f7bff;color:#fff}
 </style>
 
 <script>
 (function(){
-  const CODES=[
-    ["10-0","Suspect pierdut"],["10-1","Schimbare frecvență"],["10-2","Permisiune depășire"],
-    ["10-4","Afirmativ / Recepționat"],["10-8","În patrulă"],["10-9","Repetă"],
-    ["10-11","Focuri de armă"],["10-16","Mașină fără nr. înmatriculare"],["10-20","Locație"],
-    ["10-23","Ajuns la destinație"],["10-28","Numere înmatriculare"],["10-38","Traffic Stop"],
-    ["10-41","On-Duty"],["10-42","Off-Duty"],["10-50","Accident"],["10-60","Livrare în progres"],
-    ["10-76","În drum spre"],["10-78","Echipaje adiționale / Întăriri"],
-    ["10-80","Urmărire în desfășurare"],["10-95","Suspect în custodie"]
-  ];
-  const hud=document.getElementById('radioHud');
-  const list=document.getElementById('radioList');
-  const toggle=document.getElementById('radioToggle');
-  const gear=document.getElementById('radioGear');
-  const settings=document.getElementById('radioSettings');
-  const head=document.getElementById('radioHudHead');
-  const csEl=document.getElementById('radioCs');
-
-  const DEF={x:20,y:130,code:"#4aa3ff",text:"#f2f6ff",size:15,bg:false,vis:false,callsign:"",ovX:60,ovY:200};
-  let cfg=Object.assign({},DEF);
-  try{const s=localStorage.getItem('radioHudCfg');if(s)cfg=Object.assign({},DEF,JSON.parse(s));}catch(e){}
-  function save(){try{localStorage.setItem('radioHudCfg',JSON.stringify(cfg));}catch(e){}}
-
-  list.innerHTML=CODES.map(c=>'<div class="rc-line"><span class="rc-code">'+c[0]+'</span>: <span class="rc-txt">'+c[1]+'</span></div>').join('');
-
   const isApp=!!(window.desktopApp&&window.desktopApp.isApp);
+  if(!isApp) return; // overlay-ul merge doar în aplicația desktop
+
+  const btn=document.getElementById('ovBtn');
+  const panel=document.getElementById('ovPanel');
+
+  const DEF={code:"#4aa3ff",text:"#f2f6ff",size:16,callsign:"",ovX:60,ovY:200};
+  let cfg=Object.assign({},DEF);
+  try{const s=localStorage.getItem('ovCfg');if(s)cfg=Object.assign({},DEF,JSON.parse(s));}catch(e){}
+  function save(){try{localStorage.setItem('ovCfg',JSON.stringify(cfg));}catch(e){}}
+
   let ovOn=false, ovLocked=true;
   function ovConfig(){return {callsign:cfg.callsign,code:cfg.code,text:cfg.text,size:cfg.size,x:cfg.ovX,y:cfg.ovY,locked:ovLocked};}
+  function push(){ if(ovOn) window.desktopApp.overlay.setConfig(ovConfig()); }
 
-  function apply(){
-    hud.style.left=cfg.x+'px'; hud.style.top=cfg.y+'px'; hud.style.fontSize=cfg.size+'px';
-    hud.classList.toggle('bg',cfg.bg); hud.classList.toggle('on',cfg.vis);
-    toggle.classList.toggle('active',cfg.vis);
-    csEl.textContent='CALLSIGN: '+(cfg.callsign||'—');
-    csEl.style.color=cfg.code;
-    list.querySelectorAll('.rc-line').forEach(l=>l.style.color=cfg.text);
-    list.querySelectorAll('.rc-code').forEach(l=>l.style.color=cfg.code);
-    if(isApp&&ovOn&&window.desktopApp.overlay) window.desktopApp.overlay.setConfig(ovConfig());
-  }
+  const bStart=document.getElementById('ovStart');
+  const ctrls=document.getElementById('ovCtrls');
+  const bMove=document.getElementById('ovMove');
+  const iCall=document.getElementById('ovCall'),iCode=document.getElementById('ovCode'),
+        iText=document.getElementById('ovText'),iSize=document.getElementById('ovSize');
+  iCall.value=cfg.callsign; iCode.value=cfg.code; iText.value=cfg.text; iSize.value=cfg.size;
 
-  toggle.onclick=()=>{cfg.vis=!cfg.vis;apply();save();};
-  gear.onclick=(e)=>{e.stopPropagation();settings.classList.toggle('on');};
+  btn.onclick=()=>panel.classList.toggle('on');
+  document.getElementById('ovClose').onclick=()=>panel.classList.remove('on');
 
-  let drag=null;
-  head.addEventListener('mousedown',e=>{drag={sx:e.clientX,sy:e.clientY,ox:cfg.x,oy:cfg.y};e.preventDefault();});
-  window.addEventListener('mousemove',e=>{
-    if(!drag)return;
-    cfg.x=Math.max(0,drag.ox+(e.clientX-drag.sx));
-    cfg.y=Math.max(0,drag.oy+(e.clientY-drag.sy));
-    hud.style.left=cfg.x+'px'; hud.style.top=cfg.y+'px';
-  });
-  window.addEventListener('mouseup',()=>{if(drag){drag=null;save();}});
+  iCall.oninput=e=>{cfg.callsign=e.target.value;save();push();};
+  iCode.oninput=e=>{cfg.code=e.target.value;save();push();};
+  iText.oninput=e=>{cfg.text=e.target.value;save();push();};
+  iSize.oninput=e=>{cfg.size=+e.target.value;save();push();};
 
-  const rsCall=document.getElementById('rsCall'),rsCode=document.getElementById('rsCode'),
-        rsText=document.getElementById('rsText'),rsSize=document.getElementById('rsSize'),rsBg=document.getElementById('rsBg');
-  rsCall.value=cfg.callsign; rsCode.value=cfg.code; rsText.value=cfg.text; rsSize.value=cfg.size; rsBg.checked=cfg.bg;
-  rsCall.oninput=e=>{cfg.callsign=e.target.value;apply();save();};
-  rsCode.oninput=e=>{cfg.code=e.target.value;apply();save();};
-  rsText.oninput=e=>{cfg.text=e.target.value;apply();save();};
-  rsSize.oninput=e=>{cfg.size=+e.target.value;apply();save();};
-  rsBg.onchange=e=>{cfg.bg=e.target.checked;apply();save();};
-  document.getElementById('rsReset').onclick=()=>{cfg.x=DEF.x;cfg.y=DEF.y;apply();save();};
-  document.getElementById('rsClose').onclick=()=>settings.classList.remove('on');
-
-  const ovBox=document.getElementById('rsOverlayBox');
-  if(!isApp){ ovBox.style.display='none'; }
-  else{
-    const btnOv=document.getElementById('rsOverlay');
-    const ctrls=document.getElementById('rsOvCtrls');
-    const btnMove=document.getElementById('rsOvMove');
-    btnOv.onclick=()=>{
-      ovOn=!ovOn;
-      window.desktopApp.overlay.toggle(ovConfig());
-      btnOv.textContent=ovOn?'🛑 Oprește overlay':'🎮 Pornește overlay';
-      ctrls.style.display=ovOn?'flex':'none';
-      if(ovOn){ovLocked=true;btnMove.textContent='🔓 Mută';}
-    };
-    btnMove.onclick=()=>{
-      ovLocked=!ovLocked;
-      window.desktopApp.overlay.lock(ovLocked);
-      window.desktopApp.overlay.setConfig(ovConfig());
-      btnMove.textContent=ovLocked?'🔓 Mută':'🔒 Blochează';
-    };
-    document.getElementById('rsOvReset').onclick=()=>{cfg.ovX=DEF.ovX;cfg.ovY=DEF.ovY;save();window.desktopApp.overlay.setPos(cfg.ovX,cfg.ovY);};
-    window.desktopApp.overlay.onMoved(b=>{cfg.ovX=b.x;cfg.ovY=b.y;save();});
-    window.desktopApp.overlay.onClosed(()=>{ovOn=false;btnOv.textContent='🎮 Pornește overlay';ctrls.style.display='none';});
-  }
-
-  apply();
+  bStart.onclick=()=>{
+    ovOn=!ovOn;
+    window.desktopApp.overlay.toggle(ovConfig());
+    bStart.textContent=ovOn?'🛑 Oprește overlay':'🎮 Pornește overlay';
+    btn.classList.toggle('active',ovOn);
+    ctrls.style.display=ovOn?'flex':'none';
+    if(ovOn){ovLocked=true;bMove.textContent='🔓 Mută';}
+  };
+  bMove.onclick=()=>{
+    ovLocked=!ovLocked;
+    window.desktopApp.overlay.lock(ovLocked);
+    window.desktopApp.overlay.setConfig(ovConfig());
+    bMove.textContent=ovLocked?'🔓 Mută':'🔒 Blochează';
+  };
+  document.getElementById('ovReset').onclick=()=>{cfg.ovX=DEF.ovX;cfg.ovY=DEF.ovY;save();window.desktopApp.overlay.setPos(cfg.ovX,cfg.ovY);};
+  window.desktopApp.overlay.onMoved(b=>{cfg.ovX=b.x;cfg.ovY=b.y;save();});
+  window.desktopApp.overlay.onClosed(()=>{ovOn=false;bStart.textContent='🎮 Pornește overlay';btn.classList.remove('active');ctrls.style.display='none';});
 })();
 </script>
 
