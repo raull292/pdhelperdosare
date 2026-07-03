@@ -189,6 +189,13 @@
 <body>
 <style id="shellcss">
   html,body{height:100%}
+  /* scrollbar-uri in tema (Chrome/Edge) */
+  *{scrollbar-width:thin;scrollbar-color:#24406e transparent}
+  *::-webkit-scrollbar{width:11px;height:11px}
+  *::-webkit-scrollbar-track{background:#0a1424}
+  *::-webkit-scrollbar-thumb{background:#22375f;border:2px solid #0a1424;border-radius:8px}
+  *::-webkit-scrollbar-thumb:hover{background:#2f4a7a}
+  *::-webkit-scrollbar-corner{background:#0a1424}
   #appbar{display:none}
   .isapp #appbar, .webmode #appbar{display:flex}
   #appbar .ab-agent{z-index:1;font-size:12.5px;color:#8fe3b8;background:#0a1a34;border:1px solid #24406e;padding:5px 12px;border-radius:999px;-webkit-app-region:no-drag;cursor:pointer;white-space:nowrap;margin-left:6px}
