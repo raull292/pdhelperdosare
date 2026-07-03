@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0;padding:0;background:transparent;overflow:hidden;
+    font-family:Consolas,"SFMono-Regular",monospace;user-select:none;-webkit-user-select:none;font-size:15px}
+  /* fara fundal, fara chenar - doar text, cu umbra pentru lizibilitate peste joc */
+  #wrap{padding:2px 6px;display:inline-block;-webkit-app-region:drag}
+  #cs{font-weight:700;letter-spacing:.5px;margin-bottom:5px;
+    text-shadow:0 0 3px #000,0 1px 3px #000,-1px 0 2px #000,1px 0 2px #000}
+  .line{white-space:nowrap;line-height:1.5;
+    text-shadow:0 0 3px #000,0 1px 3px #000,-1px 0 2px #000,1px 0 2px #000}
+  .code{font-weight:700;margin-right:3px}
+  body.unlocked{cursor:move}
+  /* mic indiciu doar in modul mutare (nu un chenar in jurul textului) */
+  #grip{display:none;position:fixed;top:2px;left:2px;font-size:10px;color:#fff;
+    background:#2f6fed;border-radius:5px;padding:2px 7px;text-shadow:none;-webkit-app-region:drag;
+    font-family:-apple-system,"Segoe UI",sans-serif;font-weight:700}
+  body.unlocked #grip{display:inline-block}
+  body.unlocked #wrap{padding-top:20px}
+</style>
+</head>
+<body>
+  <div id="grip">✥ trage-mă</div>
+  <div id="wrap">
+    <div id="cs">CALLSIGN: —</div>
+    <div id="list"></div>
+  </div>
+<script>
+  const CODES=[
+    ["10-0","Suspect pierdut"],["10-1","Schimbare frecvență"],["10-2","Permisiune depășire"],
+    ["10-4","Afirmativ / Recepționat"],["10-8","În patrulă"],["10-9","Repetă"],
+    ["10-11","Focuri de armă"],["10-16","Mașină fără nr. înmatriculare"],["10-20","Locație"],
+    ["10-23","Ajuns la destinație"],["10-28","Numere înmatriculare"],["10-38","Traffic Stop"],
+    ["10-41","On-Duty"],["10-42","Off-Duty"],["10-50","Accident"],["10-60","Livrare în progres"],
+    ["10-76","În drum spre"],["10-78","Echipaje adiționale / Întăriri"],
+    ["10-80","Urmărire în desfășurare"],["10-95","Suspect în custodie"]
+  ];
+  const list=document.getElementById('list');
+  const cs=document.getElementById('cs');
+  list.innerHTML=CODES.map(c=>'<div class="line"><span class="code">'+c[0]+'</span>: <span class="txt">'+c[1]+'</span></div>').join('');
+  function apply(cfg){
+    if(!cfg)return;
+    if(cfg.callsign!==undefined) cs.textContent='CALLSIGN: '+(cfg.callsign||'—');
+    if(cfg.size) document.body.style.fontSize=cfg.size+'px';
+    if(cfg.text) list.querySelectorAll('.line').forEach(l=>l.style.color=cfg.text);
+    if(cfg.code){ list.querySelectorAll('.code').forEach(l=>l.style.color=cfg.code); cs.style.color=cfg.code; }
+    if(cfg.locked!==undefined) document.body.classList.toggle('unlocked',!cfg.locked);
+  }
+  if(window.overlayApi) window.overlayApi.onConfig(apply);
+</script>
+</body>
+</html>
