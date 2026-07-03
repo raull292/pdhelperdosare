@@ -247,6 +247,8 @@
   .login-box h2{margin:0 0 4px;font-size:20px}
   .login-box p{color:#8ba0c4;font-size:12.5px;margin:0 0 18px}
   .login-box input{width:100%;padding:11px 12px;border-radius:9px;border:1px solid #2c4778;background:#0a1830;color:#eaf1fb;font-size:14px;font-family:inherit;margin-bottom:10px}
+  .login-box select{width:100%;padding:11px 12px;border-radius:9px;border:1px solid #2c4778;background:#0a1830;color:#eaf1fb;font-size:14px;font-family:inherit;margin-bottom:10px;cursor:pointer}
+  .set-row select{width:210px;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
   .login-box button{width:100%;padding:12px;border-radius:10px;border:0;background:linear-gradient(180deg,#2f6fed,#1d3f7a);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px;font-family:inherit}
   .login-box button:hover{filter:brightness(1.1)}
 </style>
@@ -394,8 +396,9 @@
       <div class="page-h"><h2>Setări</h2><p>Preferințe cosmetice — salvate local pe calculatorul tău.</p></div>
       <div class="card"><div class="cardbox">
         <h3>👮 Agent</h3>
-        <div class="cb-sub">Apare sus în bară: „Agent • callsign | nume”.</div>
-        <div class="set-row"><label>Nume agent</label><input type="text" id="setName" placeholder="Ex: Pote Miguel" maxlength="32"></div>
+        <div class="cb-sub">Apare sus în bară: „grad • callsign | nume”.</div>
+        <div class="set-row"><label>Grad</label><select id="setRank"></select></div>
+        <div class="set-row"><label>Nume</label><input type="text" id="setName" placeholder="Ex: Pote Miguel" maxlength="32"></div>
         <div class="set-row"><label>Callsign</label><input type="text" id="setCall" placeholder="Ex: 537" maxlength="12"></div>
         <div class="set-row"><label></label><button class="btnp" id="setSave">Salvează</button></div>
       </div></div>
@@ -1192,8 +1195,9 @@ renderQuick();
   <div class="login-box">
     <div class="lb-badge">PH</div>
     <h2>Bine ai venit</h2>
-    <p>Introdu numele și callsign-ul (doar cosmetic, salvate local).</p>
-    <input type="text" id="lgName" placeholder="Nume agent (ex: Pote Miguel)" maxlength="32">
+    <p>Introdu gradul, numele și callsign-ul (doar cosmetic, salvate local).</p>
+    <select id="lgRank"></select>
+    <input type="text" id="lgName" placeholder="Nume (ex: Pote Miguel)" maxlength="32">
     <input type="text" id="lgCall" placeholder="Callsign (ex: 537)" maxlength="12">
     <button id="lgBtn">Intră</button>
   </div>
@@ -1202,6 +1206,8 @@ renderQuick();
 <script>
 (function(){
   if(!(window.desktopApp&&window.desktopApp.isApp)) document.documentElement.classList.add('webmode');
+  const RANKS=["Chestor-General","Chestor","Comisar-Șef","Comisar","Sub-Comisar","Inspector-Principal","Inspector","Agent-Șef-Principal","Agent-Șef-Adjunct","Agent-Principal","Agent","Cadet"];
+  function fillRanks(sel,val){ if(!sel)return; sel.innerHTML='<option value="">— alege gradul —</option>'+RANKS.map(function(r){return '<option'+(r===val?' selected':'')+'>'+r+'</option>';}).join(''); }
   function go(page){
     document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
@@ -1215,17 +1221,22 @@ renderQuick();
   function getA(){ try{return JSON.parse(localStorage.getItem('phAgent')||'null');}catch(e){return null;} }
   function setA(a){ localStorage.setItem('phAgent',JSON.stringify(a)); render(); }
   function render(){
-    const a=getA();
-    if(agentChip) agentChip.innerHTML = a ? ('Agent • '+(a.call?('<b>'+a.call+'</b> | '):'')+(a.name||'')) : 'Neconectat';
-    const sN=document.getElementById('setName'), sC=document.getElementById('setCall');
-    if(sN&&a) sN.value=a.name||''; if(sC&&a) sC.value=a.call||'';
+    const a=getA()||{};
+    if(agentChip){
+      var has=a.rank||a.call||a.name;
+      agentChip.innerHTML = has ? ((a.rank?a.rank+' • ':'')+(a.call?('<b>'+a.call+'</b> | '):'')+(a.name||'')) : 'Neconectat';
+    }
+    var sN=document.getElementById('setName'), sC=document.getElementById('setCall');
+    if(sN) sN.value=a.name||''; if(sC) sC.value=a.call||'';
+    fillRanks(document.getElementById('setRank'), a.rank||'');
+    fillRanks(document.getElementById('lgRank'), a.rank||'');
   }
   render();
   if(!getA() && login) login.classList.add('on');
   const lBtn=document.getElementById('lgBtn');
-  if(lBtn) lBtn.onclick=()=>{ setA({name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
+  if(lBtn) lBtn.onclick=()=>{ setA({rank:(document.getElementById('lgRank').value||''),name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
   const setSave=document.getElementById('setSave');
-  if(setSave) setSave.onclick=()=>{ setA({name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
+  if(setSave) setSave.onclick=()=>{ setA({rank:(document.getElementById('setRank').value||''),name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
   const setReset=document.getElementById('setReset');
   if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); location.reload(); } };
   const setReload=document.getElementById('setReload');
