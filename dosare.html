@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator Dosare & Amenzi — B-Zone V</title>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<style>
+  :root{
+    --bg:#080f1e; --panel:#101f38; --line:#22375f; --line2:#2c4778;
+    --blue:#2f6fed; --blue-soft:#1d3f7a; --ink:#eaf1fb; --muted:#8ba0c4; --muted2:#5f759c;
+    --green:#26c281; --green-d:#12633f; --red:#e0475a; --amber:#e8a838;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #123 0%, transparent 55%),
+      radial-gradient(900px 500px at 0% 0%, #0e2247 0%, transparent 50%),
+      var(--bg);
+    color:var(--ink);font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+  .embedded header.top{display:none}
+  .embedded .wrap{padding-top:16px}
+
+  header.top{
+    display:flex;align-items:center;gap:14px;padding:14px 18px;margin-bottom:18px;
+    background:linear-gradient(180deg,#12386e 0%,#0d244a 100%);
+    border:1px solid var(--line2);border-radius:14px;position:relative;overflow:hidden;
+  }
+  header.top::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 22px,#ffffff05 22px 24px);pointer-events:none;}
+  .badge{width:46px;height:46px;flex:0 0 46px;border-radius:10px;background:conic-gradient(from 220deg,#3f7bff,#153e86,#3f7bff);display:grid;place-items:center;font-weight:800;font-size:20px;box-shadow:inset 0 0 0 2px #ffffff22, 0 6px 16px #0006;letter-spacing:-1px;}
+  header.top h1{font-size:19px;margin:0;letter-spacing:.2px;z-index:1}
+  header.top p{margin:2px 0 0;color:#bdd0ee;font-size:12.5px;z-index:1}
+  .modechip{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:6px 12px;border-radius:999px;border:1px solid var(--line2);background:#0a1a34;color:#9fb6dc;text-transform:uppercase;z-index:1;}
+
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:linear-gradient(180deg,#0f1e37 0%,#0b1730 100%);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .panel h2{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .panel h2 .n{font-family:var(--mono);color:var(--blue);border:1px solid var(--blue-soft);border-radius:6px;padding:1px 7px;font-size:11px;}
+
+  .search{position:relative;margin-bottom:10px}
+  .search input{width:100%;padding:11px 12px 11px 36px;border-radius:10px;background:#0a1830;border:1px solid var(--line2);color:var(--ink);font-size:14px;font-family:var(--sans);}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #2f6fed33}
+  .search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:15px}
+
+  .list{max-height:520px;overflow:auto;padding-right:4px;scrollbar-width:thin}
+  .list::-webkit-scrollbar{width:8px}
+  .list::-webkit-scrollbar-thumb{background:#20365c;border-radius:8px}
+  .capgroup{margin-bottom:6px}
+  .caphead{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:8px 6px 4px;letter-spacing:.5px;text-transform:uppercase;position:sticky;top:0;background:#0c1730;}
+  .item{display:flex;gap:9px;align-items:baseline;width:100%;text-align:left;padding:8px 10px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--ink);cursor:pointer;font-size:13.5px;font-family:var(--sans);transition:background .12s,border-color .12s;}
+  .item:hover{background:#13233f}
+  .item .aid{font-family:var(--mono);font-size:11.5px;color:var(--blue);flex:0 0 auto;min-width:42px}
+  .item.sel{background:#173463;border-color:var(--blue)}
+  .item.sel .aid{color:#8fb6ff}
+  .nomatch{color:var(--muted2);font-size:13px;padding:14px 8px;text-align:center}
+
+  .out-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .out-head .name{font-size:18px;font-weight:700}
+  .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.8px;padding:4px 9px;border-radius:6px;text-transform:uppercase;border:1px solid;}
+  .tag.penal{color:#ffd0d6;border-color:#7a2a35;background:#3a141b}
+  .tag.amenda{color:#ffe6b8;border-color:#7a5a1e;background:#3a2c10}
+
+  .empty{color:var(--muted2);text-align:center;padding:50px 10px}
+  .empty .big{font-size:15px;color:var(--muted);margin-bottom:6px}
+
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
+  .copyrow{display:flex;gap:8px;align-items:stretch}
+  .copyrow input,.copyrow textarea{width:100%;padding:11px 12px;border-radius:10px;background:#0a1830;border:1px solid var(--line2);color:var(--ink);font-size:14px;resize:vertical;font-family:var(--sans);}
+  .copyrow textarea{min-height:150px;line-height:1.55;font-size:13.5px}
+  .copyrow input:focus,.copyrow textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #2f6fed33}
+  .cbtn{flex:0 0 auto;padding:0 14px;border-radius:10px;border:1px solid var(--green-d);background:linear-gradient(180deg,#1c7a51,#12633f);color:#eafff5;font-weight:700;cursor:pointer;font-size:12.5px;letter-spacing:.4px;min-width:78px;transition:transform .08s,filter .15s;}
+  .cbtn:hover{filter:brightness(1.12)}
+  .cbtn:active{transform:translateY(1px)}
+  .cbtn.done{background:linear-gradient(180deg,#2fbf7f,#1c9160);border-color:#2fbf7f}
+
+  .sent-box{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:14px;margin-bottom:14px}
+  .sent-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .sent-val{font-family:var(--mono);font-size:30px;font-weight:700;color:#8fb6ff;line-height:1}
+  .sent-val small{font-size:13px;color:var(--muted);font-weight:400;margin-left:6px}
+  .sent-range{font-family:var(--mono);font-size:12px;color:var(--muted2)}
+  input[type=range]{width:100%;accent-color:var(--blue);height:22px}
+  .sent-btns{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+  .pill{font-size:12px;padding:6px 11px;border-radius:8px;cursor:pointer;font-weight:600;background:#0e2247;border:1px solid var(--line2);color:#bcd0f0;font-family:var(--sans);}
+  .pill:hover{border-color:var(--blue);color:#fff}
+  .pill.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .sent-na{font-family:var(--mono);color:var(--amber);font-size:14px}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted);}
+  .chip b{display:block;color:var(--ink);font-family:var(--mono);font-size:14px;margin-top:2px;font-weight:700}
+  .chip.warn b{color:var(--amber)}
+
+  .combo{display:flex;gap:10px;background:#2a1b0c;border:1px solid #6d4a17;border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#f2d59a;line-height:1.45;}
+  .combo .ci{font-size:16px;line-height:1.2}
+  .combo b{color:#ffcf7a}
+
+  .tsel{width:100%;padding:10px 12px;border-radius:10px;background:#0a1830;border:1px solid var(--line2);color:var(--ink);font-size:13.5px;font-family:var(--sans);margin-bottom:14px}
+  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  @media(max-width:520px){.inputs{grid-template-columns:1fr}}
+  .inp label{display:block;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted2);margin-bottom:4px}
+  .inp input{width:100%;padding:9px 10px;border-radius:8px;background:#0a1830;border:1px solid var(--line);color:var(--ink);font-size:13px;font-family:var(--sans)}
+  .inp input:focus{outline:none;border-color:var(--blue)}
+  .inp.wide{grid-column:1/-1}
+
+  .divider{height:1px;background:var(--line);margin:16px 0}
+  .addbtn{margin-left:auto;font-size:12px;font-weight:700;padding:7px 13px;border-radius:9px;cursor:pointer;background:#123a72;border:1px solid var(--blue);color:#cfe1ff;font-family:var(--sans);}
+  .addbtn:hover{background:var(--blue);color:#fff}
+
+  .dossier{margin-top:18px}
+  .dossier .shared{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  @media(max-width:640px){.dossier .shared{grid-template-columns:1fr 1fr}}
+  .cart-empty{color:var(--muted2);font-size:13px;text-align:center;padding:26px 10px;border:1px dashed var(--line2);border-radius:12px}
+  .charge{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;background:#0a1830;border:1px solid var(--line2);margin-bottom:8px}
+  .charge.conflict{border-color:#7a2a35;background:#25121a}
+  .charge .cid{font-family:var(--mono);font-size:12px;color:var(--blue);min-width:44px}
+  .charge .cnm{flex:1;font-size:13.5px}
+  .charge .cnm small{display:block;color:var(--muted2);font-size:11px;font-family:var(--mono)}
+  .charge .cmo{width:74px;padding:7px 8px;border-radius:8px;background:#0e2247;border:1px solid var(--line2);color:var(--ink);font-family:var(--mono);font-size:13px;text-align:center}
+  .charge .cmo:focus{outline:none;border-color:var(--blue)}
+  .charge .cmo-lbl{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.5px}
+  .charge .rm{width:28px;height:28px;flex:0 0 28px;border-radius:8px;border:1px solid #6a2a34;background:#2a141a;color:#ff9aa6;cursor:pointer;font-size:15px;line-height:1}
+  .charge .rm:hover{background:#e0475a;color:#fff;border-color:#e0475a}
+  .conf-banner{display:flex;gap:10px;background:#2a121a;border:1px solid #7a2a35;border-radius:11px;padding:11px 13px;margin-bottom:12px;font-size:12.5px;color:#ffc2ca;line-height:1.45}
+  .conf-banner b{color:#ff9aa6}
+  .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:640px){.totals{grid-template-columns:1fr}}
+  .tot{background:linear-gradient(180deg,#123a72,#0d2650);border:1px solid var(--line2);border-radius:12px;padding:12px 14px}
+  .tot .tl{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#9fb6dc}
+  .tot .tv{font-family:var(--mono);font-size:26px;font-weight:700;color:#bcd8ff;line-height:1.1;margin-top:3px}
+  .tot .tv small{font-size:12px;color:#8ba0c4;font-weight:400}
+  .tot.mo{cursor:pointer}
+  .tot.mo:hover{filter:brightness(1.1)}
+  .tot .tcopy{font-size:10px;color:#7fa8e8;margin-top:4px}
+
+  .chip.mo{cursor:pointer}
+  .chip.mo:hover{border-color:var(--blue)}
+
+  .qhint{color:var(--muted);font-size:12px;margin:-4px 0 12px;line-height:1.5}
+  .qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+  @media(max-width:720px){.qgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.qgrid{grid-template-columns:1fr}}
+  .qitem{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line2);border-radius:9px;background:#0a1830;cursor:pointer;font-size:12.5px;color:#cfe0f7;user-select:none}
+  .qitem:hover{border-color:var(--blue)}
+  .qitem.on{background:#173463;border-color:var(--blue)}
+  .qitem input{accent-color:var(--blue);width:15px;height:15px;flex:0 0 auto}
+  .qitem .qf{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted2)}
+
+  .ref{margin-bottom:14px;border:1px solid var(--line2);border-radius:12px;background:#0a1830;overflow:hidden}
+  .ref>summary{cursor:pointer;padding:11px 14px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#bcd8ff;font-weight:700;list-style:none}
+  .ref>summary::-webkit-details-marker{display:none}
+  .ref>summary::before{content:"▸ ";color:var(--blue)}
+  .ref[open]>summary::before{content:"▾ "}
+  .ref .refbody{padding:0 14px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:720px){.ref .refbody{grid-template-columns:1fr}}
+  .refcol h4{margin:6px 0 6px;font-size:12px;letter-spacing:.5px}
+  .refcol.a h4{color:#26c281} .refcol.d h4{color:#e8a838} .refcol.m h4{color:#e0475a}
+  .refcol p{margin:0 0 6px;font-size:11.5px;color:var(--muted);line-height:1.45}
+  .refcol p b{color:var(--ink)}
+
+  .foot{color:var(--muted2);font-size:11px;text-align:center;margin-top:24px;line-height:1.6}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#12633f;color:#eafff5;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid #2fbf7f;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="badge">BZ</div>
+    <div>
+      <h1>Generator Dosare &amp; Amenzi</h1>
+      <p>Server B-Zone V &middot; alege infracțiunea și copiază titlul, sentința și descrierea</p>
+    </div>
+    <div class="modechip" id="modechip">selectează o faptă</div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <h2><span class="n">1</span> Alege infracțiunea</h2>
+      <div class="search">
+        <span class="ic">⌕</span>
+        <input id="search" type="text" placeholder="Caută: jaf, armă, viteză, 7.3, cayo…" autocomplete="off">
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">2</span> Rezultat</h2>
+      <div id="output">
+        <div class="empty">
+          <div class="big">Nimic selectat încă</div>
+          Alege o infracțiune din stânga (sau caută-o) și îți generez automat<br>titlul, sentința și descrierea gata de copiat în joc.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel dossier" id="dossierPanel">
+    <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare</h2>
+    <details class="ref">
+      <summary>Structură &amp; detalii (reguli server)</summary>
+      <div class="refbody">
+        <div class="refcol a">
+          <h4>＄ AMENDĂ</h4>
+          <p><b>Titlu:</b> numele alineatului CP. Fără capitol/subcapitol sau nume suspect.</p>
+          <p><b>Suma:</b> fără punct/virgulă. Se cumulează la mai multe infracțiuni.</p>
+          <p><b>Puncte:</b> maxim 9. La 15/15 → reținere permis.</p>
+          <p><b>Descriere:</b> Data + Ora + Locația + relatarea evenimentelor.</p>
+        </div>
+        <div class="refcol d">
+          <h4>📄 DOSAR PENAL</h4>
+          <p><b>Titlu:</b> nume alineat – capitol, în ordine descrescătoare.</p>
+          <p><b>Sentința:</b> luni = minute; maxim 360 luni.</p>
+          <p><b>Descriere:</b> include obligatoriu „transportat la Penitenciarul Sandy Shores".</p>
+          <p>După dosar, fă și amenda aferentă (copy-paste descrierea).</p>
+        </div>
+        <div class="refcol m">
+          <h4>🔨 MANDATE</h4>
+          <p><b>Aducere:</b> suspect la secție. Elaborat de SAP/DCCO.</p>
+          <p><b>Percheziție:</b> elaborat de DCCO. Confirmare locație.</p>
+          <p><b>Arestare:</b> cetățean identificat care nu a fost arestat pe loc.</p>
+        </div>
+      </div>
+    </details>
+    <div class="shared" id="sharedFields"></div>
+    <div id="cartArea"></div>
+  </div>
+
+  <div class="panel dossier" id="quickPanel">
+    <h2><span class="n">4</span> Amendă rapidă (trafic stop)</h2>
+    <p class="qhint">Bifează contravențiile constatate — titlul, suma și descrierea se generează instant. Folosește datele completate mai sus (dată, oră, locație, nume, mașină). Reține: max 9 puncte/amendă, iar la 15/15 puncte totale se reține permisul.</p>
+    <div class="qgrid" id="quickList"></div>
+    <div id="quickOut"></div>
+  </div>
+
+  <div class="foot">
+    Document de referință personal pentru roleplay. Valorile sunt preluate din Codul Penal B-Zone V.<br>
+    Verifică mereu regulile de cumulare (combo) înainte de a crea dosarul.
+  </div>
+</div>
+
+<div class="toast" id="toast">Copiat!</div>
+
+<script>
+/* ---------------- DATA: Cod Penal B-Zone V ---------------- */
+const A = [
+  {id:"1.1a",cap:1,name:"Depășirea limitei de viteză (sub dublu)",f:"3.000$",pct:3,s:null,t:"viteza",hint:"a depășit limita de viteză legală"},
+  {id:"1.1b",cap:1,name:"Depășirea limitei de viteză (peste dublu)",f:"7.000$",permis:"Anulare permis",s:null,t:"viteza",hint:"a depășit limita de viteză cu peste dublul limitei legale"},
+  {id:"1.2",cap:1,name:"Conducere imprudentă",f:"5.000$",pct:3,s:null,t:"amenda",hint:"conducea agresiv, punând în pericol siguranța participanților la trafic"},
+  {id:"1.3",cap:1,name:"Nerespectarea marcajelor rutiere",f:"4.000$",pct:3,s:null,t:"amenda",hint:"nu a respectat marcajele rutiere"},
+  {id:"1.4",cap:1,name:"Neacordare de prioritate",f:"4.000$",pct:3,s:null,t:"amenda",hint:"nu a acordat prioritate"},
+  {id:"1.5",cap:1,name:"Nerespectarea semnelor Polițistului",f:"4.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a respectat semnele de circulație impuse de polițist"},
+  {id:"1.6",cap:1,name:"Nerespectarea semnalelor luminoase/sonore",f:"8.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a tras pe dreapta la semnalele autospecialei"},
+  {id:"1.7",cap:1,name:"Parcare ilegală",f:"2.500$",permis:"Ridicarea autovehiculului",s:null,t:"amenda",hint:"a parcat neregulamentar (pe bordură/trotuar)"},
+  {id:"1.8",cap:1,name:"Traversarea interzisă",f:"1.000$",s:null,t:"generic",hint:"a traversat printr-un loc nepermis"},
+  {id:"1.9",cap:1,name:"Acoperirea feței la volan",f:"5.000$",permis:"Percheziție persoană + vehicul",s:null,t:"amenda",hint:"purta un obiect ce îi acoperea fața la volan"},
+  {id:"1.10",cap:1,name:"Folosirea telefonului în timpul condusului",f:"1.500$",s:null,t:"amenda",hint:"folosea telefonul în timpul condusului"},
+  {id:"1.11",cap:1,name:"Claxonarea excesivă",f:"5.000$",s:null,t:"amenda",hint:"a claxonat excesiv"},
+  {id:"1.12",cap:1,name:"Geamuri fumurii",f:"3.000$",s:null,t:"amenda",hint:"avea montate geamuri fumurii care împiedicau recunoașterea conducătorului"},
+  {id:"1.13",cap:1,name:"Neoane montate sub autovehicul",title:"Neoane",f:"5.000$",s:null,t:"amenda",hint:"avea montate neoane sub autovehicul"},
+  {id:"1.14",cap:1,name:"Claxon neomologat",f:"3.000$",s:null,t:"amenda",hint:"avea montat un claxon neomologat"},
+  {id:"1.15",cap:1,name:"Xenoane / iluminat neomologat",f:"4.500$",s:null,t:"amenda",hint:"avea montate xenoane / iluminat neomologat"},
+  {id:"1.16",cap:1,name:"Nerespectarea culorii semaforului",f:"8.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a respectat culoarea semaforului"},
+  {id:"1.17",cap:1,name:"Condusul pe contrasens",f:"10.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"circula pe contrasens"},
+
+  {id:"2.1",cap:2,name:"Conducerea unui autovehicul neînmatriculat",f:"10.000$",permis:"Anulare permis + percheziție",s:null,t:"amenda",hint:"conducea un autovehicul neînmatriculat"},
+  {id:"2.2",cap:2,name:"Refuzul prelevării de probe biologice",f:"15.000$",permis:"Anulare permis",s:[60,80],t:"trafic",hint:"a refuzat prelevarea de probe biologice"},
+  {id:"2.3",cap:2,name:"Condus sub influența drogurilor/alcoolului (≥0,8%)",f:"6.000$",permis:"Anulare permis",s:[60,100],t:"trafic",hint:"se afla sub influența alcoolului/narcoticelor la volan"},
+  {id:"2.3b",cap:2,name:"Condus sub influența alcoolului (0,1%–0,7%)",f:"5.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"avea o concentrație de alcool în sânge între 0,1% și 0,7%"},
+  {id:"2.4",cap:2,name:"Curse ilegale",f:"15.000$",permis:"Anulare permis",s:[60,100],t:"generic",hint:"participa la o cursă ilegală pe stradă"},
+  {id:"2.5",cap:2,name:"Părăsirea locului accidentului/unei scene",f:"5.500$",permis:"Anulare permis",s:[40,60],t:"generic",hint:"a părăsit locul accidentului fără a anunța autoritățile"},
+  {id:"2.6",cap:2,name:"Condusul fără permis",f:"6.000$",s:[50,80],t:"trafic",hint:"avea permisul auto expirat/inexistent"},
+  {id:"2.7",cap:2,name:"Evadarea de un ofițer cu un autovehicul",f:"7.000$",permis:"Anulare permis",s:[60,120],t:"urmarire",combo:"4.5 Rezistență la Arest înlocuiește acest articol când fuga e folosită pentru a evita arestul.",hint:"nu a oprit la semnalele poliției și a încercat să evadeze cu autovehiculul"},
+
+  {id:"3.1",cap:3,name:"Acoperirea feței",f:"3.000$",permis:"Percheziție obligatorie",s:null,t:"generic",hint:"își acoperea zona facială într-un spațiu public"},
+  {id:"3.2",cap:3,name:"Urmărirea unei persoane fără acord",f:"7.000$",s:[40,60],t:"generic",hint:"urmărea și hărțuia o altă persoană"},
+  {id:"3.3",cap:3,name:"Urmărirea unei autospeciale poliție/medici",f:"12.000$",s:[50,80],t:"generic",hint:"urmărea și hărțuia o autospecială de poliție/medici"},
+  {id:"3.4",cap:3,name:"Expunere indecentă",f:"6.000$",s:[40,60],t:"generic",hint:"își expunea organele genitale în public"},
+  {id:"3.5",cap:3,name:"Prostituție",f:"10.000$",s:[50,80],t:"generic",hint:"practica prostituția"},
+  {id:"3.6",cap:3,name:"Viol",f:"25.000$",s:[120,200],t:"generic",hint:"a comis fapta de viol"},
+  {id:"3.7",cap:3,name:"Încălcarea proprietății private",f:"7.000$",s:[60,80],t:"generic",hint:"a pătruns fără drept într-o proprietate privată"},
+  {id:"3.8",cap:3,name:"Vandalism",f:"15.000$",s:[60,80],t:"generic",hint:"a distrus/deteriorat un bun care nu îi aparținea"},
+  {id:"3.9",cap:3,name:"Șantaj",f:"6.000$",s:[75,100],t:"generic",hint:"a folosit șantajul pentru a influența o persoană"},
+  {id:"3.10",cap:3,name:"Tâlhărie",f:"15.000$",s:[70,100],t:"generic",hint:"a sustras un bun din posesia altei persoane fără consimțământ"},
+  {id:"3.11",cap:3,name:"Furt auto",f:"7.000$",s:[50,80],t:"generic",hint:"a furat/spart un autovehicul"},
+  {id:"3.11.1",cap:3,name:"Furt auto Poliție/Spital",f:"10.000$",s:[120,150],t:"generic",hint:"a furat/spart un autovehicul al Poliției/Spitalului"},
+  {id:"3.12",cap:3,name:"Jaf",f:"30.000$",s:[100,150],t:"jaf_imobil",hint:"a comis un jaf",combo:"NU se cumulează cu nimic. Maxim cu 4.3 Ultraj."},
+  {id:"3.12.1",cap:3,name:"Jaf Armat",f:"35.000$",s:[120,170],t:"jaf_imobil",hint:"a comis un jaf armat",combo:"NU se cumulează cu nimic. Maxim cu 4.3 Ultraj."},
+  {id:"3.12.2",cap:3,name:"Jaf Imobile",f:"35.000$",s:[120,150],t:"jaf_imobil",hint:"a comis un jaf imobiliar",combo:"NU se cumulează cu nimic. Maxim cu 4.3 Ultraj."},
+  {id:"3.12.3",cap:3,name:"Jaf Bancar",f:"45.000$",s:[250,360],t:"jaf_bancar",hint:"a comis un jaf bancar",combo:"NU se cumulează cu nimic. Maxim cu 4.3 Ultraj."},
+  {id:"3.13",cap:3,name:"Deranjarea liniștii publice",f:"5.000$",s:[20,40],t:"generic",hint:"a deranjat liniștea publică"},
+  {id:"3.14",cap:3,name:"Eșecul de a părăsi un loc",f:"5.000$",s:[50,70],t:"generic",hint:"a refuzat să părăsească locul indicat de ofițer"},
+  {id:"3.15",cap:3,name:"Instigarea unei revolte",f:"20.000$",s:[80,120],t:"generic",hint:"a instigat o revoltă"},
+  {id:"3.16",cap:3,name:"Calomnie",f:"7.000$",s:[30,50],t:"generic",hint:"a răspândit minciuni în public despre o persoană"},
+  {id:"3.17",cap:3,name:"Căutarea în gunoaiele din spațiul public",f:"2.000$",s:null,t:"generic",hint:"a răscolit gunoaiele din spațiul public"},
+  {id:"3.18",cap:3,name:"Înșelăciune",f:"40.000$",s:[120,200],t:"generic",hint:"a comis fapta de înșelăciune, cauzând pagube"},
+  {id:"3.19",cap:3,name:"Eveniment neautorizat în spațiul public",f:"100.000$",s:[30,30],t:"generic",hint:"a desfășurat un eveniment neautorizat pe domeniul public"},
+
+  {id:"4.1",cap:4,name:"Obstrucția unui ofițer",f:"15.000$",s:[100,150],t:"generic",hint:"a împiedicat un ofițer să își îndeplinească atribuțiile",combo:"A nu se acorda împreună cu 4.5 Rezistență la Arest."},
+  {id:"4.2",cap:4,name:"Eșecul de a părăsi o instituție a statului",f:"8.000$",s:[75,95],t:"generic",hint:"a refuzat să părăsească o instituție a statului"},
+  {id:"4.3",cap:4,name:"Ultraj",f:"20.000$",s:[50,360],t:"generic",hint:"a adresat cuvinte jignitoare/amenințări unui agent de poliție"},
+  {id:"4.4",cap:4,name:"Evadarea din custodie",f:"10.000$",s:[120,200],t:"generic",hint:"a evadat din custodia ofițerilor"},
+  {id:"4.5",cap:4,name:"Rezistență la Arest",f:"7.500$",s:[80,160],t:"generic",hint:"a opus rezistență la arest",combo:"Înlocuiește 2.7 (Evadare cu autovehicul) când fuga e folosită pentru a evita arestul."},
+  {id:"4.6",cap:4,name:"Eșecul identificării",f:"15.000$",s:[60,80],t:"generic",hint:"a refuzat să se identifice"},
+  {id:"4.7",cap:4,name:"Dare de mită",f:"15.000$",s:[150,300],t:"generic",hint:"a oferit mită unui angajat guvernamental"},
+  {id:"4.8",cap:4,name:"Codul Muncii (fără licență)",f:"15.000$",s:null,t:"generic",hint:"presta servicii fără licență/atestat"},
+  {id:"4.9",cap:4,name:"Descurajarea unui martor/victime",f:"10.000$",s:[80,120],t:"generic",hint:"a descurajat un martor/victimă de la a da mărturie"},
+  {id:"4.10",cap:4,name:"Limbaj vulgar",f:"7.000$",s:null,t:"generic",hint:"a folosit cuvinte vulgare cu scopul de a jigni"},
+  {id:"4.11",cap:4,name:"Abuzul liniei de urgență (112)",f:"10.000$",s:[50,80],t:"generic",hint:"a apelat abuziv linia de urgență 112"},
+  {id:"4.12",cap:4,name:"Braconajul",f:"30.000$",s:[70,100],t:"generic",hint:"a vânat/pescuit ilegal într-o zonă interzisă"},
+  {id:"4.13",cap:4,name:"Fals / Uz de fals",f:"15.000$",s:[80,150],t:"generic",hint:"a falsificat/folosit un act public fals"},
+  {id:"4.14",cap:4,name:"Eșecul de plată al amenzilor",f:"—",s:[40,80],t:"generic",hint:"nu a achitat amenzile în termenul legal"},
+
+  {id:"5.1",cap:5,name:"Deținere/producere substanțe ilegale (semințe/frunze)",f:"10.000$",s:[40,60],t:"droguri",combo:"NU se cumulează cu 5.2, 5.3 sau 5.4.",hint:"deținea substanțe ilegale (semințe/frunze)"},
+  {id:"5.2-II",cap:5,name:"Țigări contrabandă TIP II (21–50)",f:"15.000$",s:null,t:"droguri_amenda",hint:"deținea țigări de contrabandă peste limita legală"},
+  {id:"5.2-III",cap:5,name:"Țigări contrabandă TIP III (51–100)",f:"20.000$",s:null,t:"droguri_amenda",hint:"deținea țigări de contrabandă peste limita legală"},
+  {id:"5.2-IV",cap:5,name:"Țigări contrabandă TIP IV (101+)",f:"25.000$",s:[60,80],t:"droguri",hint:"deținea țigări de contrabandă peste limita legală"},
+  {id:"5.3-I",cap:5,name:"Droguri de risc TIP I (1–5 joint-uri)",f:"15.000$",s:null,t:"droguri_amenda",hint:"deținea droguri de risc"},
+  {id:"5.3-II",cap:5,name:"Droguri de risc TIP II (6–50 joint-uri)",f:"20.000$",s:[40,80],t:"droguri",hint:"deținea droguri de risc"},
+  {id:"5.3-III",cap:5,name:"Droguri de risc TIP III (51–100 joint-uri)",f:"25.000$",s:[80,120],t:"droguri",hint:"deținea droguri de risc"},
+  {id:"5.3-IV",cap:5,name:"Droguri de risc TIP IV (101+ joint-uri)",f:"30.000$",s:[120,250],t:"droguri",hint:"deținea droguri de risc"},
+  {id:"5.4-I",cap:5,name:"Droguri mare risc TIP I (1–3 plicuri)",f:"30.000$",s:null,t:"droguri_amenda",hint:"deținea droguri de mare risc"},
+  {id:"5.4-II",cap:5,name:"Droguri mare risc TIP II (4–50 plicuri)",f:"40.000$",s:[70,90],t:"droguri",hint:"deținea droguri de mare risc"},
+  {id:"5.4-III",cap:5,name:"Droguri mare risc TIP III (51–100 plicuri)",f:"50.000$",s:[90,140],t:"droguri",hint:"deținea droguri de mare risc"},
+  {id:"5.4-IV",cap:5,name:"Droguri mare risc TIP IV (101+ plicuri)",f:"60.000$",s:[140,360],t:"droguri",hint:"deținea droguri de mare risc"},
+  {id:"5.5-I",cap:5,name:"Blood Money TIP I (10k–100k)",f:"20.000$",s:[40,70],t:"droguri",hint:"deținea bani nemarcați (blood money)"},
+  {id:"5.5-II",cap:5,name:"Blood Money TIP II (100k–1M)",f:"30.000$",s:[70,100],t:"droguri",hint:"deținea bani nemarcați (blood money)"},
+  {id:"5.5-III",cap:5,name:"Blood Money TIP III (1M–100M)",f:"40.000$",s:[100,150],t:"droguri",hint:"deținea bani nemarcați (blood money)"},
+  {id:"5.5-IV",cap:5,name:"Blood Money TIP IV (10M+)",f:"50.000$",s:[120,175],t:"droguri",hint:"deținea bani nemarcați (blood money)"},
+  {id:"5.6",cap:5,name:"Practicarea medicinei fără licență",f:"20.000$",s:[120,180],t:"generic",hint:"practica medicina fără licență"},
+  {id:"5.7",cap:5,name:"Obligația de identificare adecvată",f:"10.000$",s:null,t:"generic",hint:"nu deținea identificarea corespunzătoare activității"},
+
+  {id:"6.1",cap:6,name:"Amenințări criminale",f:"8.500$",s:[50,80],t:"generic",hint:"a amenințat că va comite o crimă"},
+  {id:"6.2",cap:6,name:"Tentativă de omor",f:"10.000$",s:[70,90],t:"generic",hint:"a încercat să comită o crimă/vătămare severă"},
+  {id:"6.3",cap:6,name:"Vătămare corporală",f:"7.500$",s:[60,80],t:"generic",hint:"a rănit o altă persoană"},
+  {id:"6.4",cap:6,name:"Vătămare corporală gravă",f:"11.000$",s:[80,120],t:"generic",hint:"a provocat vătămări corporale grave folosind o armă"},
+  {id:"6.6",cap:6,name:"Omor din culpă",f:"10.000$",s:[120,150],t:"generic",hint:"a ucis fără intenție o persoană"},
+  {id:"6.7",cap:6,name:"Crimă (Omucidere)",f:"14.000$",s:[130,160],t:"generic",hint:"a ucis intenționat o persoană"},
+  {id:"6.8",cap:6,name:"Răpire",f:"11.000$",s:[100,130],t:"generic",hint:"a reținut o persoană cu forța, împotriva voinței sale"},
+  {id:"6.9",cap:6,name:"Tortură",f:"20.000$",s:[100,150],t:"generic",hint:"a torturat o persoană",combo:"NU cu 6.2 (Tentativă). SE cumulează cu 6.7 (Crimă) dacă a rezultat moartea."},
+  {id:"6.10",cap:6,name:"Fraudarea creditorilor",f:"15.000–150.000$",s:[200,500],t:"generic",hint:"a fraudat un creditor"},
+
+  {id:"7.1",cap:7,name:"Posesia unei arme albe",f:"6.500$",s:[50,80],t:"arma",hint:"deținea asupra sa o armă albă"},
+  {id:"7.2",cap:7,name:"Posesia armă foc calibru mic fără PORT-ARMĂ",f:"10.000$",s:[75,100],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mic fără permis port-armă"},
+  {id:"7.3",cap:7,name:"Posesia unei arme de foc de calibru mare",f:"11.000$",s:[80,120],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mare"},
+  {id:"7.4",cap:7,name:"Posesia unei arme de foc automate",f:"12.000$",s:[100,140],t:"arma",hint:"deținea asupra sa o armă de foc automată",combo:"NU se cumulează cu 7.2 sau 7.3 (calibru mic/mare)."},
+  {id:"7.5",cap:7,name:"Posesia de explozibil",f:"20.000$",s:[150,250],t:"arma",hint:"deținea asupra sa materiale explozibile"},
+  {id:"7.6",cap:7,name:"Îndreptarea unei arme de foc",f:"—",s:[60,100],t:"generic",hint:"a îndreptat o armă de foc asupra unei persoane/obiect"},
+  {id:"7.7",cap:7,name:"Descărcarea letală a unei arme de foc",f:"—",s:[70,100],t:"generic",hint:"a folosit o armă de foc pentru a vătăma grav o persoană"},
+  {id:"7.8",cap:7,name:"Traficul de armament/muniție",f:"50.000$",s:[250,360],t:"arma",hint:"deținea armament/muniție în scopul traficului",combo:"NU se cumulează cu alte acuzații din Capitolul 7."},
+
+  {id:"8.1",cap:8,name:"Terorism",f:"—",s:null,life:true,t:"generic",hint:"a organizat/participat la acte de terorism"},
+  {id:"8.2",cap:8,name:"Încălcarea regimului de securitate al statului",f:"35.000$",s:[120,200],t:"generic",hint:"a intrat ilegal într-o zonă/clădire protejată"},
+  {id:"8.3",cap:8,name:"Împiedicarea activităților guvernamentale",f:"50.000$",s:[120,250],t:"generic",hint:"a împiedicat activitățile guvernamentale"},
+  {id:"8.4",cap:8,name:"Formarea unui grup paramilitar",f:"35.000$",s:[120,200],t:"generic",hint:"a format/a aderat la un grup paramilitar",combo:"A nu se cumula cu 8.3."},
+  {id:"8.5",cap:8,name:"Incitare la violență împotriva instituțiilor",f:"25.000$",s:[120,180],t:"generic",hint:"a incitat la violență împotriva instituțiilor guvernamentale"},
+  {id:"8.6",cap:8,name:"Falsificarea documentelor guvernamentale",f:"20.000$",s:[80,120],t:"generic",hint:"a falsificat documente guvernamentale"},
+  {id:"8.7",cap:8,name:"Spionaj",f:"20.000$",s:[60,100],t:"generic",hint:"a obținut/transmis informații secrete"},
+  {id:"8.8",cap:8,name:"Sabotaj",f:"35.000$",s:[100,150],t:"generic",hint:"a sabotat infrastructură/echipamente esențiale"},
+  {id:"8.9",cap:8,name:"Constituirea unui grup infracțional organizat",f:"250.000–500.000$",s:[250,600],life:true,t:"generic",hint:"a constituit/sprijinit un grup infracțional organizat",combo:"NU se cumulează cu alte articole sau capitole."},
+  {id:"8.10",cap:8,name:"Corupție",f:"150.000–300.000$",s:[250,600],life:true,t:"generic",hint:"a comis fapte de corupție",combo:"NU se cumulează cu alte articole sau capitole."},
+  {id:"8.11",cap:8,name:"Pericol grav pentru siguranța publică (50+ dosare)",f:"—",s:[500,600],life:true,t:"generic",hint:"a acumulat minimum 50 de dosare penale, reprezentând un risc pentru ordinea publică",combo:"NU se cumulează cu alte articole sau capitole."},
+];
+
+/* ---------------- TEMPLATES ---------------- */
+const FLABEL = {
+  data:["Data","30.06.2026"], ora:["Ora","22:28"], zona:["Zona","MALDIVE / Cazino"],
+  nume:["Nume suspect","Naomi Black"], marca:["Marcă / model","Ubermacht F90"],
+  culoare:["Culoare","Albastru"], nrinm:["Nr. înmatriculare","LS05QZPN"],
+  arma:["Armă","Heavy Revolver"], gloante:["Nr. gloanțe","66"], calibru:["Calibru","7.65 MM"],
+  sectie:["Secție","centrală"], insula:["Insulă","CAYO"], viteza:["Viteză (km/h)","180"],
+  limita:["Limită (km/h)","100"], locatie:["Locație","magazinul de pe Route 68"],
+  zonafin:["Zona finală urmărire","Grove Street"], sursa:["Sursă alertă","SRI"],
+  cantitate:["Cantitate găsită","5 joint-uri"], fapta:["Descriere faptă (liber)","avea permisul auto expirat"]
+};
+
+const TPL = {
+  amenda:{ label:"Amendă / contravenție rutieră", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta"],
+    text:d=>"În data de "+d.data+" la ora "+d.ora+", în zona "+d.zona+", echipajele de poliție au tras pe dreapta un autovehicul de tip "+d.marca+" de culoare "+d.culoare+" cu numărul de înmatriculare "+d.nrinm+", acesta "+d.fapta+". În urma legitimării, șoferul a fost identificat ca fiind domnul/doamna "+d.nume+". Acesta a fost sancționat conform codului penal în vigoare." },
+  trafic:{ label:"Oprire în trafic (dosar penal)", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta","sectie"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", echipajul de poliție care patrula în zona "+d.zona+" a tras pe dreapta un autovehicul de tip "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". În urma legitimării, șoferul a fost identificat ca fiind "+d.nume+". S-a constatat că acesta "+d.fapta+". Acesta a fost transportat și procesat la secția "+d.sectie+", urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa." },
+  viteza:{ label:"Limită de viteză depășită", fields:["data","ora","zona","marca","culoare","nrinm","nume","viteza","limita"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", un autovehicul de marcă "+d.marca+" de culoare "+d.culoare+", cu numerele de înmatriculare "+d.nrinm+", a fost oprit în zona "+d.zona+" pentru faptul că a condus cu "+d.viteza+"km/h într-o zonă unde limita maximă admisă este de "+d.limita+"km/h. Conducătorul autovehiculului a fost identificat ca fiind "+d.nume+", iar acesta a fost sancționat conform codului penal." },
+  arma:{ label:"Percheziție — armă găsită (schimb de focuri)", fields:["data","ora","zona","sursa","nume","arma","gloante","calibru"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", dispecerul a primit o alertă de la "+d.sursa+" cum că sunt multiple focuri de armă în zona "+d.zona+". Domnul/Doamna "+d.nume+" a luat parte la un schimb de focuri între echipajele de poliție sosite la fața locului și mai mulți suspecți. Acesta a fost imobilizat și transportat la secția centrală unde, în urma percheziției, s-a găsit asupra sa 1x "+d.arma+" și "+d.gloante+" gloanțe "+d.calibru+". Acesta a fost procesat și transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa." },
+  razie:{ label:"Razie SAS pe insulă (Cayo / Maldive)", fields:["data","ora","insula","nume","arma","gloante","calibru"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în urma unei razii SAS asupra insulei "+d.insula+" unde au fost arestate mai multe persoane, acestea au fost transportate la secția centrală pentru procesare. Unul dintre ei a fost identificat ca fiind "+d.nume+", iar în urma unei percheziții a fost găsită asupra sa următoarele:\n1x "+d.arma+"\n"+d.gloante+"x Gloanțe "+d.calibru+"\nCetățeanul "+d.nume+" a fost procesat, sancționat conform Codului Penal și transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+  urmarire:{ label:"Urmărire / evadare cu autovehicul", fields:["data","ora","zona","marca","culoare","nrinm","zonafin","nume"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", s-a încercat oprirea unui vehicul de tip "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". Șoferul nu a oprit la semnalele poliției, motiv pentru care a început o urmărire. Urmărirea s-a desfășurat pe mai multe străzi și s-a încheiat în zona "+d.zonafin+", unde suspectul a fost implicat într-un accident soldat doar cu pagube materiale. Șoferul a fost identificat ca fiind domnul/doamna "+d.nume+". Acesta a fost transportat la secția centrală unde a fost procesat și sancționat conform codului penal, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores." },
+  jaf_imobil:{ label:"Jaf imobil (magazin / casă)", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", s-a primit o alertă asupra unui jaf la "+d.locatie+". În urma intervenției echipajelor de ordine, mai mulți suspecți au fost reținuți, unul dintre aceștia fiind identificat drept "+d.nume+". Acesta a fost imobilizat și transportat la secția "+d.sectie+" de poliție, unde în urma percheziției asupra sa au fost găsite: 1x "+d.arma+", "+d.gloante+"x gloanțe "+d.calibru+", 1x Stație. Acestea au fost confiscate iar suspectul a fost sancționat și procesat conform codului penal în vigoare, urmând ca mai apoi să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+  jaf_bancar:{ label:"Jaf bancar", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
+    text:d=>"La data de "+d.data+", în jurul orei "+d.ora+", poliția a fost alertată cu privire la un jaf la Banca "+d.locatie+". Poliția, împreună cu trupele speciale, s-au deplasat de urgență în zonă, unde a început un schimb de focuri cu suspecții. Ulterior, polițiștii au reușit să imobilizeze suspecții și să îi transporte la secția "+d.sectie+" de poliție pentru procesare. Unul dintre suspecți a fost identificat ca fiind domnul/doamna "+d.nume+", iar la percheziția acestuia au fost găsite următoarele: 1x "+d.arma+", "+d.gloante+"x gloanțe "+d.calibru+", 1x stație. Acestea au fost confiscate iar suspectul a fost sancționat și procesat conform codului penal în vigoare, urmând ca mai apoi să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+  droguri:{ label:"Percheziție — substanțe/obiecte ilegale", fields:["data","ora","zona","nume","cantitate"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma unei percheziții, domnul/doamna "+d.nume+" a fost găsit(ă) în posesia a "+d.cantitate+". Acestea au fost confiscate, iar suspectul a fost procesat și sancționat conform codului penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+  droguri_amenda:{ label:"Percheziție — contravenție (fără închisoare)", fields:["data","ora","zona","nume","cantitate"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma unei percheziții, domnul/doamna "+d.nume+" a fost găsit(ă) în posesia a "+d.cantitate+". Acestea au fost confiscate, iar contravenientul a fost sancționat conform codului penal în vigoare." },
+  generic:{ label:"Generic (orice infracțiune)", fields:["data","ora","zona","nume","fapta","sectie"],
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în timpul unei intervenții a echipajului de poliție, s-a constatat că domnul/doamna "+d.nume+" "+d.fapta+". Fapta a fost constatată de ofițerii prezenți la fața locului. Suspectul a fost transportat la secția "+d.sectie+" pentru procesare, fiind sancționat conform Codului Penal în vigoare." },
+};
+const TPL_ORDER = ["generic","trafic","amenda","viteza","arma","razie","urmarire","jaf_imobil","jaf_bancar","droguri","droguri_amenda"];
+
+/* ---------------- RELATĂRI PROPRII (per articol) pentru descrierile generice ---------------- */
+const STORY={
+  "1.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, un echipaj de poliție l-a observat pe {nume} traversând strada printr-un loc nepermis, punând în pericol atât propria siguranță, cât și siguranța celorlalți participanți la trafic.",
+  "2.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, echipajele de poliție au surprins mai multe autovehicule angajate într-o cursă ilegală de stradă, printre conducători aflându-se și {nume}, care punea în pericol viața celorlalți cetățeni.",
+  "2.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma unui accident rutier, {nume} a părăsit în grabă locul faptei, fără a acorda ajutor ori a anunța autoritățile.",
+  "3.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins purtând un obiect ce îi acoperea complet fața într-un spațiu public, îngreunând identificarea sa.",
+  "3.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a primit o sesizare potrivit căreia {nume} urmărea și hărțuia insistent o altă persoană, provocându-i temere pentru propria siguranță.",
+  "3.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a urmărit și a hărțuit o autospecială de poliție/medici aflată în misiune, punând în pericol buna desfășurare a intervenției.",
+  "3.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} și-a expus organele genitale în public, spre revolta și disconfortul cetățenilor prezenți.",
+  "3.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} practica prostituția, procurându-și mijloacele de existență prin raporturi întreținute contra cost.",
+  "3.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma unei plângeri și a probelor adunate la fața locului, s-a stabilit că {nume} a comis fapta gravă de viol asupra unei persoane.",
+  "3.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a pătruns fără drept într-o proprietate privată și a refuzat să o părăsească la cererea proprietarului.",
+  "3.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, un echipaj de poliție l-a surprins pe {nume} distrugând și deteriorând bunuri care nu îi aparțineau, provocând pagube materiale însemnate.",
+  "3.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a folosit amenințări și presiuni pentru a constrânge o persoană să îi îndeplinească diferite servicii.",
+  "3.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a sustras prin violență un bun aflat în posesia altei persoane, fără consimțământul acesteia.",
+  "3.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins în timp ce sustrăgea, respectiv forța, un autovehicul care nu îi aparținea.",
+  "3.11.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins sustrăgând un autovehicul aparținând Departamentului de Poliție/Spitalului.",
+  "3.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} tulbura liniștea publică prin gălăgie și un limbaj vulgar, stârnind un conflict cu cetățenii din zonă.",
+  "3.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat în mod repetat să părăsească locul indicat de ofițerul de poliție.",
+  "3.15":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} instiga mai mulți cetățeni la revoltă, cu intenția de a distruge bunuri publice și de a răni persoanele din jur.",
+  "3.16":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a răspândit în public afirmații false și defăimătoare la adresa unei persoane, de natură să îi aducă prejudicii.",
+  "3.17":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins răscolind containerele de gunoi din spațiul public.",
+  "3.18":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a indus în eroare o persoană prin afirmații mincinoase, obținând foloase necuvenite și cauzând pagube.",
+  "3.19":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} desfășura un eveniment public fără a deține avizul și acordul Poliției.",
+  "4.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a împiedicat în mod intenționat un ofițer să își îndeplinească atribuțiile, punând în pericol siguranța acestuia și a cetățenilor.",
+  "4.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat să părăsească o instituție a statului la solicitarea repetată a organelor de poliție.",
+  "4.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a adresat cuvinte jignitoare și amenințări unui agent de poliție aflat în exercițiul funcțiunii.",
+  "4.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume}, aflat în custodia ofițerilor, a reușit să evadeze, sustrăgându-se de sub controlul acestora.",
+  "4.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, la momentul reținerii, {nume} a opus rezistență fizică ofițerilor de poliție.",
+  "4.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat să se identifice în fața ofițerilor, atât cu un act legal, cât și prin declararea numelui său.",
+  "4.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să influențeze decizia unui angajat guvernamental, oferindu-i bunuri și sume de bani.",
+  "4.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} presta servicii într-un domeniu reglementat fără a deține licența sau atestatul necesar.",
+  "4.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să descurajeze un martor de la a da declarații, folosind amenințări și presiuni.",
+  "4.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a folosit un limbaj vulgar cu scopul vădit de a jigni și intimida o altă persoană.",
+  "4.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a apelat în mod abuziv linia de urgență 112, fără a exista o urgență reală.",
+  "4.12":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins vânând, respectiv pescuind ilegal, într-o zonă protejată prin lege.",
+  "4.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a falsificat, respectiv a folosit, un act public fals.",
+  "4.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} nu a achitat amenzile primite în termenul legal de 21 de zile.",
+  "5.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins practicând intervenții medicale asupra unei persoane, fără a deține o licență validă.",
+  "5.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} nu a putut prezenta actul de identificare corespunzător activității pe care o desfășura.",
+  "6.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a amenințat în mod explicit că va comite o faptă gravă împotriva unei persoane, provocându-i temere.",
+  "6.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să suprime viața unei persoane, fapta fiind întreruptă înainte de producerea decesului.",
+  "6.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a agresat fizic o persoană, provocându-i vătămări corporale.",
+  "6.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a provocat vătămări corporale grave unei persoane, folosind o armă.",
+  "6.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma acțiunilor lui {nume}, o persoană și-a pierdut viața, fără a fi existat intenția de a ucide.",
+  "6.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a suprimat intenționat viața unei persoane.",
+  "6.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a reținut o persoană cu forța și împotriva voinței acesteia, privând-o de libertate.",
+  "6.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a supus o persoană unor suferințe fizice extreme, cu intenția de a-i provoca durere.",
+  "6.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a ascuns și a înstrăinat bunuri pentru a-și prejudicia în mod fraudulos creditorii.",
+  "7.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins îndreptând o armă de foc asupra unei persoane, respectiv a unui obiect.",
+  "7.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a descărcat o armă de foc asupra unei persoane, în afara oricărui context de legitimă apărare.",
+  "8.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a organizat, respectiv a participat, la acte de terorism ce au pus în pericol securitatea națională.",
+  "8.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a pătruns ilegal într-o zonă protejată, cu scopul de a aduna informații sensibile.",
+  "8.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a împiedicat desfășurarea activităților guvernamentale, blocând drumurile și atacând oficialii.",
+  "8.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} face parte dintr-un grup paramilitar organizat împotriva autorităților statului.",
+  "8.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a organizat acțiuni prin care incita în mod deschis la violență împotriva instituțiilor statului.",
+  "8.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a falsificat documente guvernamentale oficiale pentru a accesa informații ori locații restricționate.",
+  "8.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a obținut și a transmis informații sensibile către entități externe.",
+  "8.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a deteriorat intenționat infrastructură esențială, cu scopul de a crea haos și de a periclita siguranța orașului.",
+  "8.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a inițiat și a sprijinit un grup infracțional organizat, structurat pentru comiterea de infracțiuni.",
+  "8.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a abuzat de poziția sa pentru a obține foloase necuvenite, subminând integritatea instituțiilor.",
+  "8.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a acumulat un număr foarte mare de dosare penale, reprezentând un risc real pentru ordinea și siguranța publică.",
+};
+
+/* ---------------- STATE ---------------- */
+let cur=null, curTpl=null, sentVal=null, vals={};
+
+/* ---------------- LIST ---------------- */
+const capNames={1:"Cap. 1 — Legislație rutieră",2:"Cap. 2 — Infracțiuni în trafic",3:"Cap. 3 — Moravuri & proprietăți",4:"Cap. 4 — Justiție",5:"Cap. 5 — Sănătate & siguranță",6:"Cap. 6 — Infracțiuni asupra persoanelor",7:"Cap. 7 — Arme mortale",8:"Cap. 8 — Securitate națională"};
+const listEl=document.getElementById('list');
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// normalizeaza diacriticele pentru cautare fara tastatura RO
+function norm(s){return String(s).toLowerCase()
+  .replace(/[ăâ]/g,'a').replace(/î/g,'i')
+  .replace(/[șş]/g,'s').replace(/[țţ]/g,'t');}
+
+function renderList(filter){
+  filter=filter||"";
+  const q=norm(filter.trim());
+  const matched=A.filter(a=>!q||norm(a.name).includes(q)||a.id.toLowerCase().includes(q)||norm("cap "+a.cap).includes(q)||("cap"+a.cap).includes(q));
+  if(!matched.length){listEl.innerHTML='<div class="nomatch">Niciun rezultat pentru „'+esc(filter)+'”.</div>';return;}
+  let html="",lastCap=null;
+  matched.forEach(a=>{
+    if(a.cap!==lastCap){if(lastCap!==null)html+="</div>";html+='<div class="capgroup"><div class="caphead">'+capNames[a.cap]+'</div>';lastCap=a.cap;}
+    const sel=cur&&cur.id===a.id?" sel":"";
+    html+='<button class="item'+sel+'" data-id="'+a.id+'"><span class="aid">'+a.id.replace(/-.*/,'')+'</span><span>'+esc(a.name)+'</span></button>';
+  });
+  html+="</div>";
+  listEl.innerHTML=html;
+  listEl.querySelectorAll('.item').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id)));
+}
+document.getElementById('search').addEventListener('input',e=>renderList(e.target.value));
+
+/* ---------------- SELECT ---------------- */
+function select(id){
+  cur=A.find(a=>a.id===id);
+  curTpl=cur.t;
+  vals={};
+  sentVal=cur.s?Math.min(360,Math.round((cur.s[0]+Math.min(cur.s[1],360))/2)):null;
+  renderList(document.getElementById('search').value);
+  renderOutput();
+}
+
+/* ---------------- OUTPUT ---------------- */
+const outEl=document.getElementById('output');
+const modechip=document.getElementById('modechip');
+function titleText(){ const isPenal=!!cur.s||cur.life; const nm=cur.title||cur.name; return isPenal ? (nm+" – CAP "+cur.cap) : nm; }
+
+function renderOutput(){
+  if(!cur){modechip.textContent="selectează o faptă";return;}
+  const isPenal=!!cur.s||cur.life;
+  const capMax=cur.s?Math.min(cur.s[1],360):null;
+  modechip.textContent=isPenal?"dosar penal":"amendă";
+
+  let h="";
+  h+='<div class="out-head"><span class="name">'+esc(cur.name)+'</span>';
+  h+=isPenal?'<span class="tag penal">Dosar penal</span>':'<span class="tag amenda">Amendă</span>';
+  h+='<button class="addbtn" id="addToDossier">＋ Adaugă la dosar</button>';
+  h+='</div>';
+
+  if(cur.combo) h+='<div class="combo"><span class="ci">⚠️</span><div><b>Reguli de cumulare:</b> '+esc(cur.combo)+'</div></div>';
+
+  h+=fieldBlock("Titlu (copiază în câmpul „Titlu”)","title",titleText(),false);
+
+  if(cur.life&&!cur.s){
+    h+='<div class="field"><label>Sentință</label><div class="sent-box"><span class="sent-na">Reținere / închisoare pe viață</span></div></div>';
+  } else if(cur.s){
+    const lifeNote=cur.s[1]>360?' <small>(peste 360 = închisoare pe viață)</small>':(cur.life?' <small>(max = închisoare pe viață)</small>':"");
+    h+='<div class="field"><label>Sentință în luni (copiază în „Sentință în luni”)</label>'
+      +'<div class="sent-box"><div class="sent-top"><div><span class="sent-val" id="sval">'+sentVal+'</span><small>luni</small></div>'
+      +'<div class="sent-range">interval: '+cur.s[0]+'–'+cur.s[1]+lifeNote+'</div></div>'
+      +'<input type="range" id="srange" min="'+cur.s[0]+'" max="'+capMax+'" value="'+sentVal+'">'
+      +'<div class="sent-btns">'
+      +'<button class="pill" data-s="min">Minim ('+cur.s[0]+')</button>'
+      +'<button class="pill on" data-s="mid">Mediu</button>'
+      +'<button class="pill" data-s="max">Maxim ('+capMax+')</button>'
+      +'<button class="pill" data-s="rnd">Aleatoriu</button>'
+      +'<button class="cbtn" id="copysent" style="min-width:70px">Copiază</button>'
+      +'</div></div></div>';
+  }
+
+  let chips="";
+  if(cur.f&&cur.f!=="—"){ const pn=fineToNum(cur.f); chips+='<div class="chip mo" data-copyfine="'+pn+'" title="Copiază suma (fără punct)">Amendă (fără punct)<b>'+pn+'$</b></div>'; }
+  if(cur.pct) chips+='<div class="chip warn">Puncte penalizare<b>'+cur.pct+'</b></div>';
+  if(cur.permis) chips+='<div class="chip warn">Permis / măsură<b style="font-size:12px">'+esc(cur.permis)+'</b></div>';
+  if(chips) h+='<div class="chips">'+chips+'</div>';
+
+  h+='<div class="divider"></div>';
+
+  h+='<div class="field"><label>Model descriere</label><select class="tsel" id="tsel">';
+  TPL_ORDER.forEach(k=>{h+='<option value="'+k+'"'+(k===curTpl?" selected":"")+'>'+TPL[k].label+'</option>';});
+  h+='</select></div>';
+
+  h+='<div class="inputs" id="inputs"></div>';
+  h+=fieldBlock("Descriere (copiază în câmpul „Descriere”)","desc","",true);
+  h+='<div style="margin-top:-6px"><button class="pill" id="regenSingle">🔄 Altă formulare</button></div>';
+
+  outEl.innerHTML=h;
+
+  if(cur.s){
+    const range=document.getElementById('srange');
+    range.addEventListener('input',()=>{sentVal=+range.value;document.getElementById('sval').textContent=sentVal;clearPills();});
+    document.querySelectorAll('.pill[data-s]').forEach(p=>p.addEventListener('click',()=>{
+      const m=p.dataset.s;
+      if(m==="min")sentVal=cur.s[0];
+      else if(m==="max")sentVal=capMax;
+      else if(m==="mid")sentVal=Math.round((cur.s[0]+capMax)/2);
+      else sentVal=cur.s[0]+Math.floor(Math.random()*(capMax-cur.s[0]+1));
+      range.value=sentVal;document.getElementById('sval').textContent=sentVal;
+      clearPills();p.classList.add('on');
+    }));
+    document.getElementById('copysent').addEventListener('click',e=>copy(String(sentVal),e.target));
+  }
+
+  document.getElementById('tsel').addEventListener('change',e=>{curTpl=e.target.value;renderInputs();});
+  document.querySelector('[data-copy="title"]').addEventListener('click',e=>copy(titleText(),e.target));
+  document.getElementById('addToDossier').addEventListener('click',()=>addToCart(cur.id,sentVal));
+  const fc=document.querySelector('[data-copyfine]'); if(fc)fc.addEventListener('click',()=>copy(fc.dataset.copyfine));
+
+  renderInputs();
+}
+function clearPills(){document.querySelectorAll('.pill[data-s]').forEach(x=>x.classList.remove('on'));}
+
+function fieldBlock(label,key,val,isArea){
+  const el=isArea?'<textarea data-out="'+key+'" spellcheck="false"></textarea>':'<input data-out="'+key+'" value="'+esc(val)+'">';
+  return '<div class="field"><label>'+label+'</label><div class="copyrow">'+el+'<button class="cbtn" data-copy="'+key+'">Copiază</button></div></div>';
+}
+
+function renderInputs(){
+  const tpl=TPL[curTpl];
+  const box=document.getElementById('inputs');
+  let flds=tpl.fields;
+  if(curTpl==="generic" && STORY[cur.id]) flds=flds.filter(f=>f!=="fapta");
+  let h="";
+  flds.forEach(f=>{
+    const meta=FLABEL[f];
+    const wide=(f==="fapta"||f==="locatie"||f==="cantitate")?" wide":"";
+    let v=vals[f]||"";
+    if(f==="fapta"&&!vals[f]&&cur.hint) v=cur.hint;
+    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input data-f="'+f+'" placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('input[data-f]').forEach(inp=>{
+    vals[inp.dataset.f]=inp.value;
+    inp.addEventListener('input',()=>{vals[inp.dataset.f]=inp.value;updateDesc();});
+  });
+  const dc=document.querySelector('[data-copy="desc"]');
+  if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');copy(ta.value,e.target);};
+  const rgS=document.getElementById('regenSingle'); if(rgS)rgS.onclick=()=>{descVariant++;updateDesc();};
+  updateDesc();
+}
+
+function updateDesc(){
+  const tpl=TPL[curTpl];
+  const d={};
+  tpl.fields.forEach(f=>{
+    let v=vals[f];
+    if(v===undefined||v===""){
+      if(f==="fapta"&&cur.hint)v=cur.hint;
+      else v="["+FLABEL[f][0].toUpperCase()+"]";
+    }
+    d[f]=v;
+  });
+  const ta=document.querySelector('[data-out="desc"]');
+  if(!ta)return;
+  if(curTpl==="generic" && STORY[cur.id]){
+    let core=STORY[cur.id].replace(/\{(\w+)\}/g,(m,k)=> (d[k]!==undefined?d[k]:m));
+    core=core.replace(/^În data de /, pv(V.dateOpen,1));
+    let closing;
+    if(cur.life) closing=" "+pv(V.closeLife,10);
+    else if(cur.s) closing=pv(V.closePenalSingle,20).replace("{sec}", d.sectie);
+    else closing=" "+pv(V.closeContrav,12);
+    ta.value=core+closing;
+  } else {
+    ta.value=varyTemplate(tpl.text(d), cur);
+  }
+}
+
+/* ---------------- COPY ---------------- */
+function copy(text,btn){
+  const done=()=>{if(btn){const o=btn.textContent;btn.textContent="✓ Copiat";btn.classList.add('done');setTimeout(()=>{btn.textContent=o;btn.classList.remove('done');},1300);}showToast();};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fb(text,done));}
+  else fb(text,done);
+}
+function fb(text,cb){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);cb();}
+const toastEl=document.getElementById('toast');let toastT;
+function showToast(){toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('show'),1200);}
+
+/* ---------------- DOSAR CUMULAT (COMBO) ---------------- */
+let cart=[]; // [{id, months}]
+const shared={data:"",ora:"",zona:"",nume:"",marca:"",culoare:"",nrinm:"",locjaf:""};
+
+// returneaza motivul conflictului intre 2 articole, sau null
+function pairConflict(a,b){
+  const soloNothing=["8.9","8.10","8.11"];
+  if(soloNothing.includes(a.id)) return a.id+" "+a.name+" nu se cumulează cu niciun alt articol.";
+  if(soloNothing.includes(b.id)) return b.id+" "+b.name+" nu se cumulează cu niciun alt articol.";
+  const jaf=["3.12","3.12.1","3.12.2","3.12.3"];
+  const aJ=jaf.includes(a.id), bJ=jaf.includes(b.id);
+  if(aJ||bJ){
+    const other=aJ?b:a, jArt=aJ?a:b;
+    if(other.id!=="4.3") return "Jaf ("+jArt.id+") nu se cumulează cu nimic — maxim cu 4.3 Ultraj.";
+  }
+  const drug=id=>/^5\.(2|3|4)/.test(id);
+  if((a.id==="5.1"&&drug(b.id))||(b.id==="5.1"&&drug(a.id))) return "5.1 Substanțe ilegale nu se cumulează cu droguri/contrabandă (5.2 / 5.3 / 5.4).";
+  if((a.id==="6.9"&&b.id==="6.2")||(b.id==="6.9"&&a.id==="6.2")) return "6.9 Tortură nu se cumulează cu 6.2 Tentativă de omor.";
+  const cap7=id=>/^7\./.test(id), excl7=["7.4","7.8"];
+  if(excl7.includes(a.id)&&cap7(b.id)&&a.id!==b.id) return a.id+" nu se cumulează cu alte articole din Capitolul 7.";
+  if(excl7.includes(b.id)&&cap7(a.id)&&a.id!==b.id) return b.id+" nu se cumulează cu alte articole din Capitolul 7.";
+  if((a.id==="4.1"&&b.id==="4.5")||(b.id==="4.1"&&a.id==="4.5")) return "4.1 Obstrucție nu se acordă împreună cu 4.5 Rezistență la Arest.";
+  if((a.id==="8.4"&&b.id==="8.3")||(b.id==="8.3"&&a.id==="8.4")) return "8.4 Grup paramilitar nu se cumulează cu 8.3.";
+  return null;
+}
+
+function addToCart(id,months){
+  if(cart.some(c=>c.id===id)){ flash("Articolul e deja în dosar."); return; }
+  const art=A.find(a=>a.id===id);
+  // verifica conflicte cu ce e deja in dosar
+  for(const c of cart){
+    const other=A.find(a=>a.id===c.id);
+    const r=pairConflict(art,other);
+    if(r){ flash("⚠️ Nu se poate adăuga: "+r); return; }
+  }
+  cart.push({id, months: months!=null?months : (art.s?Math.round((art.s[0]+art.s[1])/2):0)});
+  renderDossier();
+  document.getElementById('dossierPanel').scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function removeFromCart(id){ cart=cart.filter(c=>c.id!==id); renderDossier(); }
+
+function fineToNum(f){
+  if(!f||f==="—") return 0;
+  let s=f.split(/[–-]/)[0];              // ia minimul daca e interval
+  s=s.replace(/[^\d]/g,"");
+  return parseInt(s||"0",10);
+}
+function fmtMoney(n){ return n.toLocaleString("ro-RO").replace(/\u00A0/g,".")+"$"; }
+
+function renderShared(){
+  const box=document.getElementById('sharedFields');
+  const F=[["data","Data","30.06.2026"],["ora","Ora","22:28"],["zona","Locație / Zonă","Cazino"],["nume","Nume suspect","Naomi Black"],["marca","Model auto (opțional)","Ubermacht F90"],["culoare","Culoare auto (opțional)","Albastru"],["nrinm","Nr. înmatriculare (opțional)","LS05QZPN"]];
+  box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'" placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+  box.querySelectorAll('input[data-sh]').forEach(inp=>inp.addEventListener('input',()=>{shared[inp.dataset.sh]=inp.value;renderCart();renderQuick();}));
+}
+
+/* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
+const QUICK_IDS = A.filter(a=>a.s===null && (a.cap===1 || a.id==="2.1" || a.id==="2.3b")).map(a=>a.id);
+let quick=new Set();
+
+function renderQuickList(){
+  const box=document.getElementById('quickList');
+  box.innerHTML=QUICK_IDS.map(id=>{const a=A.find(x=>x.id===id);const on=quick.has(id)?' on':'';return '<label class="qitem'+on+'" data-q="'+id+'"><input type="checkbox" '+(quick.has(id)?'checked':'')+'><span>'+esc(a.title||a.name)+'</span><span class="qf">'+fineToNum(a.f)+'$</span></label>';}).join('');
+  box.querySelectorAll('label[data-q]').forEach(l=>{
+    l.querySelector('input').addEventListener('change',e=>{const id=l.dataset.q;if(e.target.checked)quick.add(id);else quick.delete(id);l.classList.toggle('on',e.target.checked);renderQuick();});
+  });
+}
+
+function renderQuick(){
+  const box=document.getElementById('quickOut'); if(!box)return;
+  const ids=QUICK_IDS.filter(id=>quick.has(id));
+  if(!ids.length){ box.innerHTML='<div class="cart-empty">Bifează una sau mai multe contravenții de mai sus.</div>'; return; }
+  const arts=ids.map(id=>A.find(a=>a.id===id));
+  let totFine=0,totPct=0; arts.forEach(a=>{totFine+=fineToNum(a.f);totPct+=(a.pct||0);});
+  const pctShown=Math.min(totPct,9);
+  const retine=arts.some(a=>a.permis && /anulare permis/i.test(a.permis));
+  const title=arts.map(a=>a.title||a.name).join(" + ");
+  const d=shared.data||"[DATA]",o=shared.ora||"[ORA]",z=shared.zona||"[LOCAȚIA]",n=shared.nume||"[NUME SUSPECT]";
+  const mk=shared.marca||"[MODEL]",cl=shared.culoare||"[CULOARE]",nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
+  const clauses=arts.map(a=>a.hint||("a încălcat "+(a.title||a.name).toLowerCase()));
+  const desc=pv(V.dateOpen,1)+d+", la ora "+o+", în zona "+z+", echipajul de poliție "+pv(V.stopVerb,2)+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr+", care "+collapseJoin(clauses)+". "+pv(V.soferId,4)+n+". "+pv(V.closeContrav,12);
+  let h='';
+  h+='<div class="totals">'
+    +'<div class="tot mo" id="qFine"><div class="tl">Sumă amendă (fără punct)</div><div class="tv">'+totFine+'<small>$</small></div><div class="tcopy">clic = copiază</div></div>'
+    +'<div class="tot"><div class="tl">Puncte penaliz.</div><div class="tv">'+pctShown+' <small>/9</small></div></div>'
+    +'<div class="tot"><div class="tl">Reținere permis</div><div class="tv" style="font-size:24px;color:'+(retine?'#e0475a':'#26c281')+'">'+(retine?'DA':'NU')+'</div><div class="tcopy">'+(retine?'un articol impune anularea':'niciun articol nu o impune')+'</div></div>'
+    +'</div>';
+  h+=fieldBlock("Titlu amendă (fără capitol/suspect)","qtitle",title,false);
+  h+=fieldBlock("Descriere","qdesc","",true);
+  h+='<div style="margin-top:-6px"><button class="pill" id="regenQuick">🔄 Altă formulare</button></div>';
+  box.innerHTML=h;
+  document.getElementById('qFine').onclick=()=>copy(String(totFine));
+  const qt=document.querySelector('[data-copy="qtitle"]'); if(qt)qt.onclick=e=>copy(title,e.target);
+  document.querySelector('[data-out="qdesc"]').value=desc;
+  const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>copy(document.querySelector('[data-out="qdesc"]').value,e.target);
+  const rq=document.getElementById('regenQuick'); if(rq)rq.onclick=()=>{descVariant++;renderQuick();};
+}
+
+function renderDossier(){ renderShared(); renderCart(); }
+
+function renderCart(){
+  const area=document.getElementById('cartArea');
+  if(!cart.length){ area.innerHTML='<div class="cart-empty">Niciun cap de acuzare adăugat. Selectează o infracțiune sus și apasă „＋ Adaugă la dosar".</div>'; return; }
+  const g=id=>A.find(a=>a.id===id);
+
+  // conflicte
+  const conflicts=[]; const badIds=new Set();
+  for(let i=0;i<cart.length;i++)for(let j=i+1;j<cart.length;j++){
+    const r=pairConflict(g(cart[i].id),g(cart[j].id));
+    if(r){conflicts.push(r);badIds.add(cart[i].id);badIds.add(cart[j].id);}
+  }
+  const sevOf=c=>{const a=g(c.id);return a.life?9999:(a.s?(+c.months||0):-1);};
+  const ordered=[...cart].sort((x,y)=>sevOf(y)-sevOf(x));
+
+  let h="";
+  if(conflicts.length){
+    h+='<div class="conf-banner"><span>⛔</span><div><b>Atenție — combo invalid:</b> '+conflicts.map(esc).join(" &nbsp;•&nbsp; ")+'</div></div>';
+  }
+
+  // randuri (ordine descrescatoare)
+  ordered.forEach(c=>{
+    const a=g(c.id);
+    const bad=badIds.has(c.id)?" conflict":"";
+    const moInput=a.s?'<input class="cmo" type="number" data-mo="'+a.id+'" value="'+Math.min(c.months,360)+'" min="'+a.s[0]+'" max="360"><span class="cmo-lbl">luni</span>'
+      :(a.life?'<span class="cmo-lbl" style="color:#e8a838">pe viață</span>':'<span class="cmo-lbl">amendă</span>');
+    h+='<div class="charge'+bad+'"><span class="cid">'+a.id+'</span>'
+      +'<span class="cnm">'+esc(a.name)+'<small>CAP '+a.cap+' · '+fineToNum(a.f)+'$'+(a.pct?' · '+a.pct+' pct':'')+'</small></span>'
+      +'<div style="text-align:center">'+moInput+'</div>'
+      +'<button class="rm" data-rm="'+a.id+'" title="Elimină">×</button></div>';
+  });
+
+  // grupuri
+  const penal=cart.filter(c=>{const a=g(c.id);return a.s||a.life;});
+  const contrav=cart.filter(c=>{const a=g(c.id);return !a.s&&!a.life;});
+
+  // totaluri
+  let sumMonths=0,hasLife=false; penal.forEach(c=>{const a=g(c.id);if(a.life)hasLife=true;if(a.s)sumMonths+=(+c.months||0);});
+  const cappedMonths=Math.min(sumMonths,360); const overCap=sumMonths>360;
+  let totFine=0; cart.forEach(c=>{totFine+=fineToNum(g(c.id).f);});
+  let totPct=0; contrav.forEach(c=>{totPct+=(g(c.id).pct||0);}); const pctShown=Math.min(totPct,9);
+
+  const monthsTV=hasLife?'PE VIAȚĂ':(cappedMonths+' <small>luni</small>'+(cappedMonths>=12?' <small>(~'+(cappedMonths/12).toFixed(1)+' ani)</small>':''));
+  h+='<div class="totals">'
+    +'<div class="tot mo" id="copyTotMonths"><div class="tl">Sentință dosar</div><div class="tv" id="tvMonths">'+monthsTV+'</div><div class="tcopy">'+(overCap?'plafonat la 360':'clic = copiază')+'</div></div>'
+    +'<div class="tot mo" id="copyTotFine"><div class="tl">Amendă (fără punct)</div><div class="tv">'+totFine+'<small>$</small></div><div class="tcopy">clic = copiază suma</div></div>'
+    +'<div class="tot"><div class="tl">'+(contrav.length?'Puncte penaliz.':'Capete acuzare')+'</div><div class="tv">'+(contrav.length?(pctShown+' <small>/9</small>'):cart.length)+'</div>'+(contrav.length?'<div class="tcopy">15/15 → reține permis</div>':'')+'</div>'
+    +'</div>';
+
+  // titlu DOSAR (penal, nume – capitol, descrescator)
+  if(penal.length){
+    const sortedP=[...penal].sort((x,y)=>sevOf(y)-sevOf(x));
+    const maxCap=Math.max(...sortedP.map(c=>g(c.id).cap));
+    const dTitle=sortedP.map(c=>{const a=g(c.id);return a.title||a.name;}).join(" + ")+" – CAP "+maxCap;
+    h+=fieldBlock("Titlu DOSAR PENAL (nume – capitolul cel mai mare · ordine descrescătoare)","dtitle",dTitle,false);
+  }
+  // titlu AMENDA (doar nume, fara capitol/suspect)
+  const aTitle=ordered.map(c=>{const a=g(c.id);return a.title||a.name;}).join(" + ");
+  h+=fieldBlock("Titlu AMENDĂ (doar nume · fără capitol/suspect)","atitle",aTitle,false);
+
+  // descriere comuna (dosar + amenda aferenta)
+  h+=fieldBlock("Descriere (aceeași pentru dosar și amenda aferentă)","ddesc","",true);
+  h+='<div style="margin-top:-6px"><button class="pill" id="regenCombo">🔄 Altă formulare</button></div>';
+
+  area.innerHTML=h;
+
+  // wire
+  area.querySelectorAll('input[data-mo]').forEach(inp=>inp.addEventListener('input',()=>{const c=cart.find(x=>x.id===inp.dataset.mo);if(c)c.months=Math.min(+inp.value||0,360);recalcTotals();}));
+  area.querySelectorAll('button[data-rm]').forEach(b=>b.addEventListener('click',()=>removeFromCart(b.dataset.rm)));
+  document.getElementById('copyTotMonths').addEventListener('click',()=>{ if(!hasLife) copy(String(cappedMonths)); else flash("Sentință pe viață — nu se completează în luni."); });
+  document.getElementById('copyTotFine').addEventListener('click',()=>copy(String(totFine)));
+  const dt=document.querySelector('[data-copy="dtitle"]'); if(dt)dt.onclick=e=>copy(document.querySelector('[data-out="dtitle"]').value,e.target);
+  const at=document.querySelector('[data-copy="atitle"]'); if(at)at.onclick=e=>copy(document.querySelector('[data-out="atitle"]').value,e.target);
+  const dd=document.querySelector('[data-copy="ddesc"]'); if(dd)dd.onclick=e=>copy(document.querySelector('[data-out="ddesc"]').value,e.target);
+  const rg=document.getElementById('regenCombo'); if(rg)rg.onclick=()=>{descVariant++;buildCombinedDesc();};
+
+  buildCombinedDesc();
+}
+
+// recalcul rapid la schimbarea lunilor (fara re-render complet)
+function recalcTotals(){
+  const g=id=>A.find(a=>a.id===id);
+  let tot=0,hasLife=false; cart.forEach(c=>{const a=g(c.id);if(a.life)hasLife=true;if(a.s)tot+=(+c.months||0);});
+  const capped=Math.min(tot,360);
+  const el=document.getElementById('tvMonths');
+  if(el) el.innerHTML = hasLife?'PE VIAȚĂ':(capped+' <small>luni</small>'+(capped>=12?' <small>(~'+(capped/12).toFixed(1)+' ani)</small>':''));
+  buildCombinedDesc();
+}
+
+function joinRo(arr){
+  if(!arr.length)return "";
+  if(arr.length===1)return arr[0];
+  return arr.slice(0,-1).join(", ")+" și "+arr[arr.length-1];
+}
+function isVehicle(a){ return a.cap===1||a.cap===2||a.id==="3.11"||a.id==="3.11.1"; }
+// ordine cronologica pentru descriere: motiv oprire -> escaladare -> ce s-a gasit -> restul
+function phaseOf(a){
+  if(a.cap===1) return 1;                                                   // motivul opririi (folii/neoane/viteza)
+  if(["2.7","4.1","4.2","4.4","4.5","4.6","4.3","3.14","4.10","5.7"].includes(a.id)) return 3; // escaladare/refuz
+  if(a.cap===2) return 2;                                                   // alte fapte rutiere la oprire
+  if(a.cap===7) return 4;                                                   // arme (gasit la perchezitie)
+  if(a.cap===5 && a.id!=="5.6") return 4;                                   // droguri/contrabanda (gasit la perchezitie)
+  return 5;                                                                  // fapta principala / alte fapte
+}
+// leaga clauzele si colapseaza prefixele repetate (ex. "avea montate X si avea montate Y" -> "avea montate X si Y")
+function collapseJoin(arr){
+  const prefixes=["avea montate ","deținea asupra sa ","deținea "];
+  const items=[...arr].sort();
+  const out=[]; let i=0;
+  while(i<items.length){
+    const pfx=prefixes.find(p=>items[i].startsWith(p));
+    if(pfx){ const objs=[]; let j=i; while(j<items.length&&items[j].startsWith(pfx)){objs.push(items[j].slice(pfx.length));j++;} out.push(pfx+joinRo(objs)); i=j; }
+    else { out.push(items[i]); i++; }
+  }
+  return joinRo(out);
+}
+
+/* ---------------- VARIAȚII DESCRIERE (buton „altă formulare") ---------------- */
+let descVariant=0;
+function pv(arr,salt){ return arr[((descVariant*13)+(salt||0))%arr.length]; }
+const V={
+  dateOpen:["În data de ","La data de ","În ziua de "],
+  sceneNon:["un echipaj de poliție a intervenit în urma unei sesizări","echipajele de poliție au intervenit la fața locului în urma unei sesizări","o patrulă de poliție a fost direcționată în zonă în urma unei sesizări"],
+  stopVerb:["a tras pe dreapta un autovehicul","a oprit în trafic un autovehicul","a procedat la oprirea unui autovehicul"],
+  legit:["La legitimare s-a constatat că șoferul, identificat ca fiind ","În urma legitimării, s-a constatat că șoferul, identificat ca fiind ","La verificarea actelor s-a constatat că șoferul, identificat ca fiind "],
+  soferId:["Șoferul a fost identificat ca fiind ","Conducătorul auto a fost identificat ca fiind ","La volan a fost identificat "],
+  escal:["Pe parcursul intervenției, ","În timpul intervenției, ","Pe durata acțiunii poliției, "],
+  search:["În urma percheziției corporale, s-a constatat că ","La controlul corporal, s-a constatat că ","În urma percheziției, s-a stabilit că "],
+  crimeFirst:["În urma cercetărilor, s-a stabilit că ","În urma investigațiilor, a reieșit că ","Din cercetările efectuate a rezultat că "],
+  crimeMore:["De asemenea, s-a stabilit că ","Totodată, s-a constatat că ","În plus, a reieșit că "],
+  closePenal:["Suspectul a fost imobilizat, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței.","Suspectul a fost reținut, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores.","În urma celor constatate, suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."],
+  closeLife:["Dată fiind gravitatea faptelor, acesta a fost reținut, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind închisoarea pe viață.","Având în vedere gravitatea deosebită a faptelor, acesta a fost reținut și urmează să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa fiind închisoarea pe viață."],
+  closeContrav:["Acesta a fost sancționat conform Codului Penal în vigoare.","Contravenientul a fost sancționat conform Codului Penal în vigoare.","Fapta a fost sancționată conform Codului Penal în vigoare."],
+  closePenalSingle:[" Acesta a fost condus la secția {sec}, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."," Acesta a fost transportat la secția {sec} pentru procesare și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores."," În urma celor constatate, acesta a fost procesat la secția {sec} și sancționat conform Codului Penal în vigoare, urmând să ajungă la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."],
+  tailPenal:["urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței","urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa","urmând ca ulterior să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores"]
+};
+// variază ușor un șablon fix (deschidere + coada cu penitenciar / încheierea de contravenție)
+function varyTemplate(t, art){
+  t=t.replace(/^(În|La) data de /, pv(V.dateOpen,1));
+  if(art.s||art.life){ t=t.replace(/urmând[^.]*Sandy Shores[^.]*(?=\.)/, pv(V.tailPenal,11)); }
+  else { t=t.replace(/Acesta a fost sancționat conform codului penal în vigoare\.\s*$/i, pv(V.closeContrav,12)); }
+  return t;
+}
+
+function buildCombinedDesc(){
+  const ta=document.querySelector('[data-out="ddesc"]'); if(!ta)return;
+  const g=id=>A.find(a=>a.id===id);
+  const d=shared.data||"[DATA]", o=shared.ora||"[ORA]", z=shared.zona||"[LOCAȚIA]", n=shared.nume||"[NUME SUSPECT]";
+  const penal=cart.filter(c=>{const a=g(c.id);return a.s||a.life;});
+  const sevOf=c=>{const a=g(c.id);return a.life?9999:(a.s?(+c.months||0):-1);};
+  const ordered=[...cart].sort((x,y)=>{const px=phaseOf(g(x.id)),py=phaseOf(g(y.id));if(px!==py)return px-py;return sevOf(y)-sevOf(x);});
+
+  // grupare clauze pe faze
+  const P={1:[],2:[],3:[],4:[],5:[]};
+  ordered.forEach(c=>{const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
+  const hasVehCharge=ordered.some(c=>isVehicle(g(c.id)));
+  const parts=[];
+  let named=false;
+  const S=()=>{ if(!named){named=true; return n;} return "acesta"; };
+  const open=pv(V.dateOpen,1)+d+", în jurul orei "+o+", în zona "+z+", ";
+  const objsOf=ph=>P[ph].map(h=>h.replace(/^deținea asupra sa /,'').replace(/^deținea /,''));
+
+  if(hasVehCharge){
+    const mk=shared.marca||"[MODEL]", cl=shared.culoare||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
+    const verb=ordered.some(c=>c.id==="2.7")?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
+    let s1=open+"echipajul de poliție "+verb+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr;
+    if(P[1].length) s1+=", care "+collapseJoin(P[1]);
+    s1+=".";
+    parts.push(s1);
+    if(P[2].length) parts.push(pv(V.legit,3)+n+", "+collapseJoin(P[2])+".");
+    else parts.push(pv(V.soferId,4)+n+".");
+    named=true;
+    [3,4,5].forEach(ph=>{
+      if(!P[ph].length) return;
+      if(ph===3) parts.push(pv(V.escal,6)+S()+" "+joinRo(P[3])+".");
+      else if(ph===4) parts.push(pv(V.search,7)+S()+" deținea asupra sa "+joinRo(objsOf(4))+".");
+      else parts.push(pv(V.crimeMore,9)+S()+" "+joinRo(P[5])+".");
+    });
+  } else {
+    // fără mașină: prima faptă poartă deschiderea (data/ora/zona o singură dată)
+    let firstDone=false;
+    [5,4,3].forEach(ph=>{
+      if(!P[ph].length) return;
+      let s;
+      if(!firstDone){
+        if(ph===5) s=open+"s-a stabilit că "+S()+" "+joinRo(P[5])+".";
+        else if(ph===4) s=open+"în urma unei percheziții corporale s-a constatat că "+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
+        else s=open+S()+" "+joinRo(P[3])+".";
+        firstDone=true;
+      } else {
+        if(ph===3) s=pv(V.escal,6)+S()+" "+joinRo(P[3])+".";
+        else if(ph===4) s=pv(V.search,7)+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
+        else s=pv(V.crimeMore,9)+S()+" "+joinRo(P[5])+".";
+      }
+      parts.push(s);
+    });
+  }
+
+  let closing;
+  if(penal.some(c=>g(c.id).life)) closing=pv(V.closeLife,10);
+  else if(penal.length) closing=pv(V.closePenal,11);
+  else closing=pv(V.closeContrav,12);
+  parts.push(closing);
+
+  ta.value=parts.join(" ");
+}
+
+function flash(msg){ toastEl.textContent=msg; toastEl.style.background="#7a2a35"; toastEl.style.borderColor="#e0475a"; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>{toastEl.classList.remove('show'); setTimeout(()=>{toastEl.textContent="Copiat!";toastEl.style.background="";toastEl.style.borderColor="";},250);},1900); }
+
+/* ---------------- INIT ---------------- */
+renderList();
+renderDossier();
+renderQuickList();
+renderQuick();
+</script>
+</body>
+</html>
