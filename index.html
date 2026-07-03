@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generator Dosare & Amenzi — B-Zone V</title>
-<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
 <style>
   :root{
     --bg:#080f1e; --panel:#101f38; --line:#22375f; --line2:#2c4778;
@@ -23,8 +22,25 @@
     color:var(--ink);font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
-  .embedded header.top{display:none}
-  .embedded .wrap{padding-top:16px}
+
+  /* Bara aplicației desktop (apare doar în .exe, nu în browser) */
+  #appbar{display:none}
+  .isapp #appbar{display:flex;align-items:center;gap:13px;padding:0 6px 0 15px;
+    position:fixed;top:0;left:0;right:0;height:56px;z-index:9999;
+    background:linear-gradient(180deg,#143d78,#0c2247);border-bottom:1px solid #2c4778;
+    -webkit-app-region:drag;user-select:none;overflow:hidden}
+  .isapp #appbar::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 24px,#ffffff08 24px 26px);pointer-events:none}
+  .isapp header.top{display:none}
+  .isapp .wrap{padding-top:74px}
+  #appbar .ab-badge{width:38px;height:38px;flex:0 0 38px;border-radius:9px;z-index:1;background:conic-gradient(from 220deg,#3f7bff,#153e86,#3f7bff);display:grid;place-items:center;font-weight:800;color:#fff;font-size:15px;letter-spacing:-.5px;box-shadow:inset 0 0 0 2px #ffffff26,0 4px 12px #0007}
+  #appbar .ab-tt{display:flex;flex-direction:column;line-height:1.2;z-index:1}
+  #appbar .ab-tt b{color:#fff;font-size:14.5px;letter-spacing:.2px}
+  #appbar .ab-tt span{color:#bcd2f5;font-size:11.5px}
+  #appbar .ab-sp{flex:1}
+  #appbar .ab-btns{display:flex;-webkit-app-region:no-drag;height:56px;z-index:1}
+  #appbar .ab-btn{width:46px;height:56px;border:0;background:transparent;color:#cfe0f7;cursor:pointer;display:grid;place-items:center;font-size:16px;transition:background .12s;font-family:inherit}
+  #appbar .ab-btn:hover{background:#ffffff1a}
+  #appbar .ab-btn.ab-close:hover{background:#e0475a;color:#fff}
 
   header.top{
     display:flex;align-items:center;gap:14px;padding:14px 18px;margin-bottom:18px;
@@ -171,6 +187,24 @@
 </style>
 </head>
 <body>
+<div id="appbar">
+  <div class="ab-badge">BZ</div>
+  <div class="ab-tt"><b>Generator Dosare &amp; Amenzi</b><span>Poliția B-Zone V</span></div>
+  <div class="ab-sp"></div>
+  <div class="ab-btns">
+    <button class="ab-btn" id="abMin" title="Minimizează">&#8211;</button>
+    <button class="ab-btn" id="abMax" title="Maximizează">&#9633;</button>
+    <button class="ab-btn ab-close" id="abClose" title="Închide">&#10005;</button>
+  </div>
+</div>
+<script>
+  if(window.desktopApp&&window.desktopApp.isApp){
+    document.documentElement.classList.add('isapp');
+    document.getElementById('abMin').addEventListener('click',()=>window.desktopApp.minimize());
+    document.getElementById('abMax').addEventListener('click',()=>window.desktopApp.maximize());
+    document.getElementById('abClose').addEventListener('click',()=>window.desktopApp.close());
+  }
+</script>
 <div class="wrap">
   <header class="top">
     <div class="badge">BZ</div>
@@ -247,6 +281,164 @@
 </div>
 
 <div class="toast" id="toast">Copiat!</div>
+
+<!-- ========== CODURI RADIO ========== -->
+<button id="radioToggle" title="Afișează/ascunde codurile radio">📻 Coduri Radio</button>
+
+<div id="radioHud">
+  <div id="radioHudHead"><span>CODURI RADIO</span><button id="radioGear" title="Setări">⚙</button></div>
+  <div id="radioCs">CALLSIGN: —</div>
+  <div id="radioList"></div>
+</div>
+
+<div id="radioSettings">
+  <div class="rs-title">Setări Coduri Radio</div>
+  <label class="rs-row"><span>Callsign</span><input type="text" id="rsCall" placeholder="537 / 116" maxlength="24"></label>
+  <label class="rs-row"><span>Culoare cod</span><input type="color" id="rsCode"></label>
+  <label class="rs-row"><span>Culoare text</span><input type="color" id="rsText"></label>
+  <label class="rs-row"><span>Mărime text</span><input type="range" id="rsSize" min="11" max="26"></label>
+  <label class="rs-row"><span>Fundal (în app)</span><input type="checkbox" id="rsBg"></label>
+  <div id="rsOverlayBox">
+    <div class="rs-sep">Overlay peste joc</div>
+    <div class="rs-btns"><button id="rsOverlay">🎮 Pornește overlay</button></div>
+    <div class="rs-btns" id="rsOvCtrls" style="display:none">
+      <button id="rsOvMove">🔓 Mută</button>
+      <button id="rsOvReset">Reset poziție</button>
+    </div>
+    <div class="rs-hint">Overlay transparent, mereu deasupra jocului. „Mută” îl deblochează ca să-l tragi peste GTA, apoi apeși iar ca să-l blochezi (click-through).</div>
+  </div>
+  <div class="rs-btns"><button id="rsReset">Reset poziție (app)</button><button id="rsClose">Închide</button></div>
+</div>
+
+<style>
+  #radioToggle{position:fixed;right:16px;bottom:16px;z-index:9998;
+    background:linear-gradient(180deg,#1c7a51,#12633f);color:#eafff5;border:1px solid #26c281;
+    border-radius:11px;padding:11px 15px;font-weight:700;cursor:pointer;font-size:13px;
+    font-family:-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 6px 18px #0008}
+  #radioToggle:hover{filter:brightness(1.12)}
+  #radioToggle.active{background:linear-gradient(180deg,#2f6fed,#1d3f7a);border-color:#3f7bff}
+
+  #radioHud{position:fixed;left:20px;top:130px;z-index:9997;display:none;
+    font-family:Consolas,"SFMono-Regular",monospace;min-width:210px;padding:9px 12px;border-radius:8px}
+  #radioHud.on{display:block}
+  #radioHud.bg{background:rgba(8,15,30,.72);border:1px solid #ffffff1f}
+  #radioHudHead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-size:10.5px;letter-spacing:1.5px;margin-bottom:6px;cursor:move;opacity:.7;color:#cfe0f7}
+  #radioGear{background:transparent;border:0;color:inherit;cursor:pointer;font-size:13px;padding:0 2px}
+  #radioGear:hover{opacity:.7}
+  #radioCs{font-weight:700;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+  .rc-line{white-space:nowrap;line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+  .rc-code{font-weight:700;margin-right:2px}
+
+  #radioSettings{position:fixed;right:16px;bottom:66px;z-index:9999;display:none;width:258px;
+    background:#101f38;border:1px solid #2c4778;border-radius:12px;padding:14px;box-shadow:0 12px 34px #000a;
+    font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:#eaf1fb}
+  #radioSettings.on{display:block}
+  #radioSettings .rs-title{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:12px}
+  #radioSettings .rs-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px}
+  #radioSettings .rs-row input[type=text]{width:120px;padding:6px 8px;border-radius:6px;border:1px solid #2c4778;background:#0a1830;color:#eaf1fb;font-size:12.5px;font-family:inherit}
+  #radioSettings .rs-row input[type=color]{width:44px;height:26px;border:1px solid #2c4778;border-radius:6px;background:#0a1830;cursor:pointer;padding:2px}
+  #radioSettings .rs-row input[type=range]{width:130px;accent-color:#2f6fed}
+  #radioSettings .rs-row input[type=checkbox]{width:17px;height:17px;accent-color:#2f6fed;cursor:pointer}
+  #radioSettings .rs-sep{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin:12px 0 8px;border-top:1px solid #22375f;padding-top:12px}
+  #radioSettings .rs-hint{font-size:11px;color:#5f759c;line-height:1.4;margin:8px 0 12px}
+  #radioSettings .rs-btns{display:flex;gap:8px;margin-bottom:4px}
+  #radioSettings .rs-btns button{flex:1;padding:8px;border-radius:8px;border:1px solid #2c4778;background:#0e2247;color:#bcd0f0;cursor:pointer;font-size:12.5px;font-weight:600;font-family:inherit}
+  #radioSettings .rs-btns button:hover{border-color:#3f7bff;color:#fff}
+</style>
+
+<script>
+(function(){
+  const CODES=[
+    ["10-0","Suspect pierdut"],["10-1","Schimbare frecvență"],["10-2","Permisiune depășire"],
+    ["10-4","Afirmativ / Recepționat"],["10-8","În patrulă"],["10-9","Repetă"],
+    ["10-11","Focuri de armă"],["10-16","Mașină fără nr. înmatriculare"],["10-20","Locație"],
+    ["10-23","Ajuns la destinație"],["10-28","Numere înmatriculare"],["10-38","Traffic Stop"],
+    ["10-41","On-Duty"],["10-42","Off-Duty"],["10-50","Accident"],["10-60","Livrare în progres"],
+    ["10-76","În drum spre"],["10-78","Echipaje adiționale / Întăriri"],
+    ["10-80","Urmărire în desfășurare"],["10-95","Suspect în custodie"]
+  ];
+  const hud=document.getElementById('radioHud');
+  const list=document.getElementById('radioList');
+  const toggle=document.getElementById('radioToggle');
+  const gear=document.getElementById('radioGear');
+  const settings=document.getElementById('radioSettings');
+  const head=document.getElementById('radioHudHead');
+  const csEl=document.getElementById('radioCs');
+
+  const DEF={x:20,y:130,code:"#4aa3ff",text:"#f2f6ff",size:15,bg:false,vis:false,callsign:"",ovX:60,ovY:200};
+  let cfg=Object.assign({},DEF);
+  try{const s=localStorage.getItem('radioHudCfg');if(s)cfg=Object.assign({},DEF,JSON.parse(s));}catch(e){}
+  function save(){try{localStorage.setItem('radioHudCfg',JSON.stringify(cfg));}catch(e){}}
+
+  list.innerHTML=CODES.map(c=>'<div class="rc-line"><span class="rc-code">'+c[0]+'</span>: <span class="rc-txt">'+c[1]+'</span></div>').join('');
+
+  const isApp=!!(window.desktopApp&&window.desktopApp.isApp);
+  let ovOn=false, ovLocked=true;
+  function ovConfig(){return {callsign:cfg.callsign,code:cfg.code,text:cfg.text,size:cfg.size,x:cfg.ovX,y:cfg.ovY,locked:ovLocked};}
+
+  function apply(){
+    hud.style.left=cfg.x+'px'; hud.style.top=cfg.y+'px'; hud.style.fontSize=cfg.size+'px';
+    hud.classList.toggle('bg',cfg.bg); hud.classList.toggle('on',cfg.vis);
+    toggle.classList.toggle('active',cfg.vis);
+    csEl.textContent='CALLSIGN: '+(cfg.callsign||'—');
+    csEl.style.color=cfg.code;
+    list.querySelectorAll('.rc-line').forEach(l=>l.style.color=cfg.text);
+    list.querySelectorAll('.rc-code').forEach(l=>l.style.color=cfg.code);
+    if(isApp&&ovOn&&window.desktopApp.overlay) window.desktopApp.overlay.setConfig(ovConfig());
+  }
+
+  toggle.onclick=()=>{cfg.vis=!cfg.vis;apply();save();};
+  gear.onclick=(e)=>{e.stopPropagation();settings.classList.toggle('on');};
+
+  let drag=null;
+  head.addEventListener('mousedown',e=>{drag={sx:e.clientX,sy:e.clientY,ox:cfg.x,oy:cfg.y};e.preventDefault();});
+  window.addEventListener('mousemove',e=>{
+    if(!drag)return;
+    cfg.x=Math.max(0,drag.ox+(e.clientX-drag.sx));
+    cfg.y=Math.max(0,drag.oy+(e.clientY-drag.sy));
+    hud.style.left=cfg.x+'px'; hud.style.top=cfg.y+'px';
+  });
+  window.addEventListener('mouseup',()=>{if(drag){drag=null;save();}});
+
+  const rsCall=document.getElementById('rsCall'),rsCode=document.getElementById('rsCode'),
+        rsText=document.getElementById('rsText'),rsSize=document.getElementById('rsSize'),rsBg=document.getElementById('rsBg');
+  rsCall.value=cfg.callsign; rsCode.value=cfg.code; rsText.value=cfg.text; rsSize.value=cfg.size; rsBg.checked=cfg.bg;
+  rsCall.oninput=e=>{cfg.callsign=e.target.value;apply();save();};
+  rsCode.oninput=e=>{cfg.code=e.target.value;apply();save();};
+  rsText.oninput=e=>{cfg.text=e.target.value;apply();save();};
+  rsSize.oninput=e=>{cfg.size=+e.target.value;apply();save();};
+  rsBg.onchange=e=>{cfg.bg=e.target.checked;apply();save();};
+  document.getElementById('rsReset').onclick=()=>{cfg.x=DEF.x;cfg.y=DEF.y;apply();save();};
+  document.getElementById('rsClose').onclick=()=>settings.classList.remove('on');
+
+  const ovBox=document.getElementById('rsOverlayBox');
+  if(!isApp){ ovBox.style.display='none'; }
+  else{
+    const btnOv=document.getElementById('rsOverlay');
+    const ctrls=document.getElementById('rsOvCtrls');
+    const btnMove=document.getElementById('rsOvMove');
+    btnOv.onclick=()=>{
+      ovOn=!ovOn;
+      window.desktopApp.overlay.toggle(ovConfig());
+      btnOv.textContent=ovOn?'🛑 Oprește overlay':'🎮 Pornește overlay';
+      ctrls.style.display=ovOn?'flex':'none';
+      if(ovOn){ovLocked=true;btnMove.textContent='🔓 Mută';}
+    };
+    btnMove.onclick=()=>{
+      ovLocked=!ovLocked;
+      window.desktopApp.overlay.lock(ovLocked);
+      window.desktopApp.overlay.setConfig(ovConfig());
+      btnMove.textContent=ovLocked?'🔓 Mută':'🔒 Blochează';
+    };
+    document.getElementById('rsOvReset').onclick=()=>{cfg.ovX=DEF.ovX;cfg.ovY=DEF.ovY;save();window.desktopApp.overlay.setPos(cfg.ovX,cfg.ovY);};
+    window.desktopApp.overlay.onMoved(b=>{cfg.ovX=b.x;cfg.ovY=b.y;save();});
+    window.desktopApp.overlay.onClosed(()=>{ovOn=false;btnOv.textContent='🎮 Pornește overlay';ctrls.style.display='none';});
+  }
+
+  apply();
+})();
+</script>
 
 <script>
 /* ---------------- DATA: Cod Penal B-Zone V ---------------- */
