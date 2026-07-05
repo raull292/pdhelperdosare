@@ -365,7 +365,49 @@
         </div>
       </div>
     </details>
+    <style id="scencss">
+      .scenrow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+      .scenrow label{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;white-space:nowrap}
+      .scenrow select{flex:1;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
+      .scenhint{font-size:11.5px;color:#5f759c;margin-bottom:14px;line-height:1.4;min-height:14px}
+      .scenhint.warn{color:#e8a838}
+    </style>
+    <div class="scenrow">
+      <label for="dossierScen">Scenariu dosar</label>
+      <select id="dossierScen">
+        <option value="auto">Automat (după fapte)</option>
+        <option value="trafic">Trafic stop (oprire în trafic)</option>
+        <option value="razie">Razie SAS pe insulă (Cayo/Maldive)</option>
+        <option value="focuri">Schimb de focuri (10-11)</option>
+        <option value="sesizare">Sesizare / intervenție</option>
+      </select>
+    </div>
+    <div class="scenhint" id="scenHint"></div>
     <div class="shared" id="sharedFields"></div>
+    <style id="subcss">
+      .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
+      .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
+      .subbox .sub-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+      .subbox select{flex:1;min-width:210px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit;cursor:pointer}
+      .subbox input{width:120px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit}
+      .subbox .sub-hint{font-size:11.5px;color:#5f759c;margin-top:9px;line-height:1.45}
+      .subbox .sub-hint.ok{color:#26c281}.subbox .sub-hint.warn{color:#e8a838}
+    </style>
+    <div class="subbox" id="subBox">
+      <div class="sub-title">➕ Substanțe ilegale găsite la suspect (auto-tier)</div>
+      <div class="sub-row">
+        <select id="subType">
+          <option value="frunze">Frunze / Semințe (5.1)</option>
+          <option value="risc">Droguri de risc — jointuri (5.3)</option>
+          <option value="mare">Droguri mare risc — plicuri (5.4)</option>
+          <option value="tigari">Țiări de contrabandă (5.2)</option>
+          <option value="money">Bani murdari / Blood Money — $ (5.5)</option>
+        </select>
+        <input type="number" id="subQty" placeholder="cantitate" min="0">
+        <button class="btnp green" id="subAdd">Adaugă la dosar</button>
+      </div>
+      <div class="sub-hint" id="subHint">Alege substanța și scrie cantitatea — aleg singur TIP-ul corect (I–IV) cu sentința aferentă și îl adaug în dosar.</div>
+    </div>
     <div id="cartArea"></div>
   </div>
 
@@ -887,6 +929,7 @@ function showToast(){toastEl.classList.add('show');clearTimeout(toastT);toastT=s
 
 /* ---------------- DOSAR CUMULAT (COMBO) ---------------- */
 let cart=[]; // [{id, months}]
+let dossierScenario='auto';
 const shared={data:"",ora:"",zona:"",nume:"",marca:"",culoare:"",nrinm:"",locjaf:""};
 
 // returneaza motivul conflictului intre 2 articole, sau null
@@ -1136,7 +1179,6 @@ function buildCombinedDesc(){
   const sevOf=c=>{const a=g(c.id);return a.life?9999:(a.s?(+c.months||0):-1);};
   const ordered=[...cart].sort((x,y)=>{const px=phaseOf(g(x.id)),py=phaseOf(g(y.id));if(px!==py)return px-py;return sevOf(y)-sevOf(x);});
 
-  // grupare clauze pe faze
   const P={1:[],2:[],3:[],4:[],5:[]};
   ordered.forEach(c=>{const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
   const hasVehCharge=ordered.some(c=>isVehicle(g(c.id)));
@@ -1146,7 +1188,31 @@ function buildCombinedDesc(){
   const open=pv(V.dateOpen,1)+d+", în jurul orei "+o+", în zona "+z+", ";
   const objsOf=ph=>P[ph].map(h=>h.replace(/^deținea asupra sa /,'').replace(/^deținea /,''));
 
-  if(hasVehCharge){
+  const scen=(typeof dossierScenario!=='undefined')?dossierScenario:'auto';
+  const useTrafic = scen==='trafic' || (scen==='auto' && hasVehCharge);
+  if(!useTrafic){ P[5]=P[5].concat(P[2]).concat(P[1]); P[1]=[]; P[2]=[]; }
+
+  function blocks(order, openAlready){
+    let openUsed=openAlready, anyFact=false;
+    order.forEach(ph=>{
+      if(!P[ph].length) return;
+      let s;
+      if(!openUsed){
+        if(ph===5) s=open+"s-a stabilit că "+S()+" "+joinRo(P[5])+".";
+        else if(ph===4) s=open+"în urma unei percheziții corporale s-a constatat că "+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
+        else s=open+S()+" "+joinRo(P[3])+".";
+        openUsed=true; anyFact=true;
+      } else {
+        if(ph===3) s=pv(V.escal,6)+S()+" "+joinRo(P[3])+".";
+        else if(ph===4) s=pv(V.search,7)+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
+        else s=(anyFact?pv(V.crimeMore,9):pv(V.crimeFirst,8))+S()+" "+joinRo(P[5])+".";
+        anyFact=true;
+      }
+      parts.push(s);
+    });
+  }
+
+  if(useTrafic){
     const mk=shared.marca||"[MODEL]", cl=shared.culoare||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
     const verb=ordered.some(c=>c.id==="2.7")?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
     let s1=open+"echipajul de poliție "+verb+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr;
@@ -1156,30 +1222,20 @@ function buildCombinedDesc(){
     if(P[2].length) parts.push(pv(V.legit,3)+n+", "+collapseJoin(P[2])+".");
     else parts.push(pv(V.soferId,4)+n+".");
     named=true;
-    [3,4,5].forEach(ph=>{
-      if(!P[ph].length) return;
-      if(ph===3) parts.push(pv(V.escal,6)+S()+" "+joinRo(P[3])+".");
-      else if(ph===4) parts.push(pv(V.search,7)+S()+" deținea asupra sa "+joinRo(objsOf(4))+".");
-      else parts.push(pv(V.crimeMore,9)+S()+" "+joinRo(P[5])+".");
-    });
+    blocks([3,4,5], true);
+  } else if(scen==='razie'){
+    parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", în urma unei razii SAS asupra insulei "+z+", au fost reținute mai multe persoane, printre care și "+n+".");
+    named=true;
+    blocks([4,5,3], true);
+  } else if(scen==='focuri'){
+    parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", dispecerul a primit o alertă privind focuri de armă în zona "+z+". "+n+" a luat parte la un schimb de focuri cu echipajele de poliție sosite la fața locului și a fost imobilizat.");
+    named=true;
+    blocks([4,5,3], true);
+  } else if(scen==='sesizare'){
+    parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", în zona "+z+", în urma unei sesizări, un echipaj de poliție a intervenit.");
+    blocks([5,4,3], true);
   } else {
-    // fără mașină: prima faptă poartă deschiderea (data/ora/zona o singură dată)
-    let firstDone=false;
-    [5,4,3].forEach(ph=>{
-      if(!P[ph].length) return;
-      let s;
-      if(!firstDone){
-        if(ph===5) s=open+"s-a stabilit că "+S()+" "+joinRo(P[5])+".";
-        else if(ph===4) s=open+"în urma unei percheziții corporale s-a constatat că "+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
-        else s=open+S()+" "+joinRo(P[3])+".";
-        firstDone=true;
-      } else {
-        if(ph===3) s=pv(V.escal,6)+S()+" "+joinRo(P[3])+".";
-        else if(ph===4) s=pv(V.search,7)+S()+" deținea asupra sa "+joinRo(objsOf(4))+".";
-        else s=pv(V.crimeMore,9)+S()+" "+joinRo(P[5])+".";
-      }
-      parts.push(s);
-    });
+    blocks([5,4,3], false);
   }
 
   let closing;
@@ -1194,6 +1250,39 @@ function buildCombinedDesc(){
 function flash(msg){ toastEl.textContent=msg; toastEl.style.background="#7a2a35"; toastEl.style.borderColor="#e0475a"; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>{toastEl.classList.remove('show'); setTimeout(()=>{toastEl.textContent="Copiat!";toastEl.style.background="";toastEl.style.borderColor="";},250);},1900); }
 
 /* ---------------- INIT ---------------- */
+function resolveSub(type,qty){
+  qty=+qty||0;
+  if(qty<=0) return {err:'Scrie o cantitate validă.'};
+  if(type==='frunze') return {id:'5.1'};
+  if(type==='tigari'){ if(qty<=20)return{legal:'țigări (1-20 = legal, fără dosar)'}; if(qty<=50)return{id:'5.2-II'}; if(qty<=100)return{id:'5.2-III'}; return{id:'5.2-IV'}; }
+  if(type==='risc'){ if(qty<=5)return{id:'5.3-I'}; if(qty<=50)return{id:'5.3-II'}; if(qty<=100)return{id:'5.3-III'}; return{id:'5.3-IV'}; }
+  if(type==='mare'){ if(qty<=3)return{id:'5.4-I'}; if(qty<=50)return{id:'5.4-II'}; if(qty<=100)return{id:'5.4-III'}; return{id:'5.4-IV'}; }
+  if(type==='money'){ if(qty<10000)return{err:'Sub pragul minim (10.000$).'}; if(qty<=100000)return{id:'5.5-I'}; if(qty<=1000000)return{id:'5.5-II'}; if(qty<10000000)return{id:'5.5-III'}; return{id:'5.5-IV'}; }
+  return {err:'Tip necunoscut.'};
+}
+(function(){
+  const bAdd=document.getElementById('subAdd'); if(!bAdd)return;
+  const hint=document.getElementById('subHint');
+  bAdd.addEventListener('click',function(){
+    const type=document.getElementById('subType').value;
+    const qty=document.getElementById('subQty').value;
+    const r=resolveSub(type,qty);
+    if(r.err){ hint.textContent='⚠️ '+r.err; hint.className='sub-hint warn'; return; }
+    if(r.legal){ hint.textContent='✔️ '+r.legal; hint.className='sub-hint ok'; return; }
+    const a=A.find(x=>x.id===r.id);
+    const before=cart.some(c=>c.id===r.id);
+    addToCart(r.id, a.s?Math.round((a.s[0]+Math.min(a.s[1],360))/2):0);
+    const after=cart.some(c=>c.id===r.id);
+    if(after && !before){ hint.textContent='✔️ Adăugat în dosar: '+a.name; hint.className='sub-hint ok'; document.getElementById('subQty').value=''; }
+    else { hint.textContent='ℹ️ Vezi mesajul de sus (deja în dosar sau combo interzis).'; hint.className='sub-hint warn'; }
+  });
+})();
+(function(){
+  const scenSel=document.getElementById('dossierScen'), scenHint=document.getElementById('scenHint');
+  const HINTS={auto:'Alege scenariul dacă vrei un început anume; „Automat” decide după fapte.',trafic:'Completează datele mașinii (model, culoare, nr.) mai jos.',razie:'Pune numele insulei (Cayo/Maldive) în câmpul „Locație / Zonă” de mai jos.',focuri:'Descrie schimbul de focuri; armele găsite apar din capetele de acuzare.',sesizare:'Intervenție în urma unei sesizări, fără oprire în trafic.'};
+  function upd(){ if(scenHint) scenHint.textContent=HINTS[scenSel?scenSel.value:'auto']||''; if(scenHint) scenHint.className='scenhint'+(scenSel&&scenSel.value==='razie'?' warn':''); }
+  if(scenSel){ scenSel.addEventListener('change',function(){ dossierScenario=scenSel.value; upd(); buildCombinedDesc(); }); upd(); }
+})();
 renderList();
 renderDossier();
 renderQuickList();
