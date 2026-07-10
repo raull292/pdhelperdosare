@@ -1389,10 +1389,22 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   if(lBtn) lBtn.onclick=()=>{ setA({rank:(document.getElementById('lgRank').value||''),name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
   const setSave=document.getElementById('setSave');
   if(setSave) setSave.onclick=()=>{ setA({rank:(document.getElementById('setRank').value||''),name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
+  // reîncarcă ocolind cache-ul HTTP (aplicația ia index.html live de pe GitHub, altfel poate rămâne pe versiunea veche)
+  function hardReload(){
+    try{
+      if(location.protocol==='http:'||location.protocol==='https:'){
+        const u=new URL(location.href);
+        u.searchParams.set('_', String(Date.now()));
+        location.replace(u.href);
+        return;
+      }
+    }catch(e){}
+    location.reload();
+  }
   const setReset=document.getElementById('setReset');
-  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); location.reload(); } };
+  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); hardReload(); } };
   const setReload=document.getElementById('setReload');
-  if(setReload) setReload.onclick=()=>location.reload();
+  if(setReload) setReload.onclick=()=>hardReload();
 })();
 </script>
 </body>
