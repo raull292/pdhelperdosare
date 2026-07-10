@@ -318,21 +318,16 @@
   </header>
 
   <style id="commoncss">
-    #commonPanel{margin-bottom:16px}
     .flux{font-size:12.5px;color:#7d93b8;background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:9px 13px;margin-bottom:14px}
     .flux b{color:#cfe0f7}
     .phelp{font-size:12px;color:#5f759c;line-height:1.45;margin:2px 0 12px}
     .phelp.mut{margin:10px 0 0;color:#516585}
     .phelp b{color:#8ba0c4}
+    .dc-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin:2px 0 10px}
+    #dtNow{margin-top:8px;font-size:11.5px;padding:6px 11px;border-radius:8px;border:1px solid var(--line2);background:#0e2247;color:#cfe0f7;cursor:pointer;font-family:inherit}
+    #dtNow:hover{border-color:var(--blue);color:#fff}
   </style>
   <div class="flux">1) Caută fapta &rarr; 2) Completează datele &rarr; 3) Copiază <b>Titlu</b> / <b>Sentință</b> / <b>Descriere</b> în MDT-ul din joc.</div>
-  <div class="panel" id="commonPanel">
-    <h2><span class="n">✎</span> Date comune &mdash; completează o singură dată</h2>
-    <p class="phelp">Suspect, dată, oră, locație. Se folosesc automat și la descrierea unei fapte (Panoul 2) și la dosarul cumulat (Panoul 3) &mdash; nu le mai scrii de două ori. Ce e marcat „(opțional)" poți lăsa gol.</p>
-    <div class="shared" id="sharedFields"></div>
-    <button id="dtNow" title="Pune data și ora curentă din România" style="margin-top:2px;font-size:11.5px;padding:6px 11px;border-radius:8px;border:1px solid var(--line2);background:#0e2247;color:#cfe0f7;cursor:pointer;font-family:inherit">🕒 Data &amp; ora de acum</button>
-    <p class="phelp mut">Ce lași gol apare ca <b>[CÂMP]</b> în text și-l completezi manual în joc.</p>
-  </div>
   <div class="grid">
     <div class="panel">
       <h2><span class="n">1</span> Alege infracțiunea</h2>
@@ -357,7 +352,7 @@
 
   <div class="panel dossier" id="dossierPanel">
     <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare</h2>
-    <p class="phelp">Mai multe fapte pe același suspect. Adaugă-le cu „＋ Adaugă la dosar" din Panoul 2. Datele comune le iei de sus.</p>
+    <p class="phelp">Mai multe fapte pe același suspect. Adaugă-le cu „＋ Adaugă la dosar" din Panoul 2. Datele comune (suspect, dată, oră, locație) le completezi mai jos.</p>
     <details class="ref">
       <summary>Structură &amp; detalii (reguli server)</summary>
       <div class="refbody">
@@ -401,7 +396,10 @@
       </select>
     </div>
     <div class="scenhint" id="scenHint"></div>
-    <p class="phelp" style="margin:2px 0 12px">Datele comune (suspect, dată, oră, locație) le completezi sus, la „Date comune".</p>
+    <div class="dc-title">✎ Date comune (aceleași apar și în Panoul 2)</div>
+    <div class="shared" id="sharedFields"></div>
+    <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
+    <p class="phelp mut">Ce lași gol apare ca <b>[CÂMP]</b> în text și-l completezi manual în joc.</p>
     <style id="subcss">
       .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
       .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
@@ -891,21 +889,24 @@ function fieldBlock(label,key,val,isArea){
 function renderInputs(){
   const tpl=TPL[curTpl];
   const box=document.getElementById('inputs');
-  let flds=tpl.fields.filter(f=>!COMMON.includes(f));
+  let flds=tpl.fields.slice();
   if(curTpl==="generic" && STORY[cur.id]) flds=flds.filter(f=>f!=="fapta");
   let h="";
   flds.forEach(f=>{
     const meta=FLABEL[f];
+    const isCommon=COMMON.includes(f);
     const wide=(f==="fapta"||f==="locatie"||f==="cantitate")?" wide":"";
-    let v=vals[f]||"";
+    let v=isCommon?(shared[f]||""):(vals[f]||"");
     if(f==="fapta"&&!vals[f]&&cur.hint) v=cur.hint;
-    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input data-f="'+f+'" placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
+    const attr=isCommon?('data-sh="'+f+'"'):('data-f="'+f+'"');
+    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input '+attr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
   });
   box.innerHTML=h;
   box.querySelectorAll('input[data-f]').forEach(inp=>{
     vals[inp.dataset.f]=inp.value;
     inp.addEventListener('input',()=>{vals[inp.dataset.f]=inp.value;updateDesc();});
   });
+  box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
   const dc=document.querySelector('[data-copy="desc"]');
   if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');copy(ta.value,e.target);};
   const rgS=document.getElementById('regenSingle'); if(rgS)rgS.onclick=()=>{descVariant++;updateDesc();};
@@ -1011,16 +1012,29 @@ function autoDateTime(force){
   if(force) dtManual=false;
   const t=nowRO();
   shared.data=t.data; shared.ora=t.ora;
-  const di=document.querySelector('input[data-sh="data"]'), oi=document.querySelector('input[data-sh="ora"]');
-  if(di) di.value=t.data;
-  if(oi) oi.value=t.ora;
+  document.querySelectorAll('input[data-sh="data"]').forEach(di=>di.value=t.data);
+  document.querySelectorAll('input[data-sh="ora"]').forEach(oi=>oi.value=t.ora);
   if(force){ renderCart(); renderQuick(); if(document.querySelector('[data-out="desc"]')) updateDesc(); }
+}
+// tine campurile comune (Panoul 2 + Panoul 3) sincronizate cu starea `shared`, fara re-render (nu pierde focusul)
+function syncSharedInputs(except){
+  document.querySelectorAll('input[data-sh]').forEach(inp=>{ if(inp!==except) inp.value=shared[inp.dataset.sh]||''; });
+}
+function wireSharedInput(inp){
+  inp.addEventListener('input',()=>{
+    shared[inp.dataset.sh]=inp.value;
+    if(inp.dataset.sh==='data'||inp.dataset.sh==='ora') dtManual=true;
+    syncSharedInputs(inp);
+    renderCart(); renderQuick();
+    if(document.querySelector('[data-out="desc"]')) updateDesc();
+  });
 }
 function renderShared(){
   const box=document.getElementById('sharedFields');
+  if(!box) return;
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
   box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'" placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
-  box.querySelectorAll('input[data-sh]').forEach(inp=>inp.addEventListener('input',()=>{shared[inp.dataset.sh]=inp.value;if(inp.dataset.sh==='data'||inp.dataset.sh==='ora')dtManual=true;renderCart();renderQuick();if(document.querySelector('[data-out="desc"]'))updateDesc();}));
+  box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
 }
 
 /* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
