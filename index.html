@@ -317,6 +317,22 @@
     <div class="modechip" id="modechip">selectează o faptă</div>
   </header>
 
+  <style id="commoncss">
+    #commonPanel{margin-bottom:16px}
+    .flux{font-size:12.5px;color:#7d93b8;background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:9px 13px;margin-bottom:14px}
+    .flux b{color:#cfe0f7}
+    .phelp{font-size:12px;color:#5f759c;line-height:1.45;margin:2px 0 12px}
+    .phelp.mut{margin:10px 0 0;color:#516585}
+    .phelp b{color:#8ba0c4}
+  </style>
+  <div class="flux">1) Caută fapta &rarr; 2) Completează datele &rarr; 3) Copiază <b>Titlu</b> / <b>Sentință</b> / <b>Descriere</b> în MDT-ul din joc.</div>
+  <div class="panel" id="commonPanel">
+    <h2><span class="n">✎</span> Date comune &mdash; completează o singură dată</h2>
+    <p class="phelp">Suspect, dată, oră, locație. Se folosesc automat și la descrierea unei fapte (Panoul 2) și la dosarul cumulat (Panoul 3) &mdash; nu le mai scrii de două ori. Ce e marcat „(opțional)" poți lăsa gol.</p>
+    <div class="shared" id="sharedFields"></div>
+    <button id="dtNow" title="Pune data și ora curentă din România" style="margin-top:2px;font-size:11.5px;padding:6px 11px;border-radius:8px;border:1px solid var(--line2);background:#0e2247;color:#cfe0f7;cursor:pointer;font-family:inherit">🕒 Data &amp; ora de acum</button>
+    <p class="phelp mut">Ce lași gol apare ca <b>[CÂMP]</b> în text și-l completezi manual în joc.</p>
+  </div>
   <div class="grid">
     <div class="panel">
       <h2><span class="n">1</span> Alege infracțiunea</h2>
@@ -329,6 +345,7 @@
 
     <div class="panel">
       <h2><span class="n">2</span> Rezultat</h2>
+      <p class="phelp">O singură faptă. Pentru mai multe fapte pe același suspect, folosește Dosarul cumulat (Panoul 3, mai jos).</p>
       <div id="output">
         <div class="empty">
           <div class="big">Nimic selectat încă</div>
@@ -340,6 +357,7 @@
 
   <div class="panel dossier" id="dossierPanel">
     <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare</h2>
+    <p class="phelp">Mai multe fapte pe același suspect. Adaugă-le cu „＋ Adaugă la dosar" din Panoul 2. Datele comune le iei de sus.</p>
     <details class="ref">
       <summary>Structură &amp; detalii (reguli server)</summary>
       <div class="refbody">
@@ -383,7 +401,7 @@
       </select>
     </div>
     <div class="scenhint" id="scenHint"></div>
-    <div class="shared" id="sharedFields"></div>
+    <p class="phelp" style="margin:2px 0 12px">Datele comune (suspect, dată, oră, locație) le completezi sus, la „Date comune".</p>
     <style id="subcss">
       .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
       .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
@@ -641,15 +659,17 @@ const A = [
 ];
 
 /* ---------------- TEMPLATES ---------------- */
+const COMMON=["data","ora","zona","nume","marca","culoare","nrinm"];
+function fval(f){ return (COMMON.includes(f) ? (shared[f]||"") : (vals[f]||"")); }
 const FLABEL = {
-  data:["Data","30.06.2026"], ora:["Ora","22:28"], zona:["Zona","MALDIVE / Cazino"],
-  nume:["Nume suspect","Naomi Black"], marca:["Marcă / model","Ubermacht F90"],
-  culoare:["Culoare","Albastru"], nrinm:["Nr. înmatriculare","LS05QZPN"],
-  arma:["Armă","Heavy Revolver"], gloante:["Nr. gloanțe","66"], calibru:["Calibru","7.65 MM"],
-  sectie:["Secție","centrală"], insula:["Insulă","CAYO"], viteza:["Viteză (km/h)","180"],
-  limita:["Limită (km/h)","100"], locatie:["Locație","magazinul de pe Route 68"],
-  zonafin:["Zona finală urmărire","Grove Street"], sursa:["Sursă alertă","SRI"],
-  cantitate:["Cantitate găsită","5 joint-uri"], fapta:["Descriere faptă (liber)","avea permisul auto expirat"]
+  data:["Data","ex: 30.06.2026"], ora:["Ora","ex: 22:28"], zona:["Zona","ex: MALDIVE / Cazino"],
+  nume:["Nume suspect","ex: Naomi Black"], marca:["Marcă / model","ex: Ubermacht F90"],
+  culoare:["Culoare","ex: Albastru"], nrinm:["Nr. înmatriculare","ex: LS05QZPN"],
+  arma:["Armă","ex: Heavy Revolver"], gloante:["Nr. gloanțe","ex: 66"], calibru:["Calibru","ex: 7.65 MM"],
+  sectie:["Secție","ex: centrală"], insula:["Insulă","ex: CAYO"], viteza:["Viteză (km/h)","ex: 180"],
+  limita:["Limită (km/h)","ex: 100"], locatie:["Locație","ex: magazinul de pe Route 68"],
+  zonafin:["Zona finală urmărire","ex: Grove Street"], sursa:["Sursă alertă","ex: SRI"],
+  cantitate:["Cantitate găsită","ex: 5 joint-uri"], fapta:["Descriere faptă (liber)","ex: avea permisul auto expirat"]
 };
 
 const TPL = {
@@ -788,6 +808,7 @@ const modechip=document.getElementById('modechip');
 function titleText(){ const isPenal=!!cur.s||cur.life; const nm=cur.title||cur.name; return isPenal ? (nm+" – CAP "+cur.cap) : nm; }
 
 function renderOutput(){
+  if(cur) autoDateTime();
   if(!cur){modechip.textContent="selectează o faptă";return;}
   const isPenal=!!cur.s||cur.life;
   const capMax=cur.s?Math.min(cur.s[1],360):null;
@@ -870,7 +891,7 @@ function fieldBlock(label,key,val,isArea){
 function renderInputs(){
   const tpl=TPL[curTpl];
   const box=document.getElementById('inputs');
-  let flds=tpl.fields;
+  let flds=tpl.fields.filter(f=>!COMMON.includes(f));
   if(curTpl==="generic" && STORY[cur.id]) flds=flds.filter(f=>f!=="fapta");
   let h="";
   flds.forEach(f=>{
@@ -895,7 +916,7 @@ function updateDesc(){
   const tpl=TPL[curTpl];
   const d={};
   tpl.fields.forEach(f=>{
-    let v=vals[f];
+    let v=fval(f);
     if(v===undefined||v===""){
       if(f==="fapta"&&cur.hint)v=cur.hint;
       else v="["+FLABEL[f][0].toUpperCase()+"]";
@@ -977,11 +998,29 @@ function fineToNum(f){
 }
 function fmtMoney(n){ return n.toLocaleString("ro-RO").replace(/\u00A0/g,".")+"$"; }
 
+let dtManual=false;
+function nowRO(){
+  const now=new Date();
+  const dP=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(now);
+  const oP=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(now);
+  const gv=(parts,t)=>{const p=parts.find(x=>x.type===t);return p?p.value:'';};
+  return {data:gv(dP,'day')+'.'+gv(dP,'month')+'.'+gv(dP,'year'), ora:gv(oP,'hour')+':'+gv(oP,'minute')};
+}
+function autoDateTime(force){
+  if(dtManual && !force) return;
+  if(force) dtManual=false;
+  const t=nowRO();
+  shared.data=t.data; shared.ora=t.ora;
+  const di=document.querySelector('input[data-sh="data"]'), oi=document.querySelector('input[data-sh="ora"]');
+  if(di) di.value=t.data;
+  if(oi) oi.value=t.ora;
+  if(force){ renderCart(); renderQuick(); if(document.querySelector('[data-out="desc"]')) updateDesc(); }
+}
 function renderShared(){
   const box=document.getElementById('sharedFields');
-  const F=[["data","Data","30.06.2026"],["ora","Ora","22:28"],["zona","Locație / Zonă","Cazino"],["nume","Nume suspect","Naomi Black"],["marca","Model auto (opțional)","Ubermacht F90"],["culoare","Culoare auto (opțional)","Albastru"],["nrinm","Nr. înmatriculare (opțional)","LS05QZPN"]];
+  const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
   box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'" placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
-  box.querySelectorAll('input[data-sh]').forEach(inp=>inp.addEventListener('input',()=>{shared[inp.dataset.sh]=inp.value;renderCart();renderQuick();}));
+  box.querySelectorAll('input[data-sh]').forEach(inp=>inp.addEventListener('input',()=>{shared[inp.dataset.sh]=inp.value;if(inp.dataset.sh==='data'||inp.dataset.sh==='ora')dtManual=true;renderCart();renderQuick();if(document.querySelector('[data-out="desc"]'))updateDesc();}));
 }
 
 /* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
@@ -1287,6 +1326,8 @@ renderList();
 renderDossier();
 renderQuickList();
 renderQuick();
+autoDateTime();
+const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime(true);
 </script>
 <div id="login">
   <div class="login-box">
@@ -1312,7 +1353,7 @@ renderQuick();
   }
   document.addEventListener('click',e=>{ const t=e.target.closest('[data-page]'); if(t) go(t.dataset.page); });
   const clk=document.getElementById('abClock');
-  function tick(){ if(clk){const d=new Date();clk.textContent=[d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');} }
+  function tick(){ if(clk){clk.textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());} }
   tick(); setInterval(tick,1000);
   const agentChip=document.getElementById('abAgent'), login=document.getElementById('login');
   function getA(){ try{return JSON.parse(localStorage.getItem('phAgent')||'null');}catch(e){return null;} }
