@@ -187,6 +187,7 @@
 </style>
 </head>
 <body>
+<script>try{if(location.search.indexOf('view=overlay')>-1||location.hash.indexOf('overlay')>-1)document.documentElement.classList.add('ovmode');}catch(e){}</script>
 <style id="shellcss">
   :root{color-scheme:dark}
   html,body{height:100%}
@@ -259,6 +260,32 @@
   .set-row select{width:210px;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
   .login-box button{width:100%;padding:12px;border-radius:10px;border:0;background:linear-gradient(180deg,#2f6fed,#1d3f7a);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px;font-family:inherit}
   .login-box button:hover{filter:brightness(1.1)}
+</style>
+<style id="ovcss">
+  /* ---- MDT ca overlay peste joc (se activează cu ?view=overlay) ---- */
+  html.ovmode, html.ovmode body{background:transparent!important}
+  html.ovmode #appbar{display:none!important}
+  html.ovmode #sidebar{display:none!important}
+  html.ovmode #app{top:34px!important;left:0;right:0;bottom:0;background:transparent}
+  html.ovmode #main{background:linear-gradient(180deg,rgba(9,17,34,.86),rgba(7,13,26,.92));backdrop-filter:blur(2px)}
+  html.ovmode .page{display:none!important}
+  html.ovmode #page-mdt{display:block!important}
+  html.ovmode .page-h{display:none!important}
+  html.ovmode #page-mdt .wrap{padding:10px 12px 28px;max-width:none}
+  html.ovmode .flux{display:none!important}
+  html.ovmode .foot{display:none!important}
+  #ovbar{display:none}
+  html.ovmode #ovbar{display:flex;position:fixed;top:0;left:0;right:0;height:34px;z-index:100002;
+    align-items:center;gap:8px;padding:0 6px 0 10px;background:linear-gradient(180deg,#14315f,#0c1e3a);
+    border-bottom:1px solid #2c4778;-webkit-app-region:drag;user-select:none}
+  #ovbar .ov-t{font-size:12px;color:#dbe8ff;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+  #ovbar .ov-sp{flex:1}
+  #ovbar button{-webkit-app-region:no-drag;height:24px;border-radius:6px;border:1px solid #2c4778;
+    background:#0e2247;color:#cfe0f7;cursor:pointer;font-size:11.5px;padding:0 9px;font-family:inherit;white-space:nowrap}
+  #ovbar button:hover{border-color:#3f7bff;color:#fff}
+  #ovbar button.ov-x{width:30px;padding:0;font-size:15px}
+  #ovbar button.ov-x:hover{background:#e0475a;border-color:#e0475a;color:#fff}
+  #ovbar button.on{border-color:#26c281;color:#8fe3b8}
 </style>
 <div id="appbar">
   <div class="ab-badge">PH</div>
@@ -455,6 +482,14 @@
           <div class="set-row"><label>Mărime text</label><input type="range" id="ovSize" min="11" max="28"></div>
         </div>
         <div class="cb-sub" style="margin:14px 0 0">„Mută” deblochează overlay-ul ca să-l tragi peste GTA, apoi apeși din nou ca să-l blochezi (click-through). Transparent, doar text.</div>
+      </div></div>
+      <div class="card"><div class="cardbox" id="mdtOvCard">
+        <h3>📋 MDT overlay (scrii peste joc)</h3>
+        <div class="cb-sub">Deschide MDT-ul într-o fereastră transparentă, mereu deasupra jocului, în care poți scrie și copia fără să dai alt-tab.</div>
+        <div id="mdtOvControls">
+          <div class="set-row"><label>Fereastră MDT</label><button class="btnp green" id="mdtOvStart">📋 Deschide / închide MDT overlay</button></div>
+        </div>
+        <div class="cb-sub" style="margin:14px 0 0">Scurtături globale (merg și în joc): <b style="color:#cfe0f7">Ctrl+Shift+D</b> = arată/ascunde · <b style="color:#cfe0f7">Ctrl+Shift+E</b> = lasă click-urile să treacă în joc. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
       </div></div>
     </section>
 
@@ -1384,15 +1419,55 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
     fillRanks(document.getElementById('lgRank'), a.rank||'');
   }
   render();
-  if(!getA() && login) login.classList.add('on');
+  if(!getA() && login && !document.documentElement.classList.contains('ovmode')) login.classList.add('on');
   const lBtn=document.getElementById('lgBtn');
   if(lBtn) lBtn.onclick=()=>{ setA({rank:(document.getElementById('lgRank').value||''),name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
   const setSave=document.getElementById('setSave');
   if(setSave) setSave.onclick=()=>{ setA({rank:(document.getElementById('setRank').value||''),name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
+  // reîncarcă ocolind cache-ul HTTP (aplicația ia index.html live de pe GitHub, altfel poate rămâne pe versiunea veche)
+  function hardReload(){
+    try{
+      if(location.protocol==='http:'||location.protocol==='https:'){
+        const u=new URL(location.href);
+        u.searchParams.set('_', String(Date.now()));
+        location.replace(u.href);
+        return;
+      }
+    }catch(e){}
+    location.reload();
+  }
   const setReset=document.getElementById('setReset');
-  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); location.reload(); } };
+  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); hardReload(); } };
   const setReload=document.getElementById('setReload');
-  if(setReload) setReload.onclick=()=>location.reload();
+  if(setReload) setReload.onclick=()=>hardReload();
+})();
+</script>
+<script>
+/* ---- MDT overlay: bara de control din fereastra transparentă (?view=overlay) ---- */
+(function(){
+  if(!document.documentElement.classList.contains('ovmode')) return;
+  const api=(window.mdtOverlayApi||null);
+  const bar=document.createElement('div'); bar.id='ovbar';
+  bar.innerHTML='<span class="ov-t">📋 MDT overlay</span><span class="ov-sp"></span>'
+    +'<button id="ovOpacity" title="Transparența ferestrei">◐ Transp.</button>'
+    +'<button id="ovClick" title="Lasă click-urile să treacă în joc — revii cu Ctrl+Shift+E">🖱 Click-through</button>'
+    +'<button class="ov-x" id="ovHide" title="Ascunde (Ctrl+Shift+D)">×</button>';
+  document.body.appendChild(bar);
+  let ct=false, op=100;
+  const bClick=document.getElementById('ovClick');
+  function setCT(v){ ct=!!v; bClick.classList.toggle('on',ct); bClick.textContent=ct?'🖱 Click-through: ON':'🖱 Click-through'; }
+  document.getElementById('ovHide').onclick=function(){ if(api&&api.hide)api.hide(); };
+  bClick.onclick=function(){ setCT(!ct); if(api&&api.setClickThrough)api.setClickThrough(ct); };
+  document.getElementById('ovOpacity').onclick=function(){ op=(op===100?85:(op===85?70:100)); if(api&&api.setOpacity)api.setOpacity(op/100); };
+  if(api&&api.onClickThrough) api.onClickThrough(setCT);
+})();
+/* ---- buton „Deschide MDT overlay" din pagina Overlays ---- */
+(function(){
+  const b=document.getElementById('mdtOvStart'); if(!b) return;
+  const da=window.desktopApp;
+  if(!(da&&da.isApp)){ b.disabled=true; b.textContent='Doar în aplicația desktop'; b.style.opacity=.6; b.style.cursor='default'; return; }
+  if(!da.mdtOverlay){ b.textContent='Necesită update aplicație (rebuild .exe)'; b.style.opacity=.7; b.title='Reconstruiește aplicația (npm run dist) ca să apară overlay-ul MDT'; return; }
+  b.onclick=function(){ da.mdtOverlay.toggle(); };
 })();
 </script>
 </body>
