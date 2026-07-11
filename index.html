@@ -360,7 +360,7 @@
     #dtNow{margin-top:8px;font-size:11.5px;padding:6px 11px;border-radius:8px;border:1px solid var(--line2);background:#0e2247;color:#cfe0f7;cursor:pointer;font-family:inherit}
     #dtNow:hover{border-color:var(--blue);color:#fff}
   </style>
-  <div class="flux">1) Caută fapta &rarr; 2) Completează datele &rarr; 3) Copiază <b>Titlu</b> / <b>Sentință</b> / <b>Descriere</b> în MDT-ul din joc.</div>
+  <div class="flux">1) Caută fapta &rarr; 2) Completează datele &rarr; 3) Copiază <b>Titlu</b> / <b>Sentință</b> / <b>Descriere</b> în MDT-ul din joc. &nbsp;·&nbsp; Din siguranță, tot ce scrii aici se <b>golește singur după 5 minute</b> de inactivitate.</div>
   <div class="grid">
     <div class="panel">
       <h2><span class="n">1</span> Alege infracțiunea</h2>
@@ -514,8 +514,14 @@
         <div class="set-row"><label></label><button class="btnp" id="setSave">Salvează</button></div>
       </div></div>
       <div class="card"><div class="cardbox">
+        <h3>🧹 Cache &amp; resurse</h3>
+        <div class="cb-sub">Cache-ul se golește automat la fiecare pornire (încarci mereu ultima versiune) și e plafonat la 50 MB. Îl poți goli și manual.</div>
+        <div class="set-row"><label>Cache pe disc</label><b id="cacheSize" style="font-family:var(--mono)">—</b></div>
+        <div class="set-row"><label></label><button class="btnp" id="cacheClear">Golește cache-ul acum</button></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
         <h3>🗑️ Resetare</h3>
-        <div class="cb-sub">Șterge datele salvate local (agent, setări overlay).</div>
+        <div class="cb-sub">Șterge datele salvate local (agent, setări overlay, taste).</div>
         <div class="set-row"><label></label><button class="btnp" id="setReset">Resetează tot</button></div>
       </div></div>
     </section>
@@ -1081,6 +1087,7 @@ function renderInputs(){
 }
 
 function updateDesc(){
+  if(!cur||!TPL[curTpl]) return;
   const tpl=TPL[curTpl];
   const d={};
   tpl.fields.forEach(f=>{
@@ -1509,6 +1516,43 @@ renderQuickList();
 renderQuick();
 autoDateTime();
 const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime(true);
+
+/* ---------------- AUTO-GOLIRE MDT (5 min de inactivitate) ----------------
+   Datele scrise (suspect, fapte, dosar, amenzi bifate) se șterg singure dacă
+   MDT-ul nu e folosit 5 minute — să nu ajungă datele unui caz vechi în altul. */
+(function(){
+  const page=document.getElementById('page-mdt'); if(!page) return;
+  const IDLE_MS=5*60*1000;
+  let lastUse=Date.now();
+  const touch=function(){ lastUse=Date.now(); };
+  ['pointerdown','keydown','input','change','wheel'].forEach(function(ev){ page.addEventListener(ev,touch,true); });
+  function hasData(){
+    if(cur||cart.length||quick.size) return true;
+    if(Object.keys(vals).some(function(k){return vals[k];})) return true;
+    if(['zona','nume','marca','culoare','nrinm','locjaf'].some(function(k){return shared[k];})) return true;
+    const s=document.getElementById('search');
+    return !!(s&&s.value);
+  }
+  function note(msg){
+    toastEl.textContent=msg; toastEl.classList.add('show');
+    clearTimeout(toastT);
+    toastT=setTimeout(function(){ toastEl.classList.remove('show'); setTimeout(function(){toastEl.textContent='Copiat!';},250); },2600);
+  }
+  function wipe(){
+    cur=null; curTpl=null; vals={}; sentVal=null; descVariant=0;
+    cart.length=0; quick.clear();
+    Object.keys(shared).forEach(function(k){ shared[k]=''; });
+    outEl.innerHTML='<div class="empty"><div class="big">Nimic selectat încă</div>Alege o infracțiune din stânga (sau caută-o) și îți generez automat<br>titlul, sentința și descrierea gata de copiat în joc.</div>';
+    modechip.textContent='selectează o faptă';
+    const s=document.getElementById('search'); if(s)s.value='';
+    dtManual=false; autoDateTime(true);
+    renderList('');
+    renderDossier(); renderQuickList(); renderQuick();
+    note('🧹 MDT golit automat după 5 minute de inactivitate.');
+  }
+  window.__mdtWipe=wipe; // hook pentru teste
+  setInterval(function(){ if(Date.now()-lastUse>=IDLE_MS && hasData()){ wipe(); lastUse=Date.now(); } },30*1000);
+})();
 </script>
 <div id="login">
   <div class="login-box">
@@ -1707,6 +1751,24 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   setSt('Verific automat…');
   bCheck.onclick=function(){ da.updates.check(); };
   bInstall.onclick=function(){ da.updates.install(); };
+})();
+/* ---- Setări: cache pe disc (dimensiune + golire manuală) ---- */
+(function(){
+  const el=document.getElementById('cacheSize'), btn=document.getElementById('cacheClear');
+  if(!el||!btn) return;
+  const da=window.desktopApp;
+  function fmt(n){ if(n<0)return '—'; if(n<1024)return n+' B'; if(n<1048576)return (n/1024).toFixed(1)+' KB'; return (n/1048576).toFixed(1)+' MB'; }
+  if(!(da&&da.isApp&&da.cache)){ el.textContent='—'; btn.disabled=true; btn.textContent=(da&&da.isApp)?'Necesită update aplicație':'Doar în aplicația desktop'; btn.style.opacity=.6; return; }
+  function refresh(){ da.cache.size().then(function(n){ el.textContent=fmt(n); }); }
+  btn.onclick=function(){
+    btn.disabled=true; btn.textContent='Golesc…';
+    da.cache.clear().then(function(ok){
+      btn.disabled=false; btn.textContent=ok?'✓ Golit':'Golește cache-ul acum';
+      setTimeout(function(){ btn.textContent='Golește cache-ul acum'; },1500);
+      refresh();
+    });
+  };
+  refresh();
 })();
 </script>
 </body>
