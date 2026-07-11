@@ -1503,10 +1503,11 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   function push(afterRollback){
     if(!(da&&da.isApp)){ msg('Scurtăturile globale merg doar în aplicația desktop.',false); return; }
     if(!(da.mdtOverlay&&da.mdtOverlay.setHotkeys)){ msg('Necesită update aplicație (rebuild .exe) pentru taste personalizate.',false); return; }
-    Promise.resolve(da.mdtOverlay.setHotkeys({toggle:hk.toggle,clickthrough:hk.clickthrough})).then(function(r){
+    const sent={toggle:hk.toggle,clickthrough:hk.clickthrough}; // snapshot: hk se poate schimba până se rezolvă promisiunea
+    Promise.resolve(da.mdtOverlay.setHotkeys(sent)).then(function(r){
       const failT=!!(r&&r.toggle===false), failC=!!(r&&r.clickthrough===false);
-      if(!failT&&!failC){ lastGood=Object.assign({},hk); if(!afterRollback) msg('✓ Scurtături active.',true); return; }
-      const bad=[]; if(failT)bad.push(nice(hk.toggle)+' (arată/ascunde)'); if(failC)bad.push(nice(hk.clickthrough)+' (click-through)');
+      if(!failT&&!failC){ lastGood=sent; if(!afterRollback) msg('✓ Scurtături active.',true); return; }
+      const bad=[]; if(failT)bad.push(nice(sent.toggle)+' (arată/ascunde)'); if(failC)bad.push(nice(sent.clickthrough)+' (click-through)');
       if(!afterRollback){
         // revino la ultima combinație funcțională — nu rămâi fără tastă
         if(failT)hk.toggle=lastGood.toggle; if(failC)hk.clickthrough=lastGood.clickthrough;
