@@ -318,6 +318,7 @@
     <button class="nav-item active" data-page="dashboard"><span class="ni-ic">🏠</span> Dashboard</button>
     <button class="nav-item" data-page="mdt"><span class="ni-ic">📋</span> MDT Assistant</button>
     <button class="nav-item" data-page="overlays"><span class="ni-ic">📡</span> Overlays</button>
+    <button class="nav-item" data-page="istoric"><span class="ni-ic">🗂️</span> Istoric</button>
     <button class="nav-item" data-page="setari"><span class="ni-ic">⚙️</span> Setări</button>
     <button class="nav-item" data-page="update"><span class="ni-ic">🔄</span> Update</button>
     <div class="sb-foot">Police Helper<br>B-Zone V · Poliția LS</div>
@@ -469,7 +470,8 @@
 
   <div class="foot">
     Document de referință personal pentru roleplay. Valorile sunt preluate din Codul Penal B-Zone V.<br>
-    Verifică mereu regulile de cumulare (combo) înainte de a crea dosarul.
+    Verifică mereu regulile de cumulare (combo) înainte de a crea dosarul.<br>
+    <span id="pcSync"></span>
   </div>
 </div>
     </section>
@@ -500,6 +502,29 @@
           <div class="cb-sub" id="hkStatus" style="margin:0"></div>
         </div>
         <div class="cb-sub" style="margin:14px 0 0">Scurtăturile merg global (și când ești în joc) și <b style="color:#cfe0f7">ți le alegi tu</b>: click pe câmp și apasă combinația dorită — <b style="color:#cfe0f7">Esc</b> anulează, <b style="color:#cfe0f7">Backspace</b> dezactivează tasta. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
+      </div></div>
+    </section>
+
+    <section class="page" id="page-istoric">
+      <div class="page-h"><h2>Istoric</h2><p>Ultimele documente generate — le poți re-copia oricând.</p></div>
+      <style id="histcss">
+        #page-istoric .card{max-width:900px}
+        .hitem{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(96,165,250,.15);border-radius:12px;background:rgba(8,16,34,.8);margin-bottom:9px}
+        .hitem .hmeta{flex:0 0 148px;min-width:0}
+        .hitem .htime{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+        .hitem .hkind{display:inline-block;font-size:10px;letter-spacing:.6px;text-transform:uppercase;padding:2px 8px;border-radius:6px;border:1px solid rgba(96,165,250,.35);color:#9cc3ff;margin-top:4px}
+        .hitem .hn{font-size:12.5px;color:var(--ink);margin-top:5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hitem .hbody{flex:1;min-width:0}
+        .hitem .hti{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .hitem .hd{font-size:12px;color:var(--muted);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .hitem .hbtns{flex:0 0 auto;display:flex;flex-direction:column;gap:6px}
+        .hitem .hbtns button{font-size:11.5px;padding:5px 10px}
+        .hempty{color:var(--muted2);text-align:center;padding:36px 10px;border:1px dashed rgba(96,165,250,.25);border-radius:12px}
+      </style>
+      <div class="card"><div class="cardbox">
+        <h3>🗂️ Documente generate <span style="flex:1"></span><button class="btnp" id="histClear" style="font-size:12px">Șterge istoricul</button></h3>
+        <div class="cb-sub">Se salvează automat aici tot ce copiezi (descrieri de dosare și amenzi) — ultimele 30, local pe calculatorul tău. Golirea automată a MDT-ului după 5 minute <b>nu</b> șterge istoricul.</div>
+        <div id="histList"></div>
       </div></div>
     </section>
 
@@ -662,6 +687,7 @@
   html.ovmode #main{background:linear-gradient(180deg,rgba(7,14,29,.88),rgba(5,10,22,.93))}
 </style>
 <div class="toast" id="toast">Copiat!</div>
+<datalist id="suspectList"></datalist>
 
 
 <script>
@@ -1072,7 +1098,8 @@ function renderInputs(){
     let v=isCommon?(shared[f]||""):(vals[f]||"");
     if(f==="fapta"&&!vals[f]&&cur.hint) v=cur.hint;
     const attr=isCommon?('data-sh="'+f+'"'):('data-f="'+f+'"');
-    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input '+attr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
+    const dlAttr=(f==='nume')?' list="suspectList"':'';
+    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input '+attr+dlAttr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
   });
   box.innerHTML=h;
   box.querySelectorAll('input[data-f]').forEach(inp=>{
@@ -1081,7 +1108,7 @@ function renderInputs(){
   });
   box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
   const dc=document.querySelector('[data-copy="desc"]');
-  if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');copy(ta.value,e.target);};
+  if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');copy(ta.value,e.target);histSave((cur.s||cur.life)?'Dosar':'Amendă',titleText(),ta.value);};
   const rgS=document.getElementById('regenSingle'); if(rgS)rgS.onclick=()=>{descVariant++;updateDesc();};
   updateDesc();
 }
@@ -1207,12 +1234,13 @@ function renderShared(){
   const box=document.getElementById('sharedFields');
   if(!box) return;
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
-  box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'" placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+  box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+(f[0]==='nume'?' list="suspectList"':'')+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
   box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
 }
 
 /* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
-const QUICK_IDS = A.filter(a=>a.s===null && (a.cap===1 || a.id==="2.1" || a.id==="2.3b")).map(a=>a.id);
+function computeQuickIds(){ return A.filter(a=>a.s===null && !a.life && (a.cap===1 || a.id==="2.1" || a.id==="2.3b")).map(a=>a.id); }
+let QUICK_IDS = computeQuickIds();
 let quick=new Set();
 
 function renderQuickList(){
@@ -1249,7 +1277,7 @@ function renderQuick(){
   document.getElementById('qFine').onclick=()=>copy(String(totFine));
   const qt=document.querySelector('[data-copy="qtitle"]'); if(qt)qt.onclick=e=>copy(title,e.target);
   document.querySelector('[data-out="qdesc"]').value=desc;
-  const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>copy(document.querySelector('[data-out="qdesc"]').value,e.target);
+  const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>{const v=document.querySelector('[data-out="qdesc"]').value;copy(v,e.target);histSave('Amendă rapidă',title,v);};
   const rq=document.getElementById('regenQuick'); if(rq)rq.onclick=()=>{descVariant++;renderQuick();};
 }
 
@@ -1327,7 +1355,7 @@ function renderCart(){
   document.getElementById('copyTotFine').addEventListener('click',()=>copy(String(totFine)));
   const dt=document.querySelector('[data-copy="dtitle"]'); if(dt)dt.onclick=e=>copy(document.querySelector('[data-out="dtitle"]').value,e.target);
   const at=document.querySelector('[data-copy="atitle"]'); if(at)at.onclick=e=>copy(document.querySelector('[data-out="atitle"]').value,e.target);
-  const dd=document.querySelector('[data-copy="ddesc"]'); if(dd)dd.onclick=e=>copy(document.querySelector('[data-out="ddesc"]').value,e.target);
+  const dd=document.querySelector('[data-copy="ddesc"]'); if(dd)dd.onclick=e=>{const v=document.querySelector('[data-out="ddesc"]').value;copy(v,e.target);const dte=document.querySelector('[data-out="dtitle"]'),ate=document.querySelector('[data-out="atitle"]');histSave('Dosar cumulat',(dte?dte.value:(ate?ate.value:'')),v);};
   const rg=document.getElementById('regenCombo'); if(rg)rg.onclick=()=>{descVariant++;buildCombinedDesc();};
 
   buildCombinedDesc();
@@ -1517,6 +1545,73 @@ renderQuick();
 autoDateTime();
 const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime(true);
 
+/* ---------------- ISTORIC (documente generate; supraviețuiește auto-golirii) ---------------- */
+function histAll(){ try{return JSON.parse(localStorage.getItem('phHistory')||'[]');}catch(e){return [];} }
+function histWrite(h){ try{localStorage.setItem('phHistory',JSON.stringify(h));}catch(e){} }
+function histSave(kind,title,desc){
+  if(!desc||!desc.trim()) return;
+  const h=histAll();
+  if(h[0]&&h[0].d===desc){ h[0].t=Date.now(); histWrite(h); renderHist(); return; } // același document re-copiat
+  h.unshift({t:Date.now(),k:kind,n:shared.nume||'',ti:title||'',d:desc});
+  while(h.length>30)h.pop();
+  histWrite(h); renderHist();
+}
+function histTime(t){
+  try{ return new Intl.DateTimeFormat('ro-RO',{timeZone:'Europe/Bucharest',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(t)); }catch(e){ return ''; }
+}
+function renderHist(){
+  const box=document.getElementById('histList');
+  if(box){
+    const h=histAll();
+    if(!h.length) box.innerHTML='<div class="hempty">Încă nimic. Copiază o descriere din MDT și apare aici automat.</div>';
+    else box.innerHTML=h.map(function(x,i){
+      return '<div class="hitem"><div class="hmeta"><div class="htime">'+histTime(x.t)+'</div><span class="hkind">'+esc(x.k||'')+'</span><div class="hn">'+esc(x.n||'—')+'</div></div>'
+        +'<div class="hbody"><div class="hti">'+esc(x.ti||'(fără titlu)')+'</div><div class="hd">'+esc(x.d)+'</div></div>'
+        +'<div class="hbtns"><button class="btnp" data-hc="'+i+'">Copiază desc.</button><button class="btnp" data-ht="'+i+'">Copiază titlu</button><button class="btnp" data-hx="'+i+'" style="color:#ff9aa6">Șterge</button></div></div>';
+    }).join('');
+    box.querySelectorAll('[data-hc]').forEach(function(b){ b.onclick=function(e){ const x=histAll()[+b.dataset.hc]; if(x)copy(x.d,e.target); }; });
+    box.querySelectorAll('[data-ht]').forEach(function(b){ b.onclick=function(e){ const x=histAll()[+b.dataset.ht]; if(x)copy(x.ti,e.target); }; });
+    box.querySelectorAll('[data-hx]').forEach(function(b){ b.onclick=function(){ const h2=histAll(); h2.splice(+b.dataset.hx,1); histWrite(h2); renderHist(); }; });
+  }
+  const dl=document.getElementById('suspectList');
+  if(dl){ const names=[]; histAll().forEach(function(x){ if(x.n&&names.indexOf(x.n)<0)names.push(x.n); }); dl.innerHTML=names.slice(0,10).map(function(n){return '<option value="'+esc(n)+'">';}).join(''); }
+}
+const _hc=document.getElementById('histClear');
+if(_hc)_hc.onclick=function(){ if(confirm('Ștergi tot istoricul de documente?')){ histWrite([]); renderHist(); } };
+renderHist();
+
+/* ---------------- SINCRONIZARE COD PENAL (penal-code.json, generat din wiki) ---------------- */
+(function(){
+  if(location.protocol==='file:') return; // offline: rămân valorile încorporate
+  if(typeof fetch!=='function') return;
+  try{
+  fetch('penal-code.json?_='+Date.now()).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    if(!j||!Array.isArray(j.articles)||j.articles.length<60) return;
+    let changed=0;
+    j.articles.forEach(function(w){
+      const a=A.find(function(x){return x.id===w.id;});
+      if(a){
+        if(w.f!==undefined&&a.f!==w.f){a.f=w.f;changed++;}
+        if(w.pct!==undefined&&a.pct!==w.pct){a.pct=w.pct;changed++;}
+        if(w.s!==undefined&&JSON.stringify(a.s||null)!==JSON.stringify(w.s)){a.s=w.s;changed++;}
+        if(w.life!==undefined&&!!a.life!==!!w.life){a.life=w.life;changed++;}
+      } else if(w.name&&w.cap){
+        A.push({id:w.id,cap:w.cap,name:w.name,f:w.f||'—',pct:w.pct,s:w.s||null,life:w.life,t:'generic',hint:'a comis fapta de '+String(w.name).toLowerCase()});
+        changed++;
+      }
+    });
+    if(changed){
+      QUICK_IDS=computeQuickIds();
+      renderList(document.getElementById('search').value||'');
+      renderQuickList(); renderQuick();
+      if(cur) select(cur.id);
+    }
+    const el=document.getElementById('pcSync');
+    if(el&&j.syncedAt) el.textContent='Cod Penal sincronizat cu wiki-ul: '+j.syncedAt+(changed?' · '+changed+' actualizări față de versiunea încorporată':'');
+  }).catch(function(){});
+  }catch(e){}
+})();
+
 /* ---------------- AUTO-GOLIRE MDT (5 min de inactivitate) ----------------
    Datele scrise (suspect, fapte, dosar, amenzi bifate) se șterg singure dacă
    MDT-ul nu e folosit 5 minute — să nu ajungă datele unui caz vechi în altul. */
@@ -1613,7 +1708,7 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
     location.reload();
   }
   const setReset=document.getElementById('setReset');
-  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); localStorage.removeItem('mdtHotkeys'); hardReload(); } };
+  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); localStorage.removeItem('mdtHotkeys'); localStorage.removeItem('phHistory'); hardReload(); } };
   const setReload=document.getElementById('setReload');
   if(setReload) setReload.onclick=()=>hardReload();
 })();

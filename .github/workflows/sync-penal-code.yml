@@ -1,0 +1,36 @@
+name: Sync Penal Code
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'   # every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Parse wiki into penal-code.json
+        run: node scripts/sync-penal-code.mjs
+
+      - name: Commit and push if the data changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add penal-code.json
+          if git diff --cached --quiet; then
+            echo "No penal code changes."
+          else
+            git commit -m "Sync penal code data from the B-Zone wiki"
+            git push
+          fi
