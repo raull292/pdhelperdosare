@@ -1454,16 +1454,23 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
 (function(){
   if(!document.documentElement.classList.contains('ovmode')) return;
   const api=(window.mdtOverlayApi||null);
-  // tastele configurate de utilizator (Overlays → MDT overlay); fallback pe implicite
-  let hk={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
-  try{const s=localStorage.getItem('mdtHotkeys');if(s){const p=JSON.parse(s);if(p.toggle!==undefined)hk.toggle=p.toggle;if(p.clickthrough!==undefined)hk.clickthrough=p.clickthrough;}}catch(e){}
-  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'fără tastă';
   const bar=document.createElement('div'); bar.id='ovbar';
   bar.innerHTML='<span class="ov-t">📋 MDT overlay</span><span class="ov-sp"></span>'
     +'<button id="ovOpacity" title="Transparența ferestrei">◐ Transp.</button>'
-    +'<button id="ovClick" title="Lasă click-urile să treacă în joc — revii cu '+nice(hk.clickthrough)+'">🖱 Click-through</button>'
-    +'<button class="ov-x" id="ovHide" title="Ascunde ('+nice(hk.toggle)+')">×</button>';
+    +'<button id="ovClick">🖱 Click-through</button>'
+    +'<button class="ov-x" id="ovHide">×</button>';
   document.body.appendChild(bar);
+  // tooltip-urile cu tastele configurate: setAttribute (nu innerHTML — valorile pot conține ghilimele)
+  // și re-citite la fiecare schimbare din pagina Overlays (eveniment 'storage')
+  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'fără tastă';
+  function updateTitles(){
+    let hk={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+    try{const s=localStorage.getItem('mdtHotkeys');if(s){const p=JSON.parse(s);if(p.toggle!==undefined)hk.toggle=p.toggle;if(p.clickthrough!==undefined)hk.clickthrough=p.clickthrough;}}catch(e){}
+    document.getElementById('ovClick').setAttribute('title','Lasă click-urile să treacă în joc — revii cu '+nice(hk.clickthrough));
+    document.getElementById('ovHide').setAttribute('title','Ascunde ('+nice(hk.toggle)+')');
+  }
+  updateTitles();
+  window.addEventListener('storage',function(ev){ if(!ev||ev.key===null||ev.key==='mdtHotkeys') updateTitles(); });
   let ct=false, op=100;
   const bClick=document.getElementById('ovClick');
   function setCT(v){ ct=!!v; bClick.classList.toggle('on',ct); bClick.textContent=ct?'🖱 Click-through: ON':'🖱 Click-through'; }
