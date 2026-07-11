@@ -518,11 +518,19 @@
     </section>
 
     <section class="page" id="page-update">
-      <div class="page-h"><h2>Update</h2><p>Aplicația se actualizează automat din conținutul live.</p></div>
+      <div class="page-h"><h2>Update</h2><p>Totul se actualizează singur — conținutul live + aplicația din GitHub Releases.</p></div>
       <div class="card"><div class="cardbox">
-        <h3>🔄 Status</h3>
-        <div class="cb-sub">Conținutul (dosare, amenzi, overlay) se încarcă live de pe GitHub, deci ești mereu pe ultima versiune — fără să reinstalezi nimic.</div>
-        <div class="set-row"><label>Status</label><b style="color:#26c281">✓ La zi (conținut live)</b></div>
+        <h3>⬇️ Aplicație (EXE)</h3>
+        <div class="cb-sub">Aplicația verifică automat versiunile noi la pornire și la fiecare 30 de minute, le descarcă în fundal și se instalează la repornire. Nu mai trebuie să reinstalezi nimic manual.</div>
+        <div class="set-row"><label>Versiune instalată</label><b id="updVer" style="font-family:var(--mono)">—</b></div>
+        <div class="set-row"><label>Status</label><b id="updStatus">—</b></div>
+        <div class="set-row" id="updBarRow" style="display:none"><label>Descărcare</label><div style="flex:1;max-width:210px;height:8px;border-radius:99px;background:#0a1830;border:1px solid var(--line2);overflow:hidden"><div id="updBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--blue),#22d3ee);transition:width .3s"></div></div></div>
+        <div class="set-row"><label></label><span style="display:flex;gap:8px"><button class="btnp" id="updCheck">Caută update</button><button class="btnp green" id="updInstall" style="display:none">Repornește și instalează</button></span></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>🌐 Conținut (interfață & date)</h3>
+        <div class="cb-sub">Dosarele, amenzile și overlay-ul se încarcă live de pe GitHub Pages — mereu pe ultima versiune.</div>
+        <div class="set-row"><label>Status</label><b style="color:#26c281">✓ Live</b></div>
         <div class="set-row"><label></label><button class="btnp" id="setReload">Reîncarcă acum</button></div>
       </div></div>
     </section>
@@ -1559,6 +1567,29 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   show();
   // pe fallback-ul local (file://) localStorage e alt siloz — nu suprascriem tastele salvate cu implicite
   if(location.protocol!=='file:') push();
+})();
+/* ---- pagina Update: status real de la electron-updater ---- */
+(function(){
+  const ver=document.getElementById('updVer'), st=document.getElementById('updStatus');
+  const barRow=document.getElementById('updBarRow'), bar=document.getElementById('updBar');
+  const bCheck=document.getElementById('updCheck'), bInstall=document.getElementById('updInstall');
+  if(!st) return;
+  const da=window.desktopApp;
+  function setSt(t,color){ st.textContent=t; st.style.color=color||''; }
+  if(!(da&&da.isApp)){ setSt('Doar în aplicația desktop.'); if(bCheck)bCheck.style.display='none'; return; }
+  if(!da.updates){ setSt('Necesită versiunea nouă a aplicației (se instalează o singură dată).','#e8a838'); if(bCheck)bCheck.style.display='none'; return; }
+  da.updates.version().then(function(v){ if(v)ver.textContent='v'+v; });
+  da.updates.onStatus(function(s){
+    if(!s)return;
+    if(s.state==='checking') setSt('Caut versiune nouă…');
+    else if(s.state==='downloading'){ setSt('Descarc versiunea nouă'+(s.version?' v'+s.version:'')+'…','#8fb6ff'); barRow.style.display='flex'; if(typeof s.percent==='number')bar.style.width=s.percent+'%'; }
+    else if(s.state==='ready'){ setSt('✓ Update descărcat'+(s.version?' (v'+s.version+')':'')+' — repornește ca să-l instalezi.','#26c281'); barRow.style.display='none'; bInstall.style.display='inline-block'; }
+    else if(s.state==='uptodate'){ setSt('✓ Ești pe ultima versiune.','#26c281'); barRow.style.display='none'; }
+    else if(s.state==='error'){ setSt('Nu am putut verifica acum (offline?). Reîncerc automat.','#e8a838'); barRow.style.display='none'; }
+  });
+  setSt('Verific automat…');
+  bCheck.onclick=function(){ da.updates.check(); };
+  bInstall.onclick=function(){ da.updates.install(); };
 })();
 </script>
 </body>
