@@ -286,6 +286,9 @@
   #ovbar button.ov-x{width:30px;padding:0;font-size:15px}
   #ovbar button.ov-x:hover{background:#e0475a;border-color:#e0475a;color:#fff}
   #ovbar button.on{border-color:#26c281;color:#8fe3b8}
+  /* câmpuri de captură taste (Overlays → MDT overlay) */
+  .hkin{cursor:pointer;caret-color:transparent;font-family:var(--mono)!important;text-align:center}
+  .hkin:focus{border-color:#3f7bff!important;box-shadow:0 0 0 3px #2f6fed33}
 </style>
 <div id="appbar">
   <div class="ab-badge">PH</div>
@@ -488,8 +491,12 @@
         <div class="cb-sub">Deschide MDT-ul într-o fereastră transparentă, mereu deasupra jocului, în care poți scrie și copia fără să dai alt-tab.</div>
         <div id="mdtOvControls">
           <div class="set-row"><label>Fereastră MDT</label><button class="btnp green" id="mdtOvStart">📋 Deschide / închide MDT overlay</button></div>
+          <div class="set-row"><label>Tastă arată/ascunde</label><input type="text" class="hkin" id="hkToggle" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label>Tastă click-through</label><input type="text" class="hkin" id="hkCT" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label></label><button class="btnp" id="hkReset">Reset taste (Ctrl+Shift+D / E)</button></div>
+          <div class="cb-sub" id="hkStatus" style="margin:0"></div>
         </div>
-        <div class="cb-sub" style="margin:14px 0 0">Scurtături globale (merg și în joc): <b style="color:#cfe0f7">Ctrl+Shift+D</b> = arată/ascunde · <b style="color:#cfe0f7">Ctrl+Shift+E</b> = lasă click-urile să treacă în joc. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
+        <div class="cb-sub" style="margin:14px 0 0">Scurtăturile merg global (și când ești în joc) și <b style="color:#cfe0f7">ți le alegi tu</b>: click pe câmp și apasă combinația dorită — <b style="color:#cfe0f7">Esc</b> anulează, <b style="color:#cfe0f7">Backspace</b> dezactivează tasta. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
       </div></div>
     </section>
 
@@ -1437,7 +1444,7 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
     location.reload();
   }
   const setReset=document.getElementById('setReset');
-  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); hardReload(); } };
+  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); localStorage.removeItem('mdtHotkeys'); hardReload(); } };
   const setReload=document.getElementById('setReload');
   if(setReload) setReload.onclick=()=>hardReload();
 })();
@@ -1450,9 +1457,20 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   const bar=document.createElement('div'); bar.id='ovbar';
   bar.innerHTML='<span class="ov-t">📋 MDT overlay</span><span class="ov-sp"></span>'
     +'<button id="ovOpacity" title="Transparența ferestrei">◐ Transp.</button>'
-    +'<button id="ovClick" title="Lasă click-urile să treacă în joc — revii cu Ctrl+Shift+E">🖱 Click-through</button>'
-    +'<button class="ov-x" id="ovHide" title="Ascunde (Ctrl+Shift+D)">×</button>';
+    +'<button id="ovClick">🖱 Click-through</button>'
+    +'<button class="ov-x" id="ovHide">×</button>';
   document.body.appendChild(bar);
+  // tooltip-urile cu tastele configurate: setAttribute (nu innerHTML — valorile pot conține ghilimele)
+  // și re-citite la fiecare schimbare din pagina Overlays (eveniment 'storage')
+  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'fără tastă';
+  function updateTitles(){
+    let hk={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+    try{const s=localStorage.getItem('mdtHotkeys');if(s){const p=JSON.parse(s);if(p.toggle!==undefined)hk.toggle=p.toggle;if(p.clickthrough!==undefined)hk.clickthrough=p.clickthrough;}}catch(e){}
+    document.getElementById('ovClick').setAttribute('title','Lasă click-urile să treacă în joc — revii cu '+nice(hk.clickthrough));
+    document.getElementById('ovHide').setAttribute('title','Ascunde ('+nice(hk.toggle)+')');
+  }
+  updateTitles();
+  window.addEventListener('storage',function(ev){ if(!ev||ev.key===null||ev.key==='mdtHotkeys') updateTitles(); });
   let ct=false, op=100;
   const bClick=document.getElementById('ovClick');
   function setCT(v){ ct=!!v; bClick.classList.toggle('on',ct); bClick.textContent=ct?'🖱 Click-through: ON':'🖱 Click-through'; }
@@ -1468,6 +1486,79 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   if(!(da&&da.isApp)){ b.disabled=true; b.textContent='Doar în aplicația desktop'; b.style.opacity=.6; b.style.cursor='default'; return; }
   if(!da.mdtOverlay){ b.textContent='Necesită update aplicație (rebuild .exe)'; b.style.opacity=.7; b.title='Reconstruiește aplicația (npm run dist) ca să apară overlay-ul MDT'; return; }
   b.onclick=function(){ da.mdtOverlay.toggle(); };
+})();
+/* ---- taste configurabile pentru MDT overlay (alegi ce combinații vrei) ---- */
+(function(){
+  const iT=document.getElementById('hkToggle'), iC=document.getElementById('hkCT'), stat=document.getElementById('hkStatus');
+  if(!iT||!iC) return;
+  const da=window.desktopApp;
+  const DEF={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+  let hk=Object.assign({},DEF);
+  try{const s=localStorage.getItem('mdtHotkeys');if(s)hk=Object.assign({},DEF,JSON.parse(s));}catch(e){}
+  let lastGood=Object.assign({},hk); // ultima configurație acceptată de aplicație — pentru revenire la eșec
+  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'— dezactivată —';
+  function show(){ iT.value=nice(hk.toggle); iC.value=nice(hk.clickthrough); }
+  function save(){ try{localStorage.setItem('mdtHotkeys',JSON.stringify(hk));}catch(e){} }
+  function msg(t,ok){ if(stat){stat.textContent=t; stat.style.color=ok?'#26c281':'#e8a838';} }
+  function push(afterRollback){
+    if(!(da&&da.isApp)){ msg('Scurtăturile globale merg doar în aplicația desktop.',false); return; }
+    if(!(da.mdtOverlay&&da.mdtOverlay.setHotkeys)){ msg('Necesită update aplicație (rebuild .exe) pentru taste personalizate.',false); return; }
+    const sent={toggle:hk.toggle,clickthrough:hk.clickthrough}; // snapshot: hk se poate schimba până se rezolvă promisiunea
+    Promise.resolve(da.mdtOverlay.setHotkeys(sent)).then(function(r){
+      const failT=!!(r&&r.toggle===false), failC=!!(r&&r.clickthrough===false);
+      if(!failT&&!failC){ lastGood=sent; if(!afterRollback) msg('✓ Scurtături active.',true); return; }
+      const bad=[]; if(failT)bad.push(nice(sent.toggle)+' (arată/ascunde)'); if(failC)bad.push(nice(sent.clickthrough)+' (click-through)');
+      if(!afterRollback){
+        // revino la ultima combinație funcțională — nu rămâi fără tastă
+        if(failT)hk.toggle=lastGood.toggle; if(failC)hk.clickthrough=lastGood.clickthrough;
+        save(); show();
+        msg('⚠️ '+bad.join(' și ')+' e folosită de alt program — am păstrat tasta anterioară.',false);
+        push(true);
+      } else {
+        msg('⚠️ Nu s-a putut înregistra: '+bad.join(' și ')+'.',false);
+      }
+    }).catch(function(){});
+  }
+  // folosim e.code (poziția fizică a tastei) — e.key ar da caracterul (ex. diacritice ș/ț cu AltGr,
+  // sau "@" la Shift+2), pe care Electron nu îl acceptă / îl mapează pe altă tastă fizică
+  const CODEMAP={NumpadAdd:'numadd',NumpadSubtract:'numsub',NumpadMultiply:'nummult',NumpadDivide:'numdiv',NumpadDecimal:'numdec',
+    Minus:'-',Equal:'=',BracketLeft:'[',BracketRight:']',Semicolon:';',Quote:"'",Backquote:'`',Backslash:'\\',Comma:',',Period:'.',Slash:'/',
+    Space:'Space',Tab:'Tab',Enter:'Enter',NumpadEnter:'Enter',Insert:'Insert',Home:'Home',End:'End',PageUp:'PageUp',PageDown:'PageDown',
+    ArrowUp:'Up',ArrowDown:'Down',ArrowLeft:'Left',ArrowRight:'Right'};
+  function accFrom(e){
+    if(e.key==='Control'||e.key==='Shift'||e.key==='Alt'||e.key==='Meta') return null; // doar modificatori apăsați, aștept tasta
+    const mods=[]; if(e.ctrlKey)mods.push('Control'); if(e.altKey)mods.push('Alt'); if(e.shiftKey)mods.push('Shift'); if(e.metaKey)mods.push('Super');
+    const c=e.code||''; let k=null;
+    if(/^Key[A-Z]$/.test(c)) k=c.slice(3);
+    else if(/^Digit[0-9]$/.test(c)) k=c.slice(5);
+    else if(/^F([1-9]|1[0-9]|2[0-4])$/.test(c)) k=c;
+    else if(/^Numpad[0-9]$/.test(c)) k='num'+c.slice(6);
+    else if(CODEMAP[c]!==undefined) k=CODEMAP[c];
+    if(k===null) return {unsup:true}; // tastă pe care Electron nu o poate înregistra global
+    // fără Ctrl/Alt: Shift+literă ar bloca majusculele peste tot (și în chatul din joc) — doar F1–F24 pot sta singure
+    if(!e.ctrlKey&&!e.altKey&&!e.metaKey&&!/^F\d+$/.test(k)) return {warn:true};
+    return {acc:mods.concat(k).join('+')};
+  }
+  function arm(inp,prop){
+    inp.addEventListener('focus',function(){ inp.value='apasă combinația… (Esc = anulează, Backspace = dezactivează)'; });
+    inp.addEventListener('blur',show);
+    inp.addEventListener('keydown',function(e){
+      e.preventDefault(); e.stopPropagation();
+      if(e.key==='Escape'){ inp.blur(); return; }
+      if(e.key==='Backspace'||e.key==='Delete'){ hk[prop]=''; lastGood[prop]=''; save(); show(); push(); inp.blur(); return; }
+      const r=accFrom(e);
+      if(!r) return;
+      if(r.unsup){ inp.value='⚠️ tastă nesuportată — alege alta (litere, cifre, F1–F24…)'; return; }
+      if(r.warn){ inp.value='⚠️ adaugă Ctrl sau Alt (sau folosește F1–F24)'; return; }
+      hk[prop]=r.acc; save(); show(); push(); inp.blur();
+    });
+  }
+  arm(iT,'toggle'); arm(iC,'clickthrough');
+  const rst=document.getElementById('hkReset');
+  if(rst) rst.onclick=function(){ hk=Object.assign({},DEF); lastGood=Object.assign({},DEF); save(); show(); push(); };
+  show();
+  // pe fallback-ul local (file://) localStorage e alt siloz — nu suprascriem tastele salvate cu implicite
+  if(location.protocol!=='file:') push();
 })();
 </script>
 </body>
