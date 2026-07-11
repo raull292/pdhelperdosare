@@ -286,6 +286,9 @@
   #ovbar button.ov-x{width:30px;padding:0;font-size:15px}
   #ovbar button.ov-x:hover{background:#e0475a;border-color:#e0475a;color:#fff}
   #ovbar button.on{border-color:#26c281;color:#8fe3b8}
+  /* câmpuri de captură taste (Overlays → MDT overlay) */
+  .hkin{cursor:pointer;caret-color:transparent;font-family:var(--mono)!important;text-align:center}
+  .hkin:focus{border-color:#3f7bff!important;box-shadow:0 0 0 3px #2f6fed33}
 </style>
 <div id="appbar">
   <div class="ab-badge">PH</div>
@@ -488,8 +491,12 @@
         <div class="cb-sub">Deschide MDT-ul într-o fereastră transparentă, mereu deasupra jocului, în care poți scrie și copia fără să dai alt-tab.</div>
         <div id="mdtOvControls">
           <div class="set-row"><label>Fereastră MDT</label><button class="btnp green" id="mdtOvStart">📋 Deschide / închide MDT overlay</button></div>
+          <div class="set-row"><label>Tastă arată/ascunde</label><input type="text" class="hkin" id="hkToggle" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label>Tastă click-through</label><input type="text" class="hkin" id="hkCT" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label></label><button class="btnp" id="hkReset">Reset taste (Ctrl+Shift+D / E)</button></div>
+          <div class="cb-sub" id="hkStatus" style="margin:0"></div>
         </div>
-        <div class="cb-sub" style="margin:14px 0 0">Scurtături globale (merg și în joc): <b style="color:#cfe0f7">Ctrl+Shift+D</b> = arată/ascunde · <b style="color:#cfe0f7">Ctrl+Shift+E</b> = lasă click-urile să treacă în joc. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
+        <div class="cb-sub" style="margin:14px 0 0">Scurtăturile merg global (și când ești în joc) și <b style="color:#cfe0f7">ți le alegi tu</b>: click pe câmp și apasă combinația dorită — <b style="color:#cfe0f7">Esc</b> anulează, <b style="color:#cfe0f7">Backspace</b> dezactivează tasta. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
       </div></div>
     </section>
 
@@ -1447,11 +1454,15 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
 (function(){
   if(!document.documentElement.classList.contains('ovmode')) return;
   const api=(window.mdtOverlayApi||null);
+  // tastele configurate de utilizator (Overlays → MDT overlay); fallback pe implicite
+  let hk={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+  try{const s=localStorage.getItem('mdtHotkeys');if(s){const p=JSON.parse(s);if(p.toggle!==undefined)hk.toggle=p.toggle;if(p.clickthrough!==undefined)hk.clickthrough=p.clickthrough;}}catch(e){}
+  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'fără tastă';
   const bar=document.createElement('div'); bar.id='ovbar';
   bar.innerHTML='<span class="ov-t">📋 MDT overlay</span><span class="ov-sp"></span>'
     +'<button id="ovOpacity" title="Transparența ferestrei">◐ Transp.</button>'
-    +'<button id="ovClick" title="Lasă click-urile să treacă în joc — revii cu Ctrl+Shift+E">🖱 Click-through</button>'
-    +'<button class="ov-x" id="ovHide" title="Ascunde (Ctrl+Shift+D)">×</button>';
+    +'<button id="ovClick" title="Lasă click-urile să treacă în joc — revii cu '+nice(hk.clickthrough)+'">🖱 Click-through</button>'
+    +'<button class="ov-x" id="ovHide" title="Ascunde ('+nice(hk.toggle)+')">×</button>';
   document.body.appendChild(bar);
   let ct=false, op=100;
   const bClick=document.getElementById('ovClick');
@@ -1468,6 +1479,64 @@ const _dn=document.getElementById('dtNow'); if(_dn) _dn.onclick=()=>autoDateTime
   if(!(da&&da.isApp)){ b.disabled=true; b.textContent='Doar în aplicația desktop'; b.style.opacity=.6; b.style.cursor='default'; return; }
   if(!da.mdtOverlay){ b.textContent='Necesită update aplicație (rebuild .exe)'; b.style.opacity=.7; b.title='Reconstruiește aplicația (npm run dist) ca să apară overlay-ul MDT'; return; }
   b.onclick=function(){ da.mdtOverlay.toggle(); };
+})();
+/* ---- taste configurabile pentru MDT overlay (alegi ce combinații vrei) ---- */
+(function(){
+  const iT=document.getElementById('hkToggle'), iC=document.getElementById('hkCT'), stat=document.getElementById('hkStatus');
+  if(!iT||!iC) return;
+  const da=window.desktopApp;
+  const DEF={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+  let hk=Object.assign({},DEF);
+  try{const s=localStorage.getItem('mdtHotkeys');if(s)hk=Object.assign({},DEF,JSON.parse(s));}catch(e){}
+  const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'— dezactivată —';
+  function show(){ iT.value=nice(hk.toggle); iC.value=nice(hk.clickthrough); }
+  function save(){ try{localStorage.setItem('mdtHotkeys',JSON.stringify(hk));}catch(e){} }
+  function msg(t,ok){ if(stat){stat.textContent=t; stat.style.color=ok?'#26c281':'#e8a838';} }
+  function push(){
+    if(!(da&&da.isApp)){ msg('Scurtăturile globale merg doar în aplicația desktop.',false); return; }
+    if(!(da.mdtOverlay&&da.mdtOverlay.setHotkeys)){ msg('Necesită update aplicație (rebuild .exe) pentru taste personalizate.',false); return; }
+    Promise.resolve(da.mdtOverlay.setHotkeys({toggle:hk.toggle,clickthrough:hk.clickthrough})).then(function(r){
+      const bad=[];
+      if(r&&r.toggle===false) bad.push(nice(hk.toggle)+' (arată/ascunde)');
+      if(r&&r.clickthrough===false) bad.push(nice(hk.clickthrough)+' (click-through)');
+      if(bad.length) msg('⚠️ Nu s-a putut înregistra: '+bad.join(' și ')+' — probabil e folosită de alt program. Alege altă combinație.',false);
+      else msg('✓ Scurtături active.',true);
+    }).catch(function(){});
+  }
+  function accFrom(e){
+    const mods=[]; if(e.ctrlKey)mods.push('Control'); if(e.altKey)mods.push('Alt'); if(e.shiftKey)mods.push('Shift'); if(e.metaKey)mods.push('Super');
+    let k=e.key;
+    if(k==='Control'||k==='Shift'||k==='Alt'||k==='Meta') return null; // doar modificatori apăsați, aștept tasta
+    const map={' ':'Space','ArrowUp':'Up','ArrowDown':'Down','ArrowLeft':'Left','ArrowRight':'Right','+':'Plus'};
+    if(map[k]!==undefined) k=map[k];
+    else if(/^[a-z]$/.test(k)) k=k.toUpperCase();
+    else if(/^F\d{1,2}$/.test(k)||/^[0-9]$/.test(k)){/* rămâne */}
+    else if(k.length===1) k=k.toUpperCase();
+    else{
+      const ok=['Tab','Enter','Insert','Home','End','PageUp','PageDown','PrintScreen','Pause'];
+      if(ok.indexOf(k)<0) return null;
+    }
+    // o tastă simplă (fără Ctrl/Alt/Shift) blochează tasta aia peste tot, inclusiv în joc — acceptăm doar F1–F24 singure
+    if(!mods.length && !/^F\d{1,2}$/.test(k)) return {warn:true};
+    return {acc:mods.concat(k).join('+')};
+  }
+  function arm(inp,prop){
+    inp.addEventListener('focus',function(){ inp.value='apasă combinația… (Esc = anulează, Backspace = dezactivează)'; });
+    inp.addEventListener('blur',show);
+    inp.addEventListener('keydown',function(e){
+      e.preventDefault(); e.stopPropagation();
+      if(e.key==='Escape'){ inp.blur(); return; }
+      if(e.key==='Backspace'||e.key==='Delete'){ hk[prop]=''; save(); show(); push(); inp.blur(); return; }
+      const r=accFrom(e);
+      if(!r) return;
+      if(r.warn){ inp.value='⚠️ adaugă și Ctrl/Alt/Shift (sau folosește F1–F24)'; return; }
+      hk[prop]=r.acc; save(); show(); push(); inp.blur();
+    });
+  }
+  arm(iT,'toggle'); arm(iC,'clickthrough');
+  const rst=document.getElementById('hkReset');
+  if(rst) rst.onclick=function(){ hk=Object.assign({},DEF); save(); show(); push(); };
+  show(); push(); // la pornire trimite tastele salvate către aplicație
 })();
 </script>
 </body>
