@@ -541,6 +541,120 @@
   </main>
 </div>
 
+<style id="theme2">
+  /* ============ POLICE HELPER 2.0 — tema „Night Watch" ============ */
+  :root{
+    --bg:#04070d; --panel:#0c1526; --line:#1c2e52; --line2:#2e4a7e;
+    --blue:#3b82f6; --blue2:#60a5fa; --cyan:#22d3ee; --blue-soft:#1e3a8a;
+    --ink:#e9effc; --muted:#8fa3c8; --muted2:#5b7099;
+    --green:#2dd4a0; --green-d:#0f5e42; --red:#f0475e; --amber:#f0b93c; --gold:#fbbf24;
+    --mono:"JetBrains Mono","SFMono-Regular",Consolas,Menlo,monospace;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @keyframes lightbar{0%{background-position:220% 0}100%{background-position:-220% 0}}
+  @keyframes spinring{to{transform:rotate(360deg)}}
+  @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes pulsedot{0%,100%{opacity:1}50%{opacity:.35}}
+  body{
+    background:
+      radial-gradient(1100px 700px at 85% -10%, rgba(40,86,180,.30) 0%, transparent 55%),
+      radial-gradient(900px 620px at -8% 112%, rgba(196,42,74,.12) 0%, transparent 55%),
+      radial-gradient(760px 520px at 6% -6%, rgba(19,48,108,.40) 0%, transparent 52%),
+      var(--bg);
+    font-family:var(--sans);
+  }
+  /* grilă fină de fundal, estompată spre margini */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:linear-gradient(rgba(96,165,250,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,.04) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(1100px 720px at 50% 0%,#000 0%,transparent 78%);
+            mask-image:radial-gradient(1100px 720px at 50% 0%,#000 0%,transparent 78%)}
+  html.ovmode body::before{display:none}
+
+  /* bara de sus: sticlă + girofar animat pe muchia de jos */
+  .isapp #appbar, .webmode #appbar{
+    background:linear-gradient(180deg,rgba(20,44,90,.95),rgba(8,17,36,.98));
+    border-bottom:1px solid rgba(96,165,250,.20)}
+  #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none;
+    background:linear-gradient(90deg,transparent 0%,var(--blue) 22%,var(--cyan) 38%,transparent 52%,var(--red) 74%,transparent 92%);
+    background-size:220% 100%;animation:lightbar 11s linear infinite;opacity:.85}
+  #appbar .ab-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 40%,#0b2a6b 55%,var(--gold) 78%,#60a5fa);box-shadow:inset 0 0 0 2px #ffffff2e,0 4px 14px #0009,0 0 18px rgba(59,130,246,.35)}
+  #appbar .ab-clock{border-color:rgba(96,165,250,.30);background:rgba(8,18,38,.8);color:#bcd6ff}
+  #appbar .ab-agent{border-color:rgba(45,212,160,.35);background:rgba(8,20,30,.8)}
+
+  /* sidebar */
+  #sidebar{background:linear-gradient(180deg,rgba(9,18,38,.92),rgba(5,10,22,.96));border-right:1px solid rgba(96,165,250,.12)}
+  .nav-item{border-radius:12px;color:#a9bad9;transition:background .15s,color .15s,transform .15s}
+  .nav-item:hover{background:rgba(59,130,246,.12);color:#fff;transform:translateX(2px)}
+  .nav-item.active{background:linear-gradient(90deg,rgba(59,130,246,.28),rgba(59,130,246,.08));color:#fff;box-shadow:inset 3px 0 0 var(--cyan),0 0 18px rgba(59,130,246,.12)}
+
+  /* tranziții pagini + titluri cu gradient */
+  .page.active{animation:pageIn .26s ease}
+  .page-h h2,.dash-hero h2{font-weight:800;letter-spacing:.2px;background:linear-gradient(90deg,#f2f7ff,#8fbaff 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  /* dashboard */
+  .dash-hero .dh-badge{position:relative;border-radius:18px;background:conic-gradient(from 210deg,#60a5fa,#1e40af 42%,#0b2a6b 58%,var(--gold) 80%,#60a5fa);box-shadow:inset 0 0 0 3px #ffffff26,0 10px 30px #000a,0 0 34px rgba(59,130,246,.35)}
+  .dash-hero .dh-badge::before{content:"";position:absolute;inset:-7px;border-radius:23px;z-index:-1;
+    background:conic-gradient(from 0deg,transparent 0 68%,rgba(96,165,250,.9) 84%,transparent 100%);
+    animation:spinring 7s linear infinite}
+  .dash-hero .dh-sub{background:rgba(10,20,42,.75);border:1px solid rgba(96,165,250,.22);backdrop-filter:blur(8px)}
+  .dash-card{background:linear-gradient(180deg,rgba(16,28,54,.78),rgba(9,17,34,.85));border:1px solid rgba(96,165,250,.12);border-radius:16px;backdrop-filter:blur(10px);transition:transform .16s,border-color .16s,box-shadow .16s}
+  .dash-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.5);box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 24px rgba(59,130,246,.15)}
+  .dash-card .dc-ic{transition:transform .16s}
+  .dash-card:hover .dc-ic{transform:scale(1.15)}
+
+  /* panouri & carduri: sticlă */
+  .panel,.cardbox{background:linear-gradient(180deg,rgba(16,28,54,.78),rgba(9,17,34,.86));border:1px solid rgba(96,165,250,.13);border-radius:16px;backdrop-filter:blur(12px);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  .panel h2 .n{color:var(--cyan);border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.08)}
+  .flux{background:rgba(9,18,38,.75);border-color:rgba(96,165,250,.16);border-radius:12px;backdrop-filter:blur(8px)}
+
+  /* inputuri & butoane */
+  .search input,.copyrow input,.copyrow textarea,.tsel,.inp input,.set-row input[type=text],.set-row select,.login-box input,.login-box select,.subbox select,.subbox input,.scenrow select,.charge .cmo{background:rgba(6,13,27,.85);border-color:rgba(96,165,250,.20);border-radius:10px}
+  .search input:focus,.copyrow input:focus,.copyrow textarea:focus,.inp input:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(59,130,246,.22)}
+  .cbtn{background:linear-gradient(180deg,#17b381,#0c7a55);border-color:rgba(45,212,160,.45);border-radius:11px}
+  .cbtn:hover{box-shadow:0 4px 16px rgba(45,212,160,.28);filter:brightness(1.08)}
+  .pill{border-radius:999px;background:rgba(10,20,42,.8);border-color:rgba(96,165,250,.22)}
+  .pill.on{background:linear-gradient(180deg,#3b82f6,#1d4ed8);border-color:#60a5fa;box-shadow:0 2px 12px rgba(59,130,246,.35)}
+  .btnp{border-radius:11px;background:rgba(12,24,48,.85);border-color:rgba(96,165,250,.22);transition:transform .12s,border-color .12s,box-shadow .12s}
+  .btnp:hover{transform:translateY(-1px);border-color:var(--blue2);box-shadow:0 4px 14px rgba(59,130,246,.20)}
+  .btnp.green{background:linear-gradient(180deg,#17b381,#0c7a55);border-color:rgba(45,212,160,.5)}
+  .btnp.on{background:linear-gradient(180deg,#3b82f6,#1d4ed8);border-color:#60a5fa}
+  .addbtn{background:rgba(30,58,138,.5);border-color:var(--blue)}
+  .addbtn:hover{background:var(--blue);box-shadow:0 4px 14px rgba(59,130,246,.35)}
+
+  /* liste, chips, totaluri */
+  .item{border-radius:10px;transition:background .12s,transform .12s}
+  .item:hover{background:rgba(59,130,246,.10);transform:translateX(2px)}
+  .item.sel{background:linear-gradient(90deg,rgba(59,130,246,.26),rgba(59,130,246,.10));border-color:var(--blue2)}
+  .caphead{background:rgba(7,14,29,.92)}
+  .chip{background:rgba(9,18,38,.8);border-color:rgba(96,165,250,.16);border-radius:12px}
+  .tot{background:linear-gradient(180deg,rgba(37,78,166,.40),rgba(14,30,66,.55));border-color:rgba(96,165,250,.28);border-radius:14px}
+  .tot .tv{color:#a9d2ff}
+  .tot.mo:hover{box-shadow:0 6px 20px rgba(59,130,246,.22);border-color:rgba(96,165,250,.5);filter:none}
+  .charge{background:rgba(8,16,34,.82);border-color:rgba(96,165,250,.15);border-radius:12px;transition:border-color .12s}
+  .charge:hover{border-color:rgba(96,165,250,.35)}
+  .sent-box{background:rgba(8,16,34,.82);border-color:rgba(96,165,250,.18);border-radius:14px}
+  .sent-val{color:#8fc2ff}
+  .qitem{background:rgba(8,16,34,.8);border-radius:11px}
+  .qitem.on{background:linear-gradient(90deg,rgba(59,130,246,.26),rgba(59,130,246,.10));border-color:var(--blue2)}
+  .combo{background:rgba(58,39,13,.55);border-color:rgba(240,185,60,.35);border-radius:12px;backdrop-filter:blur(8px)}
+  .conf-banner{background:rgba(64,17,27,.6);border-color:rgba(240,71,94,.4);border-radius:12px}
+  .cart-empty{border-color:rgba(96,165,250,.22);border-radius:14px;background:rgba(8,16,34,.4)}
+  .subbox,.ref{background:rgba(8,16,34,.7);border-color:rgba(96,165,250,.15);border-radius:14px}
+
+  /* toast & login */
+  .toast{background:rgba(13,74,52,.92);border-color:#2dd4a0;backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 20px rgba(45,212,160,.25);border-radius:12px}
+  #login{background:rgba(2,5,12,.8);backdrop-filter:blur(7px)}
+  .login-box{background:linear-gradient(180deg,rgba(19,36,74,.92),rgba(9,17,36,.96));border:1px solid rgba(96,165,250,.25);border-radius:20px;box-shadow:0 30px 80px #000c,0 0 40px rgba(59,130,246,.15)}
+  .login-box .lb-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 42%,#0b2a6b 58%,var(--gold) 80%,#60a5fa)}
+
+  /* scrollbar & overlay bar pe tema nouă */
+  *::-webkit-scrollbar-thumb{background:#274a86;border:2px solid #060d1c}
+  *::-webkit-scrollbar-track{background:#060d1c}
+  *::-webkit-scrollbar-corner{background:#060d1c}
+  html.ovmode #ovbar{background:linear-gradient(180deg,rgba(22,46,94,.96),rgba(9,19,40,.98));border-bottom:1px solid rgba(96,165,250,.25)}
+  html.ovmode #main{background:linear-gradient(180deg,rgba(7,14,29,.88),rgba(5,10,22,.93))}
+</style>
 <div class="toast" id="toast">Copiat!</div>
 
 
