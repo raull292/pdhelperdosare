@@ -37,7 +37,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Police Helper"
+      "shortcutName": "Police Helper",
+      "include": "installer.nsh"
     },
     "publish": [
       {

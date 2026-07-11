@@ -179,7 +179,9 @@ function initUpdater() {
   autoUpdater.on('error', (e) => send({ state: 'error', message: String((e && e.message) || e) }));
   const check = () => { autoUpdater.checkForUpdates().catch(() => {}); };
   ipcMain.handle('update-check', () => { check(); return true; });
-  ipcMain.on('update-install', () => autoUpdater.quitAndInstall());
+  // (true, true) = instalare silentioasa in acelasi folder + repornire automata;
+  // fara parametri ar deschide wizard-ul complet de instalare la fiecare update
+  ipcMain.on('update-install', () => autoUpdater.quitAndInstall(true, true));
   setTimeout(check, 5000);              // la pornire
   setInterval(check, 30 * 60 * 1000);   // apoi la fiecare 30 min
 }
