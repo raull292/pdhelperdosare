@@ -23,5 +23,9 @@ contextBridge.exposeInMainWorld('desktopApp', {
     check: () => ipcRenderer.invoke('update-check').catch(() => false),
     install: () => ipcRenderer.send('update-install'),
     onStatus: (cb) => ipcRenderer.on('update-status', (e, s) => cb(s))
+  },
+  cache: {
+    size: () => ipcRenderer.invoke('cache-size').catch(() => -1),
+    clear: () => ipcRenderer.invoke('cache-clear').catch(() => false)
   }
 });

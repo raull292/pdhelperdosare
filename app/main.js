@@ -1,6 +1,9 @@
-const { app, BrowserWindow, ipcMain, shell, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, globalShortcut, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
+// cache pe disc plafonat la 50 MB — aplicatia nu acumuleaza resurse
+app.commandLine.appendSwitch('disk-cache-size', String(50 * 1024 * 1024));
 
 const LIVE_URL = 'https://raull292.github.io/pdhelperdosare/';
 const OVERLAY_URL = 'https://raull292.github.io/pdhelperdosare/overlay.html';
@@ -147,6 +150,18 @@ function applyHotkeys(hk) {
 }
 ipcMain.handle('mdt-hotkeys', (e, hk) => applyHotkeys(hk));
 
+// ---- cache: dimensiune & golire manuala (din Setari) ----
+ipcMain.handle('cache-size', async () => {
+  try { return await session.defaultSession.getCacheSize(); } catch (err) { return -1; }
+});
+ipcMain.handle('cache-clear', async () => {
+  try {
+    await session.defaultSession.clearCache();
+    await session.defaultSession.clearCodeCaches({});
+    return true;
+  } catch (err) { return false; }
+});
+
 // ---- auto-update din GitHub Releases (electron-updater) ----
 ipcMain.handle('app-version', () => app.getVersion());
 function initUpdater() {
@@ -187,7 +202,9 @@ function createWindow() {
     }
   });
 
-  mainWin.loadURL(LIVE_URL);
+  // cache-ul se goleste la fiecare pornire: incarci mereu ultima versiune si nu se aduna date
+  const load = () => { if (mainWin) mainWin.loadURL(LIVE_URL); };
+  session.defaultSession.clearCache().then(load, load);
   mainWin.webContents.on('did-fail-load', (e, code, desc, url, isMainFrame) => {
     if (isMainFrame && code !== -3) mainWin.loadFile(path.join(__dirname, 'index.html'));
   });
