@@ -39,6 +39,16 @@ jobs:
         working-directory: app
         run: npm version --no-git-tag-version "2.0.${{ github.run_number }}"
 
+      # electron-builder refuses to create a published release on a
+      # nonexistent tag (422: "Published releases must have a valid tag"),
+      # so create and push the tag first. -f keeps re-runs idempotent.
+      - name: Create release tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "v2.0.${{ github.run_number }}"
+          git push -f origin "v2.0.${{ github.run_number }}"
+
       - name: Build and publish to GitHub Releases
         working-directory: app
         run: npx electron-builder --publish always
