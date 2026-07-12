@@ -2126,9 +2126,22 @@ renderHist();
   var cfg=window.__dgateCfg||{};
   var CLIENT_ID=cfg.clientId!==undefined?cfg.clientId:'1525688728411045909';
   var GUILD_ID=cfg.guildId||'1162871509275119637';
-  // maparea rolurilor Discord (ID) pe gradele din aplicație — se completează
-  // cu ID-urile rolurilor de pe server (Setări → Acces Discord le afișează)
-  var ROLE_MAP=cfg.roleMap||{};
+  // maparea rolurilor Discord (ID) pe gradele din aplicație
+  // numele trebuie să fie EXACT cele din lista RANKS (cu cratime și diacritice)
+  var ROLE_MAP=cfg.roleMap||{
+    '1463968575055204497':'Cadet',
+    '1463968630877192304':'Agent',
+    '1463968636715667620':'Agent-Principal',
+    '1464017596365144268':'Agent-Șef-Adjunct',
+    '1464018331307868161':'Agent-Șef-Principal',
+    '1464016913742172365':'Inspector',
+    '1463968451042213909':'Inspector-Principal',
+    '1463968367374241917':'Sub-Comisar',
+    '1464016469749923943':'Comisar',
+    '1463968568944361685':'Comisar-Șef',
+    '1162872939943841858':'Chestor'
+    // Chestor-General: același ID a fost trimis și pentru Chestor — aștept ID-ul corect
+  };
   var KEY='phDiscord';
   var FRESH_MS=24*60*60*1000;    // sub 24h de la ultima verificare: acces direct, fără request
   var GRACE_MS=7*24*60*60*1000;  // fără internet: acceptă ultima verificare reușită, max 7 zile
