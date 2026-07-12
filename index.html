@@ -476,6 +476,10 @@
       .scenrow select{flex:1;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
       .scenhint{font-size:11.5px;color:#5f759c;margin-bottom:14px;line-height:1.4;min-height:14px}
       .scenhint.warn{color:#e8a838}
+      .razq{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#2a1b0c;border:1px solid #6d4a17;border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#f2d59a}
+      .razq .rz-t{flex:1;min-width:220px;line-height:1.45}
+      .razq .rz-t b{color:#ffcf7a}
+      .subbox.glow{border-color:#f0b93c!important;box-shadow:0 0 0 3px rgba(240,185,60,.28)!important;transition:box-shadow .3s,border-color .3s}
     </style>
     <div class="scenrow">
       <label for="dossierScen">Scenariu dosar</label>
@@ -488,6 +492,11 @@
       </select>
     </div>
     <div class="scenhint" id="scenHint"></div>
+    <div class="razq" id="razQ" style="display:none">
+      <div class="rz-t"><b>Razie:</b> suspectul mai are ceva asupra lui în afară de armă și gloanțe (droguri, țigări de contrabandă, bani murdari)?</div>
+      <button class="btnp green" id="razYes" type="button">Da, are</button>
+      <button class="btnp" id="razNo" type="button">Nu, doar arma</button>
+    </div>
     <div class="dc-title">✎ Date comune (aceleași apar și în Panoul 2)</div>
     <div class="shared" id="sharedFields"></div>
     <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
@@ -1416,6 +1425,7 @@ function initFold(){
   });
 }
 function updateFoldBadges(){
+  if(window.__razQNotify) window.__razQNotify(cart.length>0);
   const db=document.getElementById('dossierBadge');
   if(db){
     if(cart.length){
@@ -1699,7 +1709,33 @@ function resolveSub(type,qty){
   const scenSel=document.getElementById('dossierScen'), scenHint=document.getElementById('scenHint');
   const HINTS={auto:'Alege scenariul dacă vrei un început anume; „Automat” decide după fapte.',trafic:'Completează datele mașinii (model, culoare, nr.) mai jos.',razie:'Pune numele insulei (Cayo/Maldive) în câmpul „Locație / Zonă” de mai jos.',focuri:'Descrie schimbul de focuri; armele găsite apar din capetele de acuzare.',sesizare:'Intervenție în urma unei sesizări, fără oprire în trafic.'};
   function upd(){ if(scenHint) scenHint.textContent=HINTS[scenSel?scenSel.value:'auto']||''; if(scenHint) scenHint.className='scenhint'+(scenSel&&scenSel.value==='razie'?' warn':''); }
-  if(scenSel){ scenSel.addEventListener('change',function(){ dossierScenario=scenSel.value; upd(); buildCombinedDesc(); }); upd(); }
+  if(scenSel){ scenSel.addEventListener('change',function(){ dossierScenario=scenSel.value; upd(); if(window.__razQReset)window.__razQReset(); buildCombinedDesc(); }); upd(); }
+})();
+/* ---- Razie: întreabă dacă suspectul mai are ceva asupra lui (în afară de armă) ---- */
+(function(){
+  const q=document.getElementById('razQ'); if(!q) return;
+  const yes=document.getElementById('razYes'), no=document.getElementById('razNo');
+  const sub=document.getElementById('subBox'), subSel=document.getElementById('subType');
+  let answered=false, hadItems=false;
+  function upd(){
+    const razie=(typeof dossierScenario!=='undefined'&&dossierScenario==='razie');
+    q.style.display=(razie&&!answered)?'':'none';
+  }
+  yes.onclick=function(){
+    answered=true; upd();
+    if(sub){
+      sub.classList.add('glow');
+      if(sub.scrollIntoView) sub.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(function(){ sub.classList.remove('glow'); },2600);
+    }
+    if(subSel) subSel.focus();
+  };
+  no.onclick=function(){ answered=true; upd(); };
+  // scenariul s-a schimbat → întreabă din nou când se revine pe razie
+  window.__razQReset=function(){ answered=false; upd(); };
+  // dosarul s-a golit (terminat / auto-golire) → următoarea razie întreabă iar
+  window.__razQNotify=function(has){ if(hadItems&&!has){ answered=false; upd(); } hadItems=has; };
+  upd();
 })();
 initFold();
 renderList();
