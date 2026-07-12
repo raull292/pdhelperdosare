@@ -1688,17 +1688,20 @@ function buildCombinedDesc(){
   const sevOf=c=>{const a=g(c.id);return a.life?9999:(a.s?(+c.months||0):-1);};
   const ordered=[...cart].sort((x,y)=>{const px=phaseOf(g(x.id)),py=phaseOf(g(y.id));if(px!==py)return px-py;return sevOf(y)-sevOf(x);});
 
+  const scen=(typeof dossierScenario!=='undefined')?dossierScenario:'auto';
+  // jaful e fapta principală: pe „Automat" primește propriul fir narativ
+  // (alertă → deplasare echipaje → reținere), nu o simplă mențiune seacă
+  const jafC=(scen==='auto')?ordered.find(c=>{const t=g(c.id).t;return t==='jaf_imobil'||t==='jaf_bancar';}):null;
   const P={1:[],2:[],3:[],4:[],5:[]};
-  ordered.forEach(c=>{const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
-  const hasVehCharge=ordered.some(c=>isVehicle(g(c.id)));
+  ordered.forEach(c=>{ if(jafC&&c.id===jafC.id) return; const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
+  const hasVehCharge=!jafC&&ordered.some(c=>isVehicle(g(c.id)));
   const parts=[];
   let named=false;
   const S=()=>{ if(!named){named=true; return n;} return "acesta"; };
   const open=pv(V.dateOpen,1)+d+", în jurul orei "+o+", în zona "+z+", ";
   const objsOf=ph=>P[ph].map(h=>h.replace(/^deținea asupra sa /,'').replace(/^deținea /,''));
 
-  const scen=(typeof dossierScenario!=='undefined')?dossierScenario:'auto';
-  const useTrafic = scen==='trafic' || (scen==='auto' && hasVehCharge);
+  const useTrafic = !jafC && (scen==='trafic' || (scen==='auto' && hasVehCharge));
   if(!useTrafic){ P[5]=P[5].concat(P[2]).concat(P[1]); P[1]=[]; P[2]=[]; }
 
   function blocks(order, openAlready){
@@ -1721,7 +1724,17 @@ function buildCombinedDesc(){
     });
   }
 
-  if(useTrafic){
+  if(jafC){
+    const ja=g(jafC.id);
+    if(ja.t==='jaf_bancar'){
+      parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", organele de poliție au fost sesizate cu privire la comiterea unui jaf armat asupra băncii din zona "+z+". La fața locului s-au deplasat de urgență echipaje de poliție împreună cu trupele speciale, printre suspecții imobilizați fiind identificat și numitul/numita "+n+".");
+    } else {
+      const fel=ja.id==='3.12.2'?' asupra unui imobil':(ja.id==='3.12.1'?' armat':'');
+      parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", prin dispecerat a fost recepționată o alertă privind comiterea unui jaf"+fel+" în zona "+z+". Echipajele de ordine publică deplasate la fața locului au procedat la reținerea mai multor suspecți, unul dintre aceștia fiind identificat în persoana numitului/numitei "+n+".");
+    }
+    named=true;
+    blocks([3,4,5], true);
+  } else if(useTrafic){
     const mk=shared.marca||"[MODEL]", cl=shared.culoare||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
     const verb=ordered.some(c=>c.id==="2.7")?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
     let s1=open+"echipajul de poliție "+verb+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr;
