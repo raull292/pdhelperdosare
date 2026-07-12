@@ -669,19 +669,40 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
             mask-image:radial-gradient(1100px 720px at 50% 0%,#000 0%,transparent 78%)}
   html.ovmode body::before{display:none}
 
-  /* bara de sus: sticlă + girofar animat pe muchia de jos */
+  /* bara de sus: glass închis cu două lumini discrete (albastru la emblemă,
+     auriu spre ceas) — fără dungile verticale vechi */
   .isapp #appbar, .webmode #appbar{
-    background:linear-gradient(180deg,rgba(20,44,90,.95),rgba(8,17,36,.98));
-    border-bottom:1px solid rgba(96,165,250,.20)}
+    background:
+      radial-gradient(560px 120px at 6% 130%, rgba(59,130,246,.20), transparent 70%),
+      radial-gradient(460px 100px at 94% -40%, rgba(251,191,36,.10), transparent 70%),
+      linear-gradient(180deg,rgba(12,24,50,.97),rgba(5,11,24,.99));
+    border-bottom:1px solid rgba(96,165,250,.15)}
+  .isapp #appbar::before, .webmode #appbar::before{display:none}
   /* girofar sub bara de sus: baleiaj albastru + roșu, mereu animat
      (decorativ — intenționat NU ascultă de setarea de animații din Windows) */
   #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;pointer-events:none;
     background:linear-gradient(90deg,transparent 0%,var(--blue) 14%,var(--cyan) 26%,transparent 40%,transparent 58%,var(--red) 72%,#ff8496 80%,transparent 94%);
     background-size:220% 100%;animation:lightbar 7s linear infinite;opacity:.95;
     filter:drop-shadow(0 0 6px rgba(59,130,246,.45))}
-  #appbar .ab-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 40%,#0b2a6b 55%,var(--gold) 78%,#60a5fa);box-shadow:inset 0 0 0 2px #ffffff2e,0 4px 14px #0009,0 0 18px rgba(59,130,246,.35)}
-  #appbar .ab-clock{border-color:rgba(96,165,250,.30);background:rgba(8,18,38,.8);color:#bcd6ff}
-  #appbar .ab-agent{border-color:rgba(45,212,160,.35);background:rgba(8,20,30,.8)}
+  /* titlul: POLICE HELPER cu tipografie de antet */
+  #appbar .ab-tt b{font-size:13.5px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;
+    background:linear-gradient(90deg,#f4f8ff 40%,#ffd98a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  #appbar .ab-tt span{color:#7d93b8;font-size:10.5px;letter-spacing:.5px}
+  /* legitimația agentului: grad auriu · callsign mono · nume */
+  #appbar .ab-agent{display:flex;align-items:center;gap:9px;padding:6px 14px 6px 12px;border-radius:12px;
+    background:linear-gradient(180deg,rgba(17,31,62,.9),rgba(9,18,38,.94));
+    border:1px solid rgba(251,191,36,.22);color:#cfe0f7;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .15s,box-shadow .15s}
+  #appbar .ab-agent:hover{border-color:rgba(251,191,36,.55);box-shadow:0 0 16px rgba(251,191,36,.14)}
+  #appbar .ab-agent .ag-rank{color:#ffd98a;font-weight:700;letter-spacing:.3px}
+  #appbar .ab-agent .ag-call{font-family:var(--mono);font-size:11.5px;color:#bcd6ff;background:rgba(59,130,246,.16);border:1px solid rgba(96,165,250,.32);padding:1px 8px;border-radius:999px}
+  #appbar .ab-agent .ag-name{color:#eef4ff;font-weight:600}
+  /* ceasul */
+  #appbar .ab-clock{font-family:var(--mono);font-size:13.5px;letter-spacing:2px;color:#dbe8ff;
+    background:transparent;border:1px solid rgba(96,165,250,.22);border-radius:10px;padding:6px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+  #appbar .ab-btn{color:#9db4d8;font-size:15px}
+  #appbar .ab-btn:hover{background:#ffffff14;color:#fff}
 
   /* sidebar */
   #sidebar{background:linear-gradient(180deg,rgba(9,18,38,.92),rgba(5,10,22,.96));border-right:1px solid rgba(96,165,250,.12)}
@@ -821,7 +842,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   /* chip-ul de mod (amendă / dosar penal) + agent conectat */
   .modechip.penal{color:#ffd0d6;border-color:rgba(240,71,94,.5);background:rgba(64,17,27,.55)}
   .modechip.amenda{color:#ffe6b8;border-color:rgba(240,185,60,.45);background:rgba(58,39,13,.55)}
-  #appbar .ab-agent.on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#2dd4a0;margin-right:7px;box-shadow:0 0 8px rgba(45,212,160,.8);animation:pulsedot 2.4s ease-in-out infinite;vertical-align:1px}
+  #appbar .ab-agent.on::before{content:"";display:inline-block;width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#2dd4a0;box-shadow:0 0 8px rgba(45,212,160,.8);animation:pulsedot 2.4s ease-in-out infinite}
 
   /* istoric: chip colorat după tipul documentului */
   .hkind.k-dosar{color:#ffd0d6!important;border-color:rgba(240,71,94,.45)!important;background:rgba(64,17,27,.5)!important}
@@ -2062,7 +2083,11 @@ renderHist();
     const a=getA()||{};
     if(agentChip){
       var has=a.rank||a.call||a.name;
-      agentChip.innerHTML = has ? ((a.rank?a.rank+' • ':'')+(a.call?('<b>'+a.call+'</b> | '):'')+(a.name||'')) : 'Neconectat';
+      agentChip.innerHTML = has
+        ? ((a.rank?'<span class="ag-rank">'+esc(a.rank)+'</span>':'')
+          +(a.call?'<span class="ag-call">'+esc(a.call)+'</span>':'')
+          +(a.name?'<span class="ag-name">'+esc(a.name)+'</span>':''))
+        : 'Neconectat';
       agentChip.classList.toggle('on',!!has);
     }
     var sN=document.getElementById('setName'), sC=document.getElementById('setCall');
