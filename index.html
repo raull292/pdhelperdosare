@@ -707,8 +707,8 @@
     background:linear-gradient(180deg,rgba(20,44,90,.95),rgba(8,17,36,.98));
     border-bottom:1px solid rgba(96,165,250,.20)}
   #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none;
-    background:linear-gradient(90deg,transparent 0%,var(--blue) 22%,var(--cyan) 38%,transparent 52%,var(--red) 74%,transparent 92%);
-    background-size:220% 100%;animation:lightbar 11s linear infinite;opacity:.85}
+    background:linear-gradient(90deg,transparent 0%,var(--blue) 16%,var(--cyan) 28%,transparent 42%,transparent 56%,var(--red) 70%,#ff8496 78%,transparent 92%);
+    background-size:220% 100%;animation:lightbar 9s linear infinite;opacity:.9}
   #appbar .ab-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 40%,#0b2a6b 55%,var(--gold) 78%,#60a5fa);box-shadow:inset 0 0 0 2px #ffffff2e,0 4px 14px #0009,0 0 18px rgba(59,130,246,.35)}
   #appbar .ab-clock{border-color:rgba(96,165,250,.30);background:rgba(8,18,38,.8);color:#bcd6ff}
   #appbar .ab-agent{border-color:rgba(45,212,160,.35);background:rgba(8,20,30,.8)}
@@ -725,9 +725,12 @@
 
   /* dashboard */
   .dash-hero .dh-badge{position:relative;border-radius:18px;background:conic-gradient(from 210deg,#60a5fa,#1e40af 42%,#0b2a6b 58%,var(--gold) 80%,#60a5fa);box-shadow:inset 0 0 0 3px #ffffff26,0 10px 30px #000a,0 0 34px rgba(59,130,246,.35)}
-  .dash-hero .dh-badge::before{content:"";position:absolute;inset:-7px;border-radius:23px;z-index:-1;
-    background:conic-gradient(from 0deg,transparent 0 68%,rgba(96,165,250,.9) 84%,transparent 100%);
-    animation:spinring 7s linear infinite}
+  /* inel girofar circular, centrat pe scut (mascat ca inel, nu felie de disc) */
+  .dash-hero .dh-badge::before{content:"";position:absolute;inset:0;margin:auto;width:126px;height:126px;border-radius:50%;z-index:-1;
+    background:conic-gradient(from 0deg,transparent 0 58%,rgba(96,165,250,.9) 76%,transparent 90%,transparent 93%,rgba(240,71,94,.55) 97%,transparent 100%);
+    -webkit-mask:radial-gradient(closest-side,transparent 0 84%,#000 86%);
+    mask:radial-gradient(closest-side,transparent 0 84%,#000 86%);
+    filter:blur(.6px);animation:spinring 7s linear infinite}
   .dash-hero .dh-sub{background:rgba(10,20,42,.75);border:1px solid rgba(96,165,250,.22);backdrop-filter:blur(8px)}
   .dash-card{background:linear-gradient(180deg,rgba(16,28,54,.78),rgba(9,17,34,.85));border:1px solid rgba(96,165,250,.12);border-radius:16px;backdrop-filter:blur(10px);transition:transform .16s,border-color .16s,box-shadow .16s}
   .dash-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.5);box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 24px rgba(59,130,246,.15)}
@@ -782,7 +785,6 @@
   .ab-badge svg,.dh-badge svg,.lb-badge svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.55))}
   #appbar .ab-badge{width:40px;height:44px;flex:0 0 40px}
   .dash-hero .dh-badge{width:96px;height:106px;border-radius:0}
-  .dash-hero .dh-badge::before{border-radius:50%;inset:-4px 4px 6px 4px}
   .login-box .lb-badge{width:72px;height:79px}
 
   /* toast & login */
@@ -808,7 +810,8 @@
       radial-gradient(24% 22% at 55% 95%, rgba(196,42,74,.06), transparent 70%);
     filter:blur(46px);animation:aura 70s ease-in-out infinite;will-change:transform}
   html.ovmode body::after{display:none}
-  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{animation:none}#appbar::after{animation:none}}
+  /* cu animațiile Windows oprite: elementele animate se ascund (altfel rămân „înghețate" ca niște dungi statice) */
+  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{display:none}#appbar::after{display:none}}
 
   /* sidebar: brand cu scut + secțiuni */
   #sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;margin-bottom:8px;border-bottom:1px solid rgba(96,165,250,.14)}
@@ -1685,17 +1688,20 @@ function buildCombinedDesc(){
   const sevOf=c=>{const a=g(c.id);return a.life?9999:(a.s?(+c.months||0):-1);};
   const ordered=[...cart].sort((x,y)=>{const px=phaseOf(g(x.id)),py=phaseOf(g(y.id));if(px!==py)return px-py;return sevOf(y)-sevOf(x);});
 
+  const scen=(typeof dossierScenario!=='undefined')?dossierScenario:'auto';
+  // jaful e fapta principală: pe „Automat" primește propriul fir narativ
+  // (alertă → deplasare echipaje → reținere), nu o simplă mențiune seacă
+  const jafC=(scen==='auto')?ordered.find(c=>{const t=g(c.id).t;return t==='jaf_imobil'||t==='jaf_bancar';}):null;
   const P={1:[],2:[],3:[],4:[],5:[]};
-  ordered.forEach(c=>{const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
-  const hasVehCharge=ordered.some(c=>isVehicle(g(c.id)));
+  ordered.forEach(c=>{ if(jafC&&c.id===jafC.id) return; const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
+  const hasVehCharge=!jafC&&ordered.some(c=>isVehicle(g(c.id)));
   const parts=[];
   let named=false;
   const S=()=>{ if(!named){named=true; return n;} return "acesta"; };
   const open=pv(V.dateOpen,1)+d+", în jurul orei "+o+", în zona "+z+", ";
   const objsOf=ph=>P[ph].map(h=>h.replace(/^deținea asupra sa /,'').replace(/^deținea /,''));
 
-  const scen=(typeof dossierScenario!=='undefined')?dossierScenario:'auto';
-  const useTrafic = scen==='trafic' || (scen==='auto' && hasVehCharge);
+  const useTrafic = !jafC && (scen==='trafic' || (scen==='auto' && hasVehCharge));
   if(!useTrafic){ P[5]=P[5].concat(P[2]).concat(P[1]); P[1]=[]; P[2]=[]; }
 
   function blocks(order, openAlready){
@@ -1718,7 +1724,17 @@ function buildCombinedDesc(){
     });
   }
 
-  if(useTrafic){
+  if(jafC){
+    const ja=g(jafC.id);
+    if(ja.t==='jaf_bancar'){
+      parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", organele de poliție au fost sesizate cu privire la comiterea unui jaf armat asupra băncii din zona "+z+". La fața locului s-au deplasat de urgență echipaje de poliție împreună cu trupele speciale, printre suspecții imobilizați fiind identificat și numitul/numita "+n+".");
+    } else {
+      const fel=ja.id==='3.12.2'?' asupra unui imobil':(ja.id==='3.12.1'?' armat':'');
+      parts.push(pv(V.dateOpen,1)+d+", în jurul orei "+o+", prin dispecerat a fost recepționată o alertă privind comiterea unui jaf"+fel+" în zona "+z+". Echipajele de ordine publică deplasate la fața locului au procedat la reținerea mai multor suspecți, unul dintre aceștia fiind identificat în persoana numitului/numitei "+n+".");
+    }
+    named=true;
+    blocks([3,4,5], true);
+  } else if(useTrafic){
     const mk=shared.marca||"[MODEL]", cl=shared.culoare||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
     const verb=ordered.some(c=>c.id==="2.7")?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
     let s1=open+"echipajul de poliție "+verb+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr;
