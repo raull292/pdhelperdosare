@@ -706,17 +706,12 @@
   .isapp #appbar, .webmode #appbar{
     background:linear-gradient(180deg,rgba(20,44,90,.95),rgba(8,17,36,.98));
     border-bottom:1px solid rgba(96,165,250,.20)}
-  /* girofar sub bara de sus: mereu vizibil — banda statică albastru↔roșu,
-     iar unde animațiile sunt permise, baleiaj luminos peste ea */
+  /* girofar sub bara de sus: baleiaj albastru + roșu, mereu animat
+     (decorativ — intenționat NU ascultă de setarea de animații din Windows) */
   #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;pointer-events:none;
-    background:linear-gradient(90deg,var(--blue) 0%,var(--cyan) 22%,rgba(96,165,250,.22) 50%,#ff8496 78%,var(--red) 100%);
-    opacity:.5}
-  @media (prefers-reduced-motion: no-preference){
-    #appbar::after{
-      background:linear-gradient(90deg,transparent 0%,var(--blue) 14%,var(--cyan) 26%,transparent 40%,transparent 58%,var(--red) 72%,#ff8496 80%,transparent 94%);
-      background-size:220% 100%;animation:lightbar 7s linear infinite;opacity:.95;
-      filter:drop-shadow(0 0 6px rgba(59,130,246,.45))}
-  }
+    background:linear-gradient(90deg,transparent 0%,var(--blue) 14%,var(--cyan) 26%,transparent 40%,transparent 58%,var(--red) 72%,#ff8496 80%,transparent 94%);
+    background-size:220% 100%;animation:lightbar 7s linear infinite;opacity:.95;
+    filter:drop-shadow(0 0 6px rgba(59,130,246,.45))}
   #appbar .ab-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 40%,#0b2a6b 55%,var(--gold) 78%,#60a5fa);box-shadow:inset 0 0 0 2px #ffffff2e,0 4px 14px #0009,0 0 18px rgba(59,130,246,.35)}
   #appbar .ab-clock{border-color:rgba(96,165,250,.30);background:rgba(8,18,38,.8);color:#bcd6ff}
   #appbar .ab-agent{border-color:rgba(45,212,160,.35);background:rgba(8,20,30,.8)}
@@ -822,12 +817,10 @@
     filter:blur(46px);animation:aura 70s ease-in-out infinite;will-change:transform}
   html.ovmode body::after{display:none}
   /* cu animațiile Windows oprite: elementele animate se ascund (altfel rămân „înghețate" ca niște dungi statice) */
-  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{animation:none}}
+  @media (prefers-reduced-motion: reduce){body::after{animation:none}}
   /* scuturile de brand „respiră" discret albastru↔roșu, ca reflexiile unui girofar */
   @keyframes girofarGlow{0%,100%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(59,130,246,.55))}50%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(240,71,94,.5))}}
-  @media (prefers-reduced-motion: no-preference){
-    #sidebar .sb-brand svg,#appbar .ab-badge svg{animation:girofarGlow 3.6s ease-in-out infinite}
-  }
+  #sidebar .sb-brand svg,#appbar .ab-badge svg{animation:girofarGlow 3.6s ease-in-out infinite}
 
   /* sidebar: brand cu scut + secțiuni */
   #sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;margin-bottom:8px;border-bottom:1px solid rgba(96,165,250,.14)}
