@@ -521,7 +521,9 @@
 
   <div class="panel dossier fold collapsed" id="quickPanel">
     <h2><span class="n">4</span> Amendă rapidă (trafic stop) <span class="fold-badge" id="quickBadge" hidden></span><button class="fold-btn" type="button" tabindex="-1">▸ Extinde</button></h2>
-    <p class="qhint">Bifează contravențiile constatate — titlul, suma și descrierea se generează instant. Folosește datele completate mai sus (dată, oră, locație, nume, mașină). Reține: max 9 puncte/amendă, iar la 15/15 puncte totale se reține permisul.</p>
+    <p class="qhint">Bifează contravențiile constatate — titlul, suma și descrierea se generează instant. Reține: max 9 puncte/amendă, iar la 15/15 puncte totale se reține permisul.</p>
+    <div class="dc-title">✎ Date amendă (aceleași câmpuri ca în Panoul 3 — se sincronizează)</div>
+    <div class="shared" id="sharedFieldsQ"></div>
     <div class="qgrid" id="quickList"></div>
     <div id="quickOut"></div>
   </div>
@@ -610,8 +612,8 @@
       <div class="page-h"><h2>Setări</h2><p>Preferințe cosmetice — salvate local pe calculatorul tău.</p></div>
       <div class="card"><div class="cardbox">
         <h3>👮 Agent</h3>
-        <div class="cb-sub">Apare sus în bară: „grad • callsign | nume”.</div>
-        <div class="set-row"><label>Grad</label><select id="setRank"></select></div>
+        <div class="cb-sub">Apare sus în bară: „grad • callsign | nume”. Gradul nu se alege manual — se preia automat din rolul tău de pe serverul Discord la fiecare verificare.</div>
+        <div class="set-row"><label>Grad</label><b id="setRankView" style="color:#8fe3b8">—</b></div>
         <div class="set-row"><label>Nume</label><input type="text" id="setName" placeholder="Ex: Pote Miguel" maxlength="32"></div>
         <div class="set-row"><label>Callsign</label><input type="text" id="setCall" placeholder="Ex: 537" maxlength="12"></div>
         <div class="set-row"><label></label><button class="btnp" id="setSave">Salvează</button></div>
@@ -1211,7 +1213,7 @@ function renderInputs(){
   });
   box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
   const dc=document.querySelector('[data-copy="desc"]');
-  if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');copy(ta.value,e.target);histSave((cur.s||cur.life)?'Dosar':'Amendă',titleText(),ta.value);};
+  if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');if(!guardCopy(ta.value))return;copy(ta.value,e.target);histSave((cur.s||cur.life)?'Dosar':'Amendă',titleText(),ta.value);};
   const rgS=document.getElementById('regenSingle'); if(rgS)rgS.onclick=()=>{descVariant++;updateDesc();};
   updateDesc();
 }
@@ -1335,11 +1337,14 @@ function wireSharedInput(inp){
   });
 }
 function renderShared(){
-  const box=document.getElementById('sharedFields');
-  if(!box) return;
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
-  box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+(f[0]==='nume'?' list="suspectList"':'')+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
-  box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
+  // aceleași câmpuri apar și în Panoul 3 (dosar) și în Panoul 4 (amendă rapidă); valorile sunt sincronizate
+  ['sharedFields','sharedFieldsQ'].forEach(function(id){
+    const box=document.getElementById(id);
+    if(!box) return;
+    box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+(f[0]==='nume'?' list="suspectList"':'')+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+    box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
+  });
 }
 
 /* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
@@ -1382,7 +1387,7 @@ function renderQuick(){
   document.getElementById('qFine').onclick=()=>copy(String(totFine));
   const qt=document.querySelector('[data-copy="qtitle"]'); if(qt)qt.onclick=e=>copy(title,e.target);
   document.querySelector('[data-out="qdesc"]').value=desc;
-  const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>{const v=document.querySelector('[data-out="qdesc"]').value;copy(v,e.target);histSave('Amendă rapidă',title,v);};
+  const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>{const v=document.querySelector('[data-out="qdesc"]').value;if(!guardCopy(v))return;copy(v,e.target);histSave('Amendă rapidă',title,v);};
   const rq=document.getElementById('regenQuick'); if(rq)rq.onclick=()=>{descVariant++;renderQuick();};
 }
 
@@ -1503,7 +1508,7 @@ function renderCart(){
   document.getElementById('copyTotFine').addEventListener('click',()=>copy(String(totFine)));
   const dt=document.querySelector('[data-copy="dtitle"]'); if(dt)dt.onclick=e=>copy(document.querySelector('[data-out="dtitle"]').value,e.target);
   const at=document.querySelector('[data-copy="atitle"]'); if(at)at.onclick=e=>copy(document.querySelector('[data-out="atitle"]').value,e.target);
-  const dd=document.querySelector('[data-copy="ddesc"]'); if(dd)dd.onclick=e=>{const v=document.querySelector('[data-out="ddesc"]').value;copy(v,e.target);const dte=document.querySelector('[data-out="dtitle"]'),ate=document.querySelector('[data-out="atitle"]');histSave('Dosar cumulat',(dte?dte.value:(ate?ate.value:'')),v);};
+  const dd=document.querySelector('[data-copy="ddesc"]'); if(dd)dd.onclick=e=>{const v=document.querySelector('[data-out="ddesc"]').value;if(!guardCopy(v))return;copy(v,e.target);const dte=document.querySelector('[data-out="dtitle"]'),ate=document.querySelector('[data-out="atitle"]');histSave('Dosar cumulat',(dte?dte.value:(ate?ate.value:'')),v);};
   const rg=document.getElementById('regenCombo'); if(rg)rg.onclick=()=>{descVariant++;buildCombinedDesc();};
 
   buildCombinedDesc();
@@ -1652,6 +1657,16 @@ function buildCombinedDesc(){
 
 function flash(msg){ toastEl.textContent=msg; toastEl.style.background="#7a2a35"; toastEl.style.borderColor="#e0475a"; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>{toastEl.classList.remove('show'); setTimeout(()=>{toastEl.textContent="Copiat!";toastEl.style.background="";toastEl.style.borderColor="";},250);},1900); }
 
+/* copierea descrierilor e blocată cât timp textul mai conține câmpuri
+   necompletate (apar ca [DATA], [NUME SUSPECT] etc.) — anti-greșeli în MDT */
+function missingFields(t){ const m=String(t).match(/\[[^\[\]\n]{2,40}\]/g); return m?[...new Set(m)]:[]; }
+function guardCopy(t){
+  const miss=missingFields(t);
+  if(!miss.length) return true;
+  flash('⛔ Nu copiez — completează întâi: '+miss.join(', '));
+  return false;
+}
+
 /* ---------------- INIT ---------------- */
 function resolveSub(type,qty){
   qty=+qty||0;
@@ -1799,7 +1814,7 @@ renderHist();
   }
   sel.addEventListener('change',renderFields);
   document.getElementById('mdCopyT').addEventListener('click',function(e){ copy(tOut.value,e.target); });
-  document.getElementById('mdCopyB').addEventListener('click',function(e){ build(); copy(bOut.value,e.target); histSave('Mandat',tOut.value,bOut.value); });
+  document.getElementById('mdCopyB').addEventListener('click',function(e){ build(); if(!guardCopy(bOut.value))return; copy(bOut.value,e.target); histSave('Mandat',tOut.value,bOut.value); });
   // autocomplete pentru „fapta" din lista articolelor Codului Penal
   const dl=document.createElement('datalist'); dl.id='motivList';
   dl.innerHTML=A.map(function(a){return '<option value="'+esc(a.name)+'">';}).join('');
@@ -1880,8 +1895,7 @@ renderHist();
   <div class="login-box">
     <div class="lb-badge"><svg viewBox="0 0 120 132"><use href="#phFull"/></svg></div>
     <h2>Bine ai venit</h2>
-    <p>Introdu gradul, numele și callsign-ul (doar cosmetic, salvate local).</p>
-    <select id="lgRank"></select>
+    <p>Introdu numele și callsign-ul (salvate local). Gradul se preia automat din rolul tău de pe serverul Discord.</p>
     <input type="text" id="lgName" placeholder="Nume (ex: Pote Miguel)" maxlength="32">
     <input type="text" id="lgCall" placeholder="Callsign (ex: 537)" maxlength="12">
     <button id="lgBtn">Intră</button>
@@ -1891,8 +1905,9 @@ renderHist();
 <script>
 (function(){
   if(!(window.desktopApp&&window.desktopApp.isApp)) document.documentElement.classList.add('webmode');
+  // gradele, de la cel mai mare la cel mai mic — folosite doar la maparea
+  // rolurilor de pe Discord (gradul NU se mai alege manual în aplicație)
   const RANKS=["Chestor-General","Chestor","Comisar-Șef","Comisar","Sub-Comisar","Inspector-Principal","Inspector","Agent-Șef-Principal","Agent-Șef-Adjunct","Agent-Principal","Agent","Cadet"];
-  function fillRanks(sel,val){ if(!sel)return; sel.innerHTML='<option value="">— alege gradul —</option>'+RANKS.map(function(r){return '<option'+(r===val?' selected':'')+'>'+r+'</option>';}).join(''); }
   function go(page){
     document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
@@ -1915,8 +1930,8 @@ renderHist();
     if(sN) sN.value=a.name||''; if(sC) sC.value=a.call||'';
     var lN=document.getElementById('lgName'), lC=document.getElementById('lgCall');
     if(lN) lN.value=a.name||''; if(lC) lC.value=a.call||'';
-    fillRanks(document.getElementById('setRank'), a.rank||'');
-    fillRanks(document.getElementById('lgRank'), a.rank||'');
+    var rv=document.getElementById('setRankView');
+    if(rv) rv.textContent=a.rank||'— se setează automat la autorizarea Discord';
   }
   // hook pentru sincronizarea profilului din Discord (poarta de acces îl folosește)
   window.__agentSync=function(patch){
@@ -1929,9 +1944,9 @@ renderHist();
   render();
   if(!getA() && login && !document.documentElement.classList.contains('ovmode')) login.classList.add('on');
   const lBtn=document.getElementById('lgBtn');
-  if(lBtn) lBtn.onclick=()=>{ setA({rank:(document.getElementById('lgRank').value||''),name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
+  if(lBtn) lBtn.onclick=()=>{ setA({rank:(getA()||{}).rank||'',name:(document.getElementById('lgName').value||'').trim(),call:(document.getElementById('lgCall').value||'').trim()}); login.classList.remove('on'); };
   const setSave=document.getElementById('setSave');
-  if(setSave) setSave.onclick=()=>{ setA({rank:(document.getElementById('setRank').value||''),name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
+  if(setSave) setSave.onclick=()=>{ setA({rank:(getA()||{}).rank||'',name:(document.getElementById('setName').value||'').trim(),call:(document.getElementById('setCall').value||'').trim()}); setSave.textContent='Salvat ✓'; setTimeout(()=>setSave.textContent='Salvează',1200); };
   // reîncarcă ocolind cache-ul HTTP (aplicația ia index.html live de pe GitHub, altfel poate rămâne pe versiunea veche)
   function hardReload(){
     try{
