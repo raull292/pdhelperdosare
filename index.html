@@ -857,6 +857,7 @@
 </style>
 <div class="toast" id="toast">Copiat!</div>
 <datalist id="suspectList"></datalist>
+<datalist id="carList"></datalist>
 
 
 <script>
@@ -1275,7 +1276,7 @@ function renderInputs(){
     let v=isCommon?(shared[f]||""):(vals[f]||"");
     if(f==="fapta"&&!vals[f]&&cur.hint) v=cur.hint;
     const attr=isCommon?('data-sh="'+f+'"'):('data-f="'+f+'"');
-    const dlAttr=(f==='nume')?' list="suspectList"':'';
+    const dlAttr=dlFor(f);
     h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input '+attr+dlAttr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
   });
   box.innerHTML=h;
@@ -1436,13 +1437,22 @@ function wireSharedInput(inp){
     if(document.querySelector('[data-out="desc"]')) updateDesc();
   });
 }
+/* lista mașinilor de pe server (autocomplete la „Model auto") — sincronizată
+   din wiki prin vehicles.json; scrii marca (ex: Ubermacht) și vezi toate modelele ei */
+let CARS=["Akuma","Albany Cavalvade III","Annis 350z","Annis Elegy GTR","Annis Miata","Annis Roxanne","Asbo","Avarus","Bagger","Balkan Galactic 5","Balkan Terra","Bati 801","Baza RXB-7","Beater Dukes","Benefactor Batiz","Benefactor C 500","Benefactor Club R7","Benefactor E 55","Benefactor Grande","Benefactor Imperial","Benefactor KLS 63s","Benefactor M-GTR","Benefactor Opulent","Benefactor Opulent Limo","Benefactor Schafter GTR","Benefactor Schafter GTR Coupe","Benefactor Schlagen AR","Benefactor Speedo XL","Benefactor Transit","Benefactor Vision Neon","Benefactor Visione","Benefactor W140","Benefactor W164","Benefactor XLS","Beyoza Prime","Beyoza Super v4","Beyoza Trail Pro","BF Club 4","BF Club 8 R","BF Club Variant 2020","BF Oktavia RS","BF400","Bison","Bizan Horizon BMS RX-34","Bizan Saitamo R-34","Bizan Tau Fighter","Bizon 6XW","Bizon 7X-W Sandstorm","Bizon CS5 i330","Bizon E92 Cabrio","Bizon R1000","Bizon W36","Bizon W5 Competition F90","Bizon W5 Performance","Bizon ZT4","Blade","Blista","Blista Kanjo","Bmx","Bondar BRS 650","Bondar KR-1200","Bravado Bison Utility","Bravado Colossus","Bravado CX-9","Bravado Gauntlet Hemi","Bravado Hellfire","Brioso R/A","Brute Ambulanta","Brute SMURD","Buccaneer Custom","Buddy Bolid","Buddy Centomille","Buddy Diamond","Buddy Spyder","Buddy Turbo Sport","Buddy Zion","Budi 8R Coupe","Budi BS-3 Sedan","Budi SX-8 1998","Canis Griffon","Cheburek","Chimera","Chino Custom","Club","Coil Savanna","Coil Type S","Coil Velocity","Contender","Coquette BlackFin","Corvus Charlotte ZX-6","Daemon2","Dagger Canion","Dagger Fire","Decebal 1310 Sport","Decebal 1310 Xmas","Dewbauchee Vantage","Diablous","Dinka Jester SS","Dinka Lione","Dinka Nexus","Dinka Sugoi","Dominator GTT","Emperor","Endurex Race Bike","Enduro","Enus Bakalar","Enus Expert GT","Enus Huntley Bayga","Enus Jubilee Ghost","Enus Jubilee Royal","Enus Paragon GTS","Enus Spectrum","Eudora","F620","Faggio Mod","Felon GT","Ferentari Dracula","Ferentari Portenzo","Fixter","Gallivanter Baller Ems","Gallivanter Gladiator","Glendale Custom","Grotti Itali R","Grotti La Grotti","Grotti RXX-S","Grotti Sangue","Grotti Spada","Grotti Spider","Grotti Spider R","Hakuchou","Hakuchou Drag","Hermes","Hustler","HVY Sturdy","Innovation","Issi","Jackal","Karin Kuruma Drift","Karin Tunder","Koenigsberg Jeska","Lambada Black","Lambada SAN","Lambada Spark","Lambada Tornado","Lambada Ultimate","Lambada Uraganu","Lambada Urs","Lampadati GTA","Maibatsu Evolution","Maibatsu Mule","Maibatsu Penumbra Retro","Maidubizi Epsilon 9","Manana","Manchez","Marley David Sunset","Mercies Brutus Racheta","Mercies BZG CX-63 Sedan","Mercies BZG LS 63","Mercies GX-63","Mercies MAG","Mercies Xtreme 6x6","Michelli GT","Moonbeam Custom","MTL BigBoy","MTL Brickade","MTL Haulking","MTL OldBoy","Mushtar Cobra","Nightblade","NightFury RR","Novak","Obey Avant RS","Obey I-tron GT","Obey Q7","Obey RS5","Obey RS7","Obey RSS","Obey TTs","Ocelot Vija","Oracle","Outlaw","Overflod Argon RS","Overflod Emozione","Overflod Mera","Overflod Mera Turbo","Overflod Toatara","Paradise 911 GT-3SR","Paradise 991 S Turbo","Paradise 991 S Turbo Cabrio","Paradise Panama","Paradise Pursuit","Paradise Snowflake","Patriot Stretch","Pegassi Rovente","Pegassi STO","Pegassi SVJ","Pegassi Veleno","Pelicia Haira","Peyote","Pfister 911","Pfister Comet Callista","Prison Bus 2","Progen 675","Progen 720","Progen Ayrton","Progen P1 Xmas","Raven GT","Regina","Romero Hearse","Sabre Turbo","Sakura Festival","Sakura GTR","Sanchez","Scorcher","Sentinel GTS","Slamvan","Sovereign","Speedo","Stafford","Stalion","Stirling GT","Stretch","Stryder","Super Range Evotra","Surfer Custom","Syan SS","Syan SS Hypersport","Tampa","Taurus BMS Classic","Taurus Mushtar BMS","Thrax","Tri-Cycles Race Bike","Truffade Astral","Truffade Legacy","Truffade Obsidian","Truffade Puro","Truffade Transform","Truffade Vivo","Truffade Zion Halloween","Ubermacht 760","Ubermacht e30","Ubermacht e30 Touring","Ubermacht e36","Ubermacht e38","Ubermacht e46","Ubermacht e60","Ubermacht e70","Ubermacht F10","Ubermacht F86","Ubermacht F90","Ubermacht G42","Ubermacht G70","Ubermacht G70-eDrive","Ubermacht G90","Ubermacht G99","Ubermacht i8","Ubermacht M4","Ubermacht M5","Ubermacht M6","Ubermacht M8","Ubermacht Strasse 6X","Ubermacht W4 Cabrio","Ubermacht X5","Ubermacht XM","Vapid Caracara Ems","Vapid Raptor","Vapid Riata","Vapid Rocco","Vapid Sandstorm","Vapid Speedo Express","Vapid Steed","Verus","Virgo Classic Custom","Virtue","Volt S Performance","Voodoo Custom","Weevil","White Dragon GTR","X80 Proto","Zentorno","Zion Cabrio","Zombie Chopper"];
+function renderCarList(){
+  const dl=document.getElementById('carList');
+  if(dl) dl.innerHTML=CARS.map(c=>'<option value="'+esc(c)+'">').join('');
+}
+function dlFor(f){ return f==='nume'?' list="suspectList"':(f==='marca'?' list="carList"':''); }
+
 function renderShared(){
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
   // aceleași câmpuri apar și în Panoul 3 (dosar) și în Panoul 4 (amendă rapidă); valorile sunt sincronizate
   ['sharedFields','sharedFieldsQ'].forEach(function(id){
     const box=document.getElementById(id);
     if(!box) return;
-    box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+(f[0]==='nume'?' list="suspectList"':'')+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+    box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+dlFor(f[0])+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
     box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
   });
 }
@@ -1844,6 +1854,7 @@ function resolveSub(type,qty){
   upd();
 })();
 initFold();
+renderCarList();
 renderList();
 renderDossier();
 renderQuickList();
@@ -1993,6 +2004,12 @@ renderHist();
     }
     const el=document.getElementById('pcSync');
     if(el&&j.syncedAt) el.textContent='Cod Penal sincronizat cu wiki-ul: '+j.syncedAt+(changed?' · '+changed+' actualizări față de versiunea încorporată':'');
+  }).catch(function(){});
+  // lista de mașini (autocomplete „Model auto") — aceeași sincronizare din wiki
+  fetch('vehicles.json?_='+Date.now()).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    if(!j||!Array.isArray(j.vehicles)||j.vehicles.length<150) return;
+    CARS=j.vehicles;
+    renderCarList();
   }).catch(function(){});
   }catch(e){}
 })();

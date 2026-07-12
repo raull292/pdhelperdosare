@@ -23,14 +23,17 @@ jobs:
       - name: Parse wiki into penal-code.json
         run: node scripts/sync-penal-code.mjs
 
+      - name: Parse wiki into vehicles.json
+        run: node scripts/sync-vehicles.mjs
+
       - name: Commit and push if the data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add penal-code.json
+          git add penal-code.json vehicles.json
           if git diff --cached --quiet; then
-            echo "No penal code changes."
+            echo "No wiki data changes."
           else
-            git commit -m "Sync penal code data from the B-Zone wiki"
+            git commit -m "Sync penal code and vehicle data from the B-Zone wiki"
             git push
           fi
