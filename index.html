@@ -706,9 +706,17 @@
   .isapp #appbar, .webmode #appbar{
     background:linear-gradient(180deg,rgba(20,44,90,.95),rgba(8,17,36,.98));
     border-bottom:1px solid rgba(96,165,250,.20)}
-  #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none;
-    background:linear-gradient(90deg,transparent 0%,var(--blue) 16%,var(--cyan) 28%,transparent 42%,transparent 56%,var(--red) 70%,#ff8496 78%,transparent 92%);
-    background-size:220% 100%;animation:lightbar 9s linear infinite;opacity:.9}
+  /* girofar sub bara de sus: mereu vizibil — banda statică albastru↔roșu,
+     iar unde animațiile sunt permise, baleiaj luminos peste ea */
+  #appbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;pointer-events:none;
+    background:linear-gradient(90deg,var(--blue) 0%,var(--cyan) 22%,rgba(96,165,250,.22) 50%,#ff8496 78%,var(--red) 100%);
+    opacity:.5}
+  @media (prefers-reduced-motion: no-preference){
+    #appbar::after{
+      background:linear-gradient(90deg,transparent 0%,var(--blue) 14%,var(--cyan) 26%,transparent 40%,transparent 58%,var(--red) 72%,#ff8496 80%,transparent 94%);
+      background-size:220% 100%;animation:lightbar 7s linear infinite;opacity:.95;
+      filter:drop-shadow(0 0 6px rgba(59,130,246,.45))}
+  }
   #appbar .ab-badge{background:conic-gradient(from 210deg,#60a5fa,#1e40af 40%,#0b2a6b 55%,var(--gold) 78%,#60a5fa);box-shadow:inset 0 0 0 2px #ffffff2e,0 4px 14px #0009,0 0 18px rgba(59,130,246,.35)}
   #appbar .ab-clock{border-color:rgba(96,165,250,.30);background:rgba(8,18,38,.8);color:#bcd6ff}
   #appbar .ab-agent{border-color:rgba(45,212,160,.35);background:rgba(8,20,30,.8)}
@@ -725,12 +733,15 @@
 
   /* dashboard */
   .dash-hero .dh-badge{position:relative;border-radius:18px;background:conic-gradient(from 210deg,#60a5fa,#1e40af 42%,#0b2a6b 58%,var(--gold) 80%,#60a5fa);box-shadow:inset 0 0 0 3px #ffffff26,0 10px 30px #000a,0 0 34px rgba(59,130,246,.35)}
-  /* inel girofar circular, centrat pe scut (mascat ca inel, nu felie de disc) */
-  .dash-hero .dh-badge::before{content:"";position:absolute;inset:0;margin:auto;width:126px;height:126px;border-radius:50%;z-index:-1;
-    background:conic-gradient(from 0deg,transparent 0 58%,rgba(96,165,250,.9) 76%,transparent 90%,transparent 93%,rgba(240,71,94,.55) 97%,transparent 100%);
-    -webkit-mask:radial-gradient(closest-side,transparent 0 84%,#000 86%);
-    mask:radial-gradient(closest-side,transparent 0 84%,#000 86%);
-    filter:blur(.6px);animation:spinring 7s linear infinite}
+  /* girofar dublu în jurul scutului: arc albastru + arc roșu, față în față */
+  .dash-hero .dh-badge::before{content:"";position:absolute;inset:0;margin:auto;width:132px;height:132px;border-radius:50%;z-index:-1;
+    background:conic-gradient(from 0deg,
+      transparent 0 6%, rgba(240,71,94,.85) 17%, rgba(255,132,150,.5) 22%, transparent 32%,
+      transparent 50%, rgba(96,165,250,.95) 62%, rgba(34,211,238,.75) 70%, transparent 82%);
+    -webkit-mask:radial-gradient(closest-side,transparent 0 80%,#000 83%);
+    mask:radial-gradient(closest-side,transparent 0 80%,#000 83%);
+    filter:blur(.5px) drop-shadow(0 0 9px rgba(59,130,246,.45));
+    animation:spinring 5s linear infinite}
   .dash-hero .dh-sub{background:rgba(10,20,42,.75);border:1px solid rgba(96,165,250,.22);backdrop-filter:blur(8px)}
   .dash-card{background:linear-gradient(180deg,rgba(16,28,54,.78),rgba(9,17,34,.85));border:1px solid rgba(96,165,250,.12);border-radius:16px;backdrop-filter:blur(10px);transition:transform .16s,border-color .16s,box-shadow .16s}
   .dash-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.5);box-shadow:0 14px 34px rgba(0,0,0,.45),0 0 24px rgba(59,130,246,.15)}
@@ -811,7 +822,12 @@
     filter:blur(46px);animation:aura 70s ease-in-out infinite;will-change:transform}
   html.ovmode body::after{display:none}
   /* cu animațiile Windows oprite: elementele animate se ascund (altfel rămân „înghețate" ca niște dungi statice) */
-  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{display:none}#appbar::after{display:none}}
+  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{animation:none}}
+  /* scuturile de brand „respiră" discret albastru↔roșu, ca reflexiile unui girofar */
+  @keyframes girofarGlow{0%,100%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(59,130,246,.55))}50%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(240,71,94,.5))}}
+  @media (prefers-reduced-motion: no-preference){
+    #sidebar .sb-brand svg,#appbar .ab-badge svg{animation:girofarGlow 3.6s ease-in-out infinite}
+  }
 
   /* sidebar: brand cu scut + secțiuni */
   #sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;margin-bottom:8px;border-bottom:1px solid rgba(96,165,250,.14)}
