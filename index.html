@@ -626,6 +626,8 @@
         <h3>🔐 Acces Discord</h3>
         <div class="cb-sub">Aplicația e rezervată membrilor serverului de Discord. Statusul se reverifică periodic, automat.</div>
         <div class="set-row"><label>Status</label><b id="dscStatus">—</b></div>
+        <div class="set-row"><label>Grad de pe server</label><b id="dscRank">—</b></div>
+        <div class="cb-sub" id="dscRoles" style="display:none;word-break:break-all;font-family:var(--mono);font-size:11px"></div>
         <div class="set-row"><label></label><span style="display:flex;gap:8px"><button class="btnp" id="dscRecheck">Reverifică</button><button class="btnp" id="dscLogout" style="color:#ff9aa6">Deconectează</button></span></div>
       </div></div>
       <div class="card"><div class="cardbox">
@@ -1911,9 +1913,19 @@ renderHist();
     }
     var sN=document.getElementById('setName'), sC=document.getElementById('setCall');
     if(sN) sN.value=a.name||''; if(sC) sC.value=a.call||'';
+    var lN=document.getElementById('lgName'), lC=document.getElementById('lgCall');
+    if(lN) lN.value=a.name||''; if(lC) lC.value=a.call||'';
     fillRanks(document.getElementById('setRank'), a.rank||'');
     fillRanks(document.getElementById('lgRank'), a.rank||'');
   }
+  // hook pentru sincronizarea profilului din Discord (poarta de acces îl folosește)
+  window.__agentSync=function(patch){
+    const a=getA()||{}; let ch=false;
+    for(const k in patch){ if(patch[k]&&a[k]!==patch[k]){ a[k]=patch[k]; ch=true; } }
+    if(ch) setA(a);
+    return ch;
+  };
+  window.__agentSync.ranks=RANKS;
   render();
   if(!getA() && login && !document.documentElement.classList.contains('ovmode')) login.classList.add('on');
   const lBtn=document.getElementById('lgBtn');
@@ -2114,6 +2126,22 @@ renderHist();
   var cfg=window.__dgateCfg||{};
   var CLIENT_ID=cfg.clientId!==undefined?cfg.clientId:'1525688728411045909';
   var GUILD_ID=cfg.guildId||'1162871509275119637';
+  // maparea rolurilor Discord (ID) pe gradele din aplicație
+  // numele trebuie să fie EXACT cele din lista RANKS (cu cratime și diacritice)
+  var ROLE_MAP=cfg.roleMap||{
+    '1463968575055204497':'Cadet',
+    '1463968630877192304':'Agent',
+    '1463968636715667620':'Agent-Principal',
+    '1464017596365144268':'Agent-Șef-Adjunct',
+    '1464018331307868161':'Agent-Șef-Principal',
+    '1464016913742172365':'Inspector',
+    '1463968451042213909':'Inspector-Principal',
+    '1463968367374241917':'Sub-Comisar',
+    '1464016469749923943':'Comisar',
+    '1463968568944361685':'Comisar-Șef',
+    '1162872939943841858':'Chestor'
+    // Chestor-General: același ID a fost trimis și pentru Chestor — aștept ID-ul corect
+  };
   var KEY='phDiscord';
   var FRESH_MS=24*60*60*1000;    // sub 24h de la ultima verificare: acces direct, fără request
   var GRACE_MS=7*24*60*60*1000;  // fără internet: acceptă ultima verificare reușită, max 7 zile
@@ -2149,8 +2177,46 @@ renderHist();
 
   function authUrl(redirect,st){
     return 'https://discord.com/oauth2/authorize?client_id='+CLIENT_ID
-      +'&response_type=token&scope=identify%20guilds'
+      +'&response_type=token&scope=identify%20guilds%20guilds.members.read'
       +'&redirect_uri='+encodeURIComponent(redirect)+'&state='+st;
+  }
+
+  // rolurile de pe server → gradul din aplicație (dacă are mai multe, ia gradul cel mai mare)
+  function bestRank(roles){
+    var order=(window.__agentSync&&window.__agentSync.ranks)||[];
+    var best=null,bi=1e9;
+    (roles||[]).forEach(function(id){
+      var r=ROLE_MAP[id]; if(!r) return;
+      var i=order.indexOf(r); if(i>-1&&i<bi){bi=i;best=r;}
+    });
+    return best;
+  }
+  function applyMember(roles,nick){
+    var patch={};
+    var r=bestRank(roles); if(r) patch.rank=r;
+    if(nick){
+      var a=null; try{a=JSON.parse(localStorage.getItem('phAgent')||'null');}catch(e){}
+      if(!a||!a.name) patch.name=nick;   // nu suprascrie un nume pus manual
+    }
+    if((patch.rank||patch.name)&&window.__agentSync) window.__agentSync(patch);
+  }
+  function updateRankUI(){
+    var el=document.getElementById('dscRank'), hint=document.getElementById('dscRoles');
+    if(!el) return;
+    var c=readC();
+    var roles=(c&&c.roles)||[];
+    var r=bestRank(roles);
+    if(r){ el.textContent='✅ '+r; if(hint)hint.style.display='none'; return; }
+    if(roles.length){
+      el.textContent=roles.length+' roluri detectate (nemapate)';
+      if(hint){ hint.style.display=''; hint.textContent='ID roluri de pe server: '+roles.join(', ')+' — mapează-le pe grade ca să se seteze automat.'; }
+    } else {
+      el.textContent='—';
+      if(hint){
+        if(c&&c.ok&&!c.roles){ hint.style.display=''; hint.textContent='Apasă „Reverifică" ca să autorizezi și citirea gradului de pe server.'; }
+        else hint.style.display='none';
+      }
+    }
   }
   function goAuth(){
     var st=Math.random().toString(36).slice(2);
@@ -2195,14 +2261,21 @@ renderHist();
           showGate('Contul tău de Discord nu e membru al serverului. Intră întâi pe serverul de Discord, apoi conectează-te din nou.',!OV);
           return;
         }
-        return fetch('https://discord.com/api/users/@me',{headers:{Authorization:'Bearer '+token}})
-          .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
-          .then(function(u){
-            var nm=(u&&(u.global_name||u.username))||'';
-            writeC({ok:1,t:Date.now(),tok:token,te:tokenExp||0,name:nm});
-            setStatus('✅ verificat'+(nm?(' ca '+nm):''));
-            hideGate();
-          });
+        var H={Authorization:'Bearer '+token};
+        return Promise.all([
+          fetch('https://discord.com/api/users/@me',{headers:H}).then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
+          fetch('https://discord.com/api/users/@me/guilds/'+GUILD_ID+'/member',{headers:H}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+        ]).then(function(res){
+          var u=res[0],mem=res[1];
+          var nm=(u&&(u.global_name||u.username))||'';
+          var entry={ok:1,t:Date.now(),tok:token,te:tokenExp||0,name:nm};
+          if(mem){ entry.roles=mem.roles||[]; entry.nick=mem.nick||''; }
+          writeC(entry);
+          if(mem) applyMember(entry.roles,entry.nick);
+          updateRankUI();
+          setStatus('✅ verificat'+(nm?(' ca '+nm):''));
+          hideGate();
+        });
       })
       .catch(function(){ fallback('Nu am putut contacta Discord (ești offline?).'); });
   }
@@ -2223,6 +2296,7 @@ renderHist();
     var c=readC();
     if(c&&c.ok&&Date.now()-c.t<FRESH_MS){
       hideGate(); setStatus('✅ verificat'+(c.name?(' ca '+c.name):''));
+      if(c.roles) applyMember(c.roles,c.nick);
     } else if(c&&c.ok&&tokenAlive(c)){
       verify(c.tok,c.te);   // cache mai vechi de 24h, dar tokenul mai e bun → reverificare silențioasă
     } else {
@@ -2231,9 +2305,11 @@ renderHist();
   }
 
   var rb=document.getElementById('dscRecheck');
-  if(rb)rb.onclick=function(){ var c=readC(); if(tokenAlive(c))verify(c.tok,c.te); else goAuth(); };
+  // dacă tokenul e de dinainte de citirea gradelor (fără roluri în cache), refă autorizarea ca să prindă noul scope
+  if(rb)rb.onclick=function(){ var c=readC(); if(tokenAlive(c)&&c.roles)verify(c.tok,c.te); else goAuth(); };
   var lb=document.getElementById('dscLogout');
   if(lb)lb.onclick=function(){ writeC(null); location.reload(); };
+  updateRankUI();
 })();
 </script>
 </body>
