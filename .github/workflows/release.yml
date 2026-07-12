@@ -39,18 +39,21 @@ jobs:
         working-directory: app
         run: npm version --no-git-tag-version "2.0.${{ github.run_number }}"
 
-      # electron-builder refuses to create a published release on a
-      # nonexistent tag (422: "Published releases must have a valid tag"),
-      # so create and push the tag first. -f keeps re-runs idempotent.
-      - name: Create release tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -f "v2.0.${{ github.run_number }}"
-          git push -f origin "v2.0.${{ github.run_number }}"
-
-      - name: Build and publish to GitHub Releases
+      # Build only — publishing is done in the next step with gh, because
+      # electron-builder's own publisher uploads assets in parallel and can
+      # race itself into creating duplicate releases for the same tag
+      # (one holding the exe, one holding just the blockmap).
+      - name: Build installer
         working-directory: app
-        run: npx electron-builder --publish always
+        run: npx electron-builder --win --publish never
+
+      - name: Create release with all artifacts
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v2.0.${{ github.run_number }}" \
+            app/dist/*.exe app/dist/*.blockmap app/dist/latest.yml \
+            --target "${{ github.sha }}" \
+            --title "2.0.${{ github.run_number }}" \
+            --notes "Automated build from ${{ github.sha }}"
