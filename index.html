@@ -341,20 +341,27 @@
     </section>
 
     <section class="page" id="page-mdt">
-      <div class="page-h"><h2>MDT Assistant</h2><p>Alege infracțiunea și copiază titlul, sentința și descrierea.</p></div>
+      <div class="page-h mdt-h">
+        <div><h2>MDT Assistant</h2><p>Alege infracțiunea și copiază titlul, sentința și descrierea.</p></div>
+        <div class="modechip" id="modechip">selectează o faptă</div>
+      </div>
   <div class="wrap">
-  <header class="top">
-    <div class="badge">BZ</div>
-    <div>
-      <h1>Generator Dosare &amp; Amenzi</h1>
-      <p>Server B-Zone V &middot; alege infracțiunea și copiază titlul, sentința și descrierea</p>
-    </div>
-    <div class="modechip" id="modechip">selectează o faptă</div>
-  </header>
 
   <style id="commoncss">
-    .flux{font-size:12.5px;color:#7d93b8;background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:9px 13px;margin-bottom:14px}
-    .flux b{color:#cfe0f7}
+    .page-h.mdt-h{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .flux{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px;color:#7d93b8;background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:9px 13px;margin-bottom:14px}
+    .flux .fx{display:inline-flex;align-items:center;gap:7px;color:#cfe0f7;white-space:nowrap}
+    .flux .fx b{font-family:var(--mono);font-size:10.5px;color:#8fb6ff;border:1px solid var(--blue-soft);border-radius:6px;padding:1px 7px;background:#0e2247;font-weight:700}
+    .flux .fxa{color:#41598a}
+    .flux .fxn{margin-left:auto;font-size:11.5px;color:#5f759c;white-space:nowrap}
+    .panel.fold>h2{cursor:pointer;user-select:none;transition:color .12s}
+    .panel.fold>h2:hover{color:#cfe0f7}
+    .panel.fold.collapsed>h2{margin-bottom:0}
+    .panel.fold.collapsed>*:not(h2){display:none!important}
+    .fold-badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.3px;color:#8fe3b8;border:1px solid rgba(45,212,160,.35);background:rgba(45,212,160,.08);padding:2px 9px;border-radius:999px;margin-left:auto;text-transform:none;white-space:nowrap}
+    .fold-btn{pointer-events:none;font-family:inherit;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#bcd8ff;background:#0e2247;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;margin-left:auto;text-transform:uppercase;white-space:nowrap}
+    .fold-badge:not([hidden])~.fold-btn{margin-left:10px}
+    .panel.fold>h2:hover .fold-btn{border-color:var(--blue);color:#fff}
     .phelp{font-size:12px;color:#5f759c;line-height:1.45;margin:2px 0 12px}
     .phelp.mut{margin:10px 0 0;color:#516585}
     .phelp b{color:#8ba0c4}
@@ -362,7 +369,12 @@
     #dtNow{margin-top:8px;font-size:11.5px;padding:6px 11px;border-radius:8px;border:1px solid var(--line2);background:#0e2247;color:#cfe0f7;cursor:pointer;font-family:inherit}
     #dtNow:hover{border-color:var(--blue);color:#fff}
   </style>
-  <div class="flux">1) Caută fapta &rarr; 2) Completează datele &rarr; 3) Copiază <b>Titlu</b> / <b>Sentință</b> / <b>Descriere</b> în MDT-ul din joc. &nbsp;·&nbsp; Din siguranță, tot ce scrii aici se <b>golește singur după 5 minute</b> de inactivitate.</div>
+  <div class="flux">
+    <span class="fx"><b>1</b> Caută fapta</span><span class="fxa">→</span>
+    <span class="fx"><b>2</b> Completează datele</span><span class="fxa">→</span>
+    <span class="fx"><b>3</b> Copiază Titlu / Sentință / Descriere în MDT</span>
+    <span class="fxn">🧹 se golește singur după 5 min de inactivitate</span>
+  </div>
   <div class="grid">
     <div class="panel">
       <h2><span class="n">1</span> Alege infracțiunea</h2>
@@ -385,8 +397,8 @@
     </div>
   </div>
 
-  <div class="panel dossier" id="dossierPanel">
-    <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare</h2>
+  <div class="panel dossier fold collapsed" id="dossierPanel">
+    <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare <span class="fold-badge" id="dossierBadge" hidden></span><button class="fold-btn" type="button" tabindex="-1">▸ Extinde</button></h2>
     <p class="phelp">Mai multe fapte pe același suspect. Adaugă-le cu „＋ Adaugă la dosar" din Panoul 2. Datele comune (suspect, dată, oră, locație) le completezi mai jos.</p>
     <details class="ref">
       <summary>Structură &amp; detalii (reguli server)</summary>
@@ -462,8 +474,8 @@
     <div id="cartArea"></div>
   </div>
 
-  <div class="panel dossier" id="quickPanel">
-    <h2><span class="n">4</span> Amendă rapidă (trafic stop)</h2>
+  <div class="panel dossier fold collapsed" id="quickPanel">
+    <h2><span class="n">4</span> Amendă rapidă (trafic stop) <span class="fold-badge" id="quickBadge" hidden></span><button class="fold-btn" type="button" tabindex="-1">▸ Extinde</button></h2>
     <p class="qhint">Bifează contravențiile constatate — titlul, suma și descrierea se generează instant. Folosește datele completate mai sus (dată, oră, locație, nume, mașină). Reține: max 9 puncte/amendă, iar la 15/15 puncte totale se reține permisul.</p>
     <div class="qgrid" id="quickList"></div>
     <div id="quickOut"></div>
@@ -693,6 +705,10 @@
   .conf-banner{background:rgba(64,17,27,.6);border-color:rgba(240,71,94,.4);border-radius:12px}
   .cart-empty{border-color:rgba(96,165,250,.22);border-radius:14px;background:rgba(8,16,34,.4)}
   .subbox,.ref{background:rgba(8,16,34,.7);border-color:rgba(96,165,250,.15);border-radius:14px}
+  .fold-btn{background:rgba(12,24,48,.85);border-color:rgba(96,165,250,.25)}
+  .fold-badge{border-color:rgba(45,212,160,.4);background:rgba(45,212,160,.1)}
+  .flux .fx b{background:rgba(30,58,138,.4);border-color:rgba(96,165,250,.35);color:#a9d2ff}
+  .panel.fold.collapsed{box-shadow:0 4px 14px rgba(0,0,0,.25)}
 
   /* toast & login */
   .toast{background:rgba(13,74,52,.92);border-color:#2dd4a0;backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 20px rgba(45,212,160,.25);border-radius:12px}
@@ -1214,6 +1230,7 @@ function addToCart(id,months){
   }
   cart.push({id, months: months!=null?months : (art.s?Math.round((art.s[0]+art.s[1])/2):0)});
   renderDossier();
+  applyFold('dossierPanel',true);
   document.getElementById('dossierPanel').scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function removeFromCart(id){ cart=cart.filter(c=>c.id!==id); renderDossier(); }
@@ -1278,6 +1295,7 @@ function renderQuickList(){
 }
 
 function renderQuick(){
+  updateFoldBadges();
   const box=document.getElementById('quickOut'); if(!box)return;
   const ids=QUICK_IDS.filter(id=>quick.has(id));
   if(!ids.length){ box.innerHTML='<div class="cart-empty">Bifează una sau mai multe contravenții de mai sus.</div>'; return; }
@@ -1309,7 +1327,50 @@ function renderQuick(){
 
 function renderDossier(){ renderShared(); renderCart(); }
 
+/* ---------------- PANOURI PLIABILE (3 Dosar cumulat & 4 Amendă rapidă) ---------------- */
+const FOLD_KEY='mdtFold';
+function foldSt(){ try{return JSON.parse(localStorage.getItem(FOLD_KEY)||'{}')||{};}catch(e){return {};} }
+function applyFold(id,open){
+  const p=document.getElementById(id); if(!p) return;
+  p.classList.toggle('collapsed',!open);
+  const b=p.querySelector('.fold-btn'); if(b) b.textContent=open?'▾ Restrânge':'▸ Extinde';
+}
+function initFold(){
+  const st=foldSt();
+  ['dossierPanel','quickPanel'].forEach(function(id){
+    const p=document.getElementById(id); if(!p) return;
+    applyFold(id, st[id]===1);
+    const h=p.querySelector('h2');
+    if(h) h.addEventListener('click',function(){
+      const open=p.classList.contains('collapsed');
+      applyFold(id,open);
+      const st2=foldSt(); st2[id]=open?1:0;
+      try{localStorage.setItem(FOLD_KEY,JSON.stringify(st2));}catch(e){}
+    });
+  });
+}
+function updateFoldBadges(){
+  const db=document.getElementById('dossierBadge');
+  if(db){
+    if(cart.length){
+      let luni=0,life=false;
+      cart.forEach(function(c){ const a=A.find(function(x){return x.id===c.id;}); if(!a)return; if(a.life)life=true; else if(a.s)luni+=(+c.months||0); });
+      db.hidden=false;
+      db.textContent=cart.length+(cart.length===1?' faptă':' fapte')+(life?' · pe viață':(luni?' · '+luni+' luni':''));
+    } else db.hidden=true;
+  }
+  const qb=document.getElementById('quickBadge');
+  if(qb){
+    if(quick.size){
+      let tot=0; quick.forEach(function(id){ const a=A.find(function(x){return x.id===id;}); if(a)tot+=fineToNum(a.f); });
+      qb.hidden=false;
+      qb.textContent=quick.size+(quick.size===1?' bifată':' bifate')+' · '+tot+'$';
+    } else qb.hidden=true;
+  }
+}
+
 function renderCart(){
+  updateFoldBadges();
   const area=document.getElementById('cartArea');
   if(!cart.length){ area.innerHTML='<div class="cart-empty">Niciun cap de acuzare adăugat. Selectează o infracțiune sus și apasă „＋ Adaugă la dosar".</div>'; return; }
   const g=id=>A.find(a=>a.id===id);
@@ -1564,6 +1625,7 @@ function resolveSub(type,qty){
   function upd(){ if(scenHint) scenHint.textContent=HINTS[scenSel?scenSel.value:'auto']||''; if(scenHint) scenHint.className='scenhint'+(scenSel&&scenSel.value==='razie'?' warn':''); }
   if(scenSel){ scenSel.addEventListener('change',function(){ dossierScenario=scenSel.value; upd(); buildCombinedDesc(); }); upd(); }
 })();
+initFold();
 renderList();
 renderDossier();
 renderQuickList();
