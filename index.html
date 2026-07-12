@@ -360,11 +360,14 @@
 </script>
 <div id="app">
   <nav id="sidebar">
+    <div class="sb-brand"><svg viewBox="0 0 120 132"><use href="#phMark"/></svg><div><b>Police Helper</b><span>B-Zone V · LSPD</span></div></div>
     <button class="nav-item active" data-page="dashboard"><span class="ni-ic">🏠</span> Dashboard</button>
+    <div class="sb-sec">Operativ</div>
     <button class="nav-item" data-page="mdt"><span class="ni-ic">📋</span> MDT Assistant</button>
     <button class="nav-item" data-page="mandate"><span class="ni-ic">📜</span> Mandate</button>
     <button class="nav-item" data-page="overlays"><span class="ni-ic">📡</span> Overlays</button>
     <button class="nav-item" data-page="istoric"><span class="ni-ic">🗂️</span> Istoric</button>
+    <div class="sb-sec">Aplicație</div>
     <button class="nav-item" data-page="setari"><span class="ni-ic">⚙️</span> Setări</button>
     <button class="nav-item" data-page="update"><span class="ni-ic">🔄</span> Update</button>
     <div class="sb-foot">Police Helper<br>B-Zone V · Poliția LS</div>
@@ -794,6 +797,60 @@
   *::-webkit-scrollbar-corner{background:#060d1c}
   html.ovmode #ovbar{background:linear-gradient(180deg,rgba(22,46,94,.96),rgba(9,19,40,.98));border-bottom:1px solid rgba(96,165,250,.25)}
   html.ovmode #main{background:linear-gradient(180deg,rgba(7,14,29,.88),rgba(5,10,22,.93))}
+
+  /* ===== rafinare vizuală (v2) ===== */
+  /* fundal viu: aurore care plutesc foarte lent */
+  @keyframes aura{0%,100%{transform:translate(-6%,-3%) scale(1)}50%{transform:translate(7%,5%) scale(1.12)}}
+  body::after{content:"";position:fixed;inset:-25%;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(36% 30% at 72% 18%, rgba(59,130,246,.14), transparent 70%),
+      radial-gradient(30% 26% at 18% 78%, rgba(34,211,238,.09), transparent 70%),
+      radial-gradient(24% 22% at 55% 95%, rgba(196,42,74,.06), transparent 70%);
+    filter:blur(46px);animation:aura 70s ease-in-out infinite;will-change:transform}
+  html.ovmode body::after{display:none}
+  @media (prefers-reduced-motion: reduce){body::after{animation:none}.dash-hero .dh-badge::before{animation:none}#appbar::after{animation:none}}
+
+  /* sidebar: brand cu scut + secțiuni */
+  #sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;margin-bottom:8px;border-bottom:1px solid rgba(96,165,250,.14)}
+  #sidebar .sb-brand svg{width:34px;height:37px;flex:0 0 34px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))}
+  #sidebar .sb-brand b{display:block;font-size:13.5px;color:#fff;letter-spacing:.2px;line-height:1.15}
+  #sidebar .sb-brand span{font-size:10.5px;color:#5b7099}
+  #sidebar .sb-sec{font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:#44587e;font-weight:800;padding:12px 12px 5px}
+  .nav-item .ni-ic{transition:transform .15s}
+  .nav-item.active .ni-ic{transform:scale(1.15)}
+
+  /* dashboard: accente colorate pe carduri + iconițe în casete */
+  .dash-card{position:relative;overflow:hidden}
+  .dash-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;opacity:.85}
+  .dash-cards .dash-card:nth-child(1)::before{background:linear-gradient(90deg,#3b82f6,#22d3ee)}
+  .dash-cards .dash-card:nth-child(2)::before{background:linear-gradient(90deg,#fbbf24,#b45309)}
+  .dash-cards .dash-card:nth-child(3)::before{background:linear-gradient(90deg,#22d3ee,#0e7490)}
+  .dash-cards .dash-card:nth-child(4)::before{background:linear-gradient(90deg,#2dd4a0,#0f5e42)}
+  .dash-card .dc-ic{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 12px;border-radius:15px;border:1px solid rgba(96,165,250,.18);background:rgba(59,130,246,.09)}
+  .dash-cards .dash-card:nth-child(2) .dc-ic{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08)}
+  .dash-cards .dash-card:nth-child(3) .dc-ic{border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.07)}
+  .dash-cards .dash-card:nth-child(4) .dc-ic{border-color:rgba(45,212,160,.25);background:rgba(45,212,160,.07)}
+
+  /* stări goale cu filigranul scutului */
+  .empty,.cart-empty,.hempty{position:relative;overflow:hidden}
+  .empty::before,.cart-empty::before,.hempty::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);width:120px;height:132px;opacity:.06;pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 132'%3E%3Cpath d='M60 3 C74 11 91 15 110 15 C110 55 104 93 60 129 C16 93 10 55 10 15 C29 15 46 11 60 3 Z' fill='%238fb6ff'/%3E%3Cpolygon fill='%23060d1c' points='60,38 66.11,55.59 84.73,55.97 69.89,67.21 75.28,85.03 60,74.4 44.72,85.03 50.11,67.21 35.27,55.97 53.89,55.59'/%3E%3C/svg%3E") center/contain no-repeat}
+  .cart-empty::before,.hempty::before{width:76px;height:84px}
+
+  /* chip-ul de mod (amendă / dosar penal) + agent conectat */
+  .modechip.penal{color:#ffd0d6;border-color:rgba(240,71,94,.5);background:rgba(64,17,27,.55)}
+  .modechip.amenda{color:#ffe6b8;border-color:rgba(240,185,60,.45);background:rgba(58,39,13,.55)}
+  #appbar .ab-agent.on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#2dd4a0;margin-right:7px;box-shadow:0 0 8px rgba(45,212,160,.8);animation:pulsedot 2.4s ease-in-out infinite;vertical-align:1px}
+
+  /* istoric: chip colorat după tipul documentului */
+  .hkind.k-dosar{color:#ffd0d6!important;border-color:rgba(240,71,94,.45)!important;background:rgba(64,17,27,.5)!important}
+  .hkind.k-amenda{color:#ffe6b8!important;border-color:rgba(240,185,60,.4)!important;background:rgba(58,39,13,.5)!important}
+  .hkind.k-mandat{color:#cfe0ff!important;border-color:rgba(96,165,250,.45)!important;background:rgba(30,58,138,.45)!important}
+
+  /* detalii: numărul panoului cu aură, intrări animate, focus vizibil */
+  .panel h2 .n{background:linear-gradient(180deg,rgba(34,211,238,.16),rgba(34,211,238,.04));box-shadow:0 0 12px rgba(34,211,238,.12)}
+  .login-box,#dgate .dg-box{animation:pageIn .3s ease}
+  button:focus-visible,.nav-item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(96,165,250,.65);outline-offset:2px}
 </style>
 <div class="toast" id="toast">Copiat!</div>
 <datalist id="suspectList"></datalist>
@@ -1121,10 +1178,11 @@ function titleText(){ const isPenal=!!cur.s||cur.life; const nm=cur.title||cur.n
 
 function renderOutput(){
   if(cur) autoDateTime();
-  if(!cur){modechip.textContent="selectează o faptă";return;}
+  if(!cur){modechip.textContent="selectează o faptă";modechip.classList.remove('penal','amenda');return;}
   const isPenal=!!cur.s||cur.life;
   const capMax=cur.s?Math.min(cur.s[1],360):null;
   modechip.textContent=isPenal?"dosar penal":"amendă";
+  modechip.classList.toggle('penal',!!isPenal); modechip.classList.toggle('amenda',!isPenal);
 
   let h="";
   h+='<div class="out-head"><span class="name">'+esc(cur.name)+'</span>';
@@ -1797,7 +1855,8 @@ function renderHist(){
     const h=histAll();
     if(!h.length) box.innerHTML='<div class="hempty">Încă nimic. Copiază o descriere din MDT și apare aici automat.</div>';
     else box.innerHTML=h.map(function(x,i){
-      return '<div class="hitem"><div class="hmeta"><div class="htime">'+histTime(x.t)+'</div><span class="hkind">'+esc(x.k||'')+'</span><div class="hn">'+esc(x.n||'—')+'</div></div>'
+      var kc=x.k==='Mandat'?'k-mandat':(/Dosar/.test(x.k||'')?'k-dosar':'k-amenda');
+      return '<div class="hitem"><div class="hmeta"><div class="htime">'+histTime(x.t)+'</div><span class="hkind '+kc+'">'+esc(x.k||'')+'</span><div class="hn">'+esc(x.n||'—')+'</div></div>'
         +'<div class="hbody"><div class="hti">'+esc(x.ti||'(fără titlu)')+'</div><div class="hd">'+esc(x.d)+'</div></div>'
         +'<div class="hbtns"><button class="btnp" data-hc="'+i+'">Copiază desc.</button><button class="btnp" data-ht="'+i+'">Copiază titlu</button><button class="btnp" data-hx="'+i+'" style="color:#ff9aa6">Șterge</button></div></div>';
     }).join('');
@@ -1948,7 +2007,7 @@ renderHist();
     cart.length=0; quick.clear();
     Object.keys(shared).forEach(function(k){ shared[k]=''; });
     outEl.innerHTML='<div class="empty"><div class="big">Nimic selectat încă</div>Alege o infracțiune din stânga (sau caută-o) și îți generez automat<br>titlul, sentința și descrierea gata de copiat în joc.</div>';
-    modechip.textContent='selectează o faptă';
+    modechip.textContent='selectează o faptă'; modechip.classList.remove('penal','amenda');
     const s=document.getElementById('search'); if(s)s.value='';
     dtManual=false; autoDateTime(true);
     renderList('');
@@ -1993,6 +2052,7 @@ renderHist();
     if(agentChip){
       var has=a.rank||a.call||a.name;
       agentChip.innerHTML = has ? ((a.rank?a.rank+' • ':'')+(a.call?('<b>'+a.call+'</b> | '):'')+(a.name||'')) : 'Neconectat';
+      agentChip.classList.toggle('on',!!has);
     }
     var sN=document.getElementById('setName'), sC=document.getElementById('setCall');
     if(sN) sN.value=a.name||''; if(sC) sC.value=a.call||'';
