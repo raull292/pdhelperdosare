@@ -37,6 +37,7 @@ function createOverlay(cfg) {
     alwaysOnTop: true,
     hasShadow: false,
     focusable: true,
+    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'overlay-preload.js'),
       contextIsolation: true,
@@ -81,6 +82,7 @@ function createMdtOverlay() {
     alwaysOnTop: true,
     hasShadow: false,
     focusable: true,
+    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'mdt-overlay-preload.js'),
       contextIsolation: true,
