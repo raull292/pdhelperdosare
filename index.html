@@ -1107,6 +1107,7 @@ document.getElementById('search').addEventListener('input',e=>renderList(e.targe
 function select(id){
   cur=A.find(a=>a.id===id);
   curTpl=cur.t;
+  razP2Done=false;
   vals={};
   sentVal=cur.s?Math.min(360,Math.round((cur.s[0]+Math.min(cur.s[1],360))/2)):null;
   renderList(document.getElementById('search').value);
@@ -1165,6 +1166,7 @@ function renderOutput(){
   h+='</select></div>';
 
   h+='<div class="inputs" id="inputs"></div>';
+  h+='<div id="razQ2"></div>';
   h+=fieldBlock("Descriere (copiază în câmpul „Descriere”)","desc","",true);
   h+='<div style="margin-top:-6px"><button class="pill" id="regenSingle">🔄 Altă formulare</button></div>';
 
@@ -1185,7 +1187,7 @@ function renderOutput(){
     document.getElementById('copysent').addEventListener('click',e=>copy(String(sentVal),e.target));
   }
 
-  document.getElementById('tsel').addEventListener('change',e=>{curTpl=e.target.value;renderInputs();});
+  document.getElementById('tsel').addEventListener('change',e=>{curTpl=e.target.value;if(curTpl!=='razie')razP2Done=false;renderInputs();});
   document.querySelector('[data-copy="title"]').addEventListener('click',e=>copy(titleText(),e.target));
   document.getElementById('addToDossier').addEventListener('click',()=>addToCart(cur.id,sentVal));
   const fc=document.querySelector('[data-copyfine]'); if(fc)fc.addEventListener('click',()=>copy(fc.dataset.copyfine));
@@ -1224,7 +1226,35 @@ function renderInputs(){
   const dc=document.querySelector('[data-copy="desc"]');
   if(dc)dc.onclick=e=>{const ta=document.querySelector('[data-out="desc"]');if(!guardCopy(ta.value))return;copy(ta.value,e.target);histSave((cur.s||cur.life)?'Dosar':'Amendă',titleText(),ta.value);};
   const rgS=document.getElementById('regenSingle'); if(rgS)rgS.onclick=()=>{descVariant++;updateDesc();};
+  renderRazQ2();
   updateDesc();
+}
+
+/* întrebarea de razie și în Panoul 2 — apare când modelul de descriere e „Razie SAS” */
+let razP2Done=false;
+function renderRazQ2(){
+  const box=document.getElementById('razQ2'); if(!box) return;
+  if(curTpl!=='razie'||razP2Done){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="razq"><div class="rz-t"><b>Razie:</b> suspectul mai are ceva asupra lui în afară de armă și gloanțe (droguri, țigări de contrabandă, bani murdari)?</div>'
+    +'<button class="btnp green" id="razYes2" type="button">Da, are</button>'
+    +'<button class="btnp" id="razNo2" type="button">Nu, doar arma</button></div>';
+  document.getElementById('razNo2').onclick=function(){ razP2Done=true; renderRazQ2(); };
+  document.getElementById('razYes2').onclick=function(){
+    razP2Done=true; renderRazQ2();
+    // cumularea se face în Dosarul cumulat: mută fapta acolo pe scenariul razie
+    if(!cart.some(function(c){return c.id===cur.id;})) addToCart(cur.id,sentVal);
+    else applyFold('dossierPanel',true);
+    const ds=document.getElementById('dossierScen');
+    if(ds&&ds.value!=='razie'){ ds.value='razie'; ds.dispatchEvent(new Event('change',{bubbles:true})); }
+    if(window.__razQAnswered) window.__razQAnswered();   // nu repeta întrebarea și în Panoul 3
+    const sub=document.getElementById('subBox');
+    if(sub){
+      sub.classList.add('glow');
+      if(sub.scrollIntoView) sub.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(function(){ sub.classList.remove('glow'); },2600);
+    }
+    const ss=document.getElementById('subType'); if(ss) ss.focus();
+  };
 }
 
 function updateDesc(){
@@ -1733,6 +1763,8 @@ function resolveSub(type,qty){
   no.onclick=function(){ answered=true; upd(); };
   // scenariul s-a schimbat → întreabă din nou când se revine pe razie
   window.__razQReset=function(){ answered=false; upd(); };
+  // s-a răspuns deja în Panoul 2 → nu repeta întrebarea aici
+  window.__razQAnswered=function(){ answered=true; upd(); };
   // dosarul s-a golit (terminat / auto-golire) → următoarea razie întreabă iar
   window.__razQNotify=function(has){ if(hadItems&&!has){ answered=false; upd(); } hadItems=has; };
   upd();
