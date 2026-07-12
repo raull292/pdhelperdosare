@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, shell, globalShortcut, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 
 // cache pe disc plafonat la 50 MB — aplicatia nu acumuleaza resurse
 app.commandLine.appendSwitch('disk-cache-size', String(50 * 1024 * 1024));
@@ -20,6 +21,43 @@ ipcMain.on('win-maximize', (e) => {
   if (w) w.isMaximized() ? w.unmaximize() : w.maximize();
 });
 ipcMain.on('win-close', (e) => BrowserWindow.fromWebContents(e.sender)?.close());
+
+// ---- autorizare Discord prin browserul de sistem (loopback pe 127.0.0.1) ----
+// Browserul utilizatorului (unde e deja logat pe Discord) face autorizarea;
+// pagina de retur trimite tokenul catre acest mini-server local, care il
+// livreaza ferestrei aplicatiei. Nu se face niciun login in aplicatie.
+let dAuthSrv = null;
+function closeAuthSrv() { if (dAuthSrv) { try { dAuthSrv.close(); } catch (_) {} dAuthSrv = null; } }
+ipcMain.on('discord-auth-start', (e, authUrl) => {
+  const send = (data) => { try { e.sender.send('discord-token', data); } catch (_) {} };
+  if (typeof authUrl !== 'string' || !authUrl.startsWith('https://discord.com/oauth2/authorize')) return;
+  try {
+    if (!dAuthSrv) {
+      dAuthSrv = http.createServer((req, res) => {
+        const u = new URL(req.url, 'http://127.0.0.1:53682');
+        if (u.pathname === '/cb') {
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end('<!doctype html><meta charset="utf-8"><title>Police Helper</title>'
+            + '<body style="font-family:sans-serif;background:#0b1730;color:#eaf1fb;display:grid;place-items:center;height:100vh;margin:0">'
+            + '<div id="m" style="text-align:center;font-size:18px">Se transmite autorizarea…</div>'
+            + '<script>fetch("/tok?"+location.hash.slice(1)).then(function(){document.getElementById("m").innerHTML="✅ Autorizat!<br><small style=\\"color:#8ba0c4\\">Poți închide tab-ul și te poți întoarce în Police Helper.</small>";}).catch(function(){document.getElementById("m").textContent="Eroare — încearcă din nou din aplicație.";});</script>');
+        } else if (u.pathname === '/tok') {
+          send({
+            token: u.searchParams.get('access_token') || '',
+            expiresIn: +(u.searchParams.get('expires_in') || 0),
+            state: u.searchParams.get('state') || ''
+          });
+          res.writeHead(200, { 'Content-Type': 'text/plain' }); res.end('ok');
+          setTimeout(closeAuthSrv, 1500);
+        } else { res.writeHead(404); res.end(); }
+      });
+      dAuthSrv.on('error', () => { send({ error: 'port' }); closeAuthSrv(); });
+      dAuthSrv.listen(53682, '127.0.0.1');
+      setTimeout(closeAuthSrv, 5 * 60 * 1000); // nu lasa portul deschis la nesfarsit
+    }
+  } catch (_) { send({ error: 'port' }); }
+  shell.openExternal(authUrl);
+});
 
 // ---- overlay transparent peste joc ----
 function createOverlay(cfg) {

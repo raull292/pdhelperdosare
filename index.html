@@ -2120,6 +2120,8 @@ renderHist();
   if(!CLIENT_ID || location.protocol==='file:') return;   // dezactivat / mod offline de avarie
   var card=document.getElementById('dscCard'); if(card) card.style.display='';
   var OV=document.documentElement.classList.contains('ovmode');
+  var DAPI=(window.desktopApp&&window.desktopApp.discord)?window.desktopApp.discord:null;
+  var LOOPBACK='http://127.0.0.1:53682/cb';
 
   function readC(){ try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;} }
   function writeC(o){ try{ if(o)localStorage.setItem(KEY,JSON.stringify(o)); else localStorage.removeItem(KEY); }catch(e){} }
@@ -2133,7 +2135,7 @@ renderHist();
         +'<svg viewBox="0 0 120 132" class="dg-logo"><use href="#phFull"/></svg>'
         +'<h2>Acces pentru membri</h2>'
         +'<p id="dgMsg"></p>'
-        +(OV?'':'<button id="dgBtn" type="button">Conectează-te cu Discord</button>')
+        +(OV?'':'<button id="dgBtn" type="button">Autorizează prin Discord</button>')
         +'<div class="dg-note">Police Helper e disponibil doar membrilor serverului de Discord al facțiunii.</div>'
         +'</div>';
       document.body.appendChild(gate);
@@ -2145,13 +2147,33 @@ renderHist();
   }
   function hideGate(){ if(gate)gate.style.display='none'; }
 
+  function authUrl(redirect,st){
+    return 'https://discord.com/oauth2/authorize?client_id='+CLIENT_ID
+      +'&response_type=token&scope=identify%20guilds'
+      +'&redirect_uri='+encodeURIComponent(redirect)+'&state='+st;
+  }
   function goAuth(){
     var st=Math.random().toString(36).slice(2);
     try{sessionStorage.setItem('dgState',st);}catch(e){}
-    location.href='https://discord.com/oauth2/authorize?client_id='+CLIENT_ID
-      +'&response_type=token&scope=identify%20guilds'
-      +'&redirect_uri='+encodeURIComponent(location.origin+location.pathname)
-      +'&state='+st;
+    if(DAPI){
+      // aplicația desktop: autorizarea se face în browserul normal al
+      // utilizatorului (unde e deja logat pe Discord) — un singur click
+      DAPI.auth(authUrl(LOOPBACK,st));
+      showGate('Ți-am deschis browserul — apasă „Autorizează" acolo, apoi întoarce-te aici. Nu e nevoie de niciun login în aplicație.',true);
+      return;
+    }
+    location.href=authUrl(location.origin+location.pathname,st);
+  }
+  if(DAPI){
+    DAPI.onToken(function(d){
+      if(!d||d.error||!d.token){
+        showGate(d&&d.error==='port'?'Portul local de autorizare e ocupat — reîncearcă în câteva secunde.':'Autorizarea nu a reușit — apasă din nou pe buton.',true);
+        return;
+      }
+      var want=null; try{want=sessionStorage.getItem('dgState');}catch(e){}
+      if(want&&d.state&&want!==d.state){ showGate('Sesiunea de autorizare nu s-a putut valida — încearcă din nou.',true); return; }
+      verify(d.token, Date.now()+(d.expiresIn?d.expiresIn*1000:6*24*60*60*1000));
+    });
   }
 
   function fallback(msg){
@@ -2204,7 +2226,7 @@ renderHist();
     } else if(c&&c.ok&&tokenAlive(c)){
       verify(c.tok,c.te);   // cache mai vechi de 24h, dar tokenul mai e bun → reverificare silențioasă
     } else {
-      showGate(OV?'Accesul nu e confirmat.':'Conectează-te cu Discord ca să confirmi că ești membru al serverului.',!OV);
+      showGate(OV?'Accesul nu e confirmat.':(DAPI?'Apasă mai jos — se deschide browserul tău, unde doar autorizezi accesul (un click, fără login în aplicație).':'Autorizează accesul prin Discord ca să confirmi că ești membru al serverului.'),!OV);
     }
   }
 
