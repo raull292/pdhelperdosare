@@ -317,6 +317,7 @@
   <nav id="sidebar">
     <button class="nav-item active" data-page="dashboard"><span class="ni-ic">🏠</span> Dashboard</button>
     <button class="nav-item" data-page="mdt"><span class="ni-ic">📋</span> MDT Assistant</button>
+    <button class="nav-item" data-page="mandate"><span class="ni-ic">📜</span> Mandate</button>
     <button class="nav-item" data-page="overlays"><span class="ni-ic">📡</span> Overlays</button>
     <button class="nav-item" data-page="istoric"><span class="ni-ic">🗂️</span> Istoric</button>
     <button class="nav-item" data-page="setari"><span class="ni-ic">⚙️</span> Setări</button>
@@ -474,6 +475,26 @@
     <span id="pcSync"></span>
   </div>
 </div>
+    </section>
+
+    <section class="page" id="page-mandate">
+      <div class="page-h"><h2>Mandate</h2><p>Generator de mandate — aducere, percheziție, arestare.</p></div>
+      <div class="card" style="max-width:860px"><div class="cardbox">
+        <h3>📜 Generator mandat</h3>
+        <div class="cb-sub" id="mdHint"></div>
+        <div class="scenrow" style="margin-bottom:12px">
+          <label for="mdType">Tip mandat</label>
+          <select id="mdType">
+            <option value="aducere">Mandat de aducere</option>
+            <option value="perchezitie">Mandat de percheziție</option>
+            <option value="arestare">Mandat de arestare</option>
+          </select>
+        </div>
+        <div class="inputs" id="mdInputs"></div>
+        <div class="field"><label>Titlu (copiază în câmpul „Titlu”)</label><div class="copyrow"><input id="mdTitleOut" readonly><button class="cbtn" id="mdCopyT">Copiază</button></div></div>
+        <div class="field"><label>Conținut mandat (copiază în câmpul „Descriere”)</label><div class="copyrow"><textarea id="mdBodyOut" spellcheck="false" style="min-height:230px"></textarea><button class="cbtn" id="mdCopyB">Copiază</button></div></div>
+        <p class="phelp mut">Data, ora și emitentul (gradul + numele tale din Setări) se completează automat. Ce lași gol apare ca <b>[CÂMP]</b>.</p>
+      </div></div>
     </section>
 
     <section class="page" id="page-overlays">
@@ -871,92 +892,97 @@ const FLABEL = {
 
 const TPL = {
   amenda:{ label:"Amendă / contravenție rutieră", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta"],
-    text:d=>"În data de "+d.data+" la ora "+d.ora+", în zona "+d.zona+", echipajele de poliție au tras pe dreapta un autovehicul de tip "+d.marca+" de culoare "+d.culoare+" cu numărul de înmatriculare "+d.nrinm+", acesta "+d.fapta+". În urma legitimării, șoferul a fost identificat ca fiind domnul/doamna "+d.nume+". Acesta a fost sancționat conform codului penal în vigoare." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", un echipaj de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+", întrucât s-a constatat că acesta "+d.fapta+". În urma legitimării, conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare." },
   trafic:{ label:"Oprire în trafic (dosar penal)", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta","sectie"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", echipajul de poliție care patrula în zona "+d.zona+" a tras pe dreapta un autovehicul de tip "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". În urma legitimării, șoferul a fost identificat ca fiind "+d.nume+". S-a constatat că acesta "+d.fapta+". Acesta a fost transportat și procesat la secția "+d.sectie+", urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", echipajul de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". În urma legitimării, conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", iar din verificările efectuate a rezultat că acesta/aceasta "+d.fapta+". Suspectul a fost condus la secția "+d.sectie+" de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
   viteza:{ label:"Limită de viteză depășită", fields:["data","ora","zona","marca","culoare","nrinm","nume","viteza","limita"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", un autovehicul de marcă "+d.marca+" de culoare "+d.culoare+", cu numerele de înmatriculare "+d.nrinm+", a fost oprit în zona "+d.zona+" pentru faptul că a condus cu "+d.viteza+"km/h într-o zonă unde limita maximă admisă este de "+d.limita+"km/h. Conducătorul autovehiculului a fost identificat ca fiind "+d.nume+", iar acesta a fost sancționat conform codului penal." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", cu ocazia acțiunilor de supraveghere a traficului rutier desfășurate în zona "+d.zona+", a fost oprit autovehiculul marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+", înregistrat circulând cu viteza de "+d.viteza+" km/h pe un sector de drum cu limita maximă admisă de "+d.limita+" km/h. Conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare." },
   arma:{ label:"Percheziție — armă găsită (schimb de focuri)", fields:["data","ora","zona","sursa","nume","arma","gloante","calibru"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", dispecerul a primit o alertă de la "+d.sursa+" cum că sunt multiple focuri de armă în zona "+d.zona+". Domnul/Doamna "+d.nume+" a luat parte la un schimb de focuri între echipajele de poliție sosite la fața locului și mai mulți suspecți. Acesta a fost imobilizat și transportat la secția centrală unde, în urma percheziției, s-a găsit asupra sa 1x "+d.arma+" și "+d.gloante+" gloanțe "+d.calibru+". Acesta a fost procesat și transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", prin dispecerat a fost recepționată o alertă transmisă de "+d.sursa+", privind executarea de focuri de armă în zona "+d.zona+". La sosirea echipajelor de poliție, între forțele de ordine și mai mulți suspecți a avut loc un schimb de focuri, printre participanți fiind identificat(ă) și numitul/numita "+d.nume+", care a fost imobilizat(ă) și condus(ă) la secția centrală de poliție. În urma percheziției corporale efectuate, asupra sa au fost găsite: 1x "+d.arma+" și "+d.gloante+" gloanțe calibrul "+d.calibru+", bunuri ce au fost ridicate în vederea confiscării. Suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
   razie:{ label:"Razie SAS pe insulă (Cayo / Maldive)", fields:["data","ora","insula","nume","arma","gloante","calibru"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în urma unei razii SAS asupra insulei "+d.insula+" unde au fost arestate mai multe persoane, acestea au fost transportate la secția centrală pentru procesare. Unul dintre ei a fost identificat ca fiind "+d.nume+", iar în urma unei percheziții a fost găsită asupra sa următoarele:\n1x "+d.arma+"\n"+d.gloante+"x Gloanțe "+d.calibru+"\nCetățeanul "+d.nume+" a fost procesat, sancționat conform Codului Penal și transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în cadrul unei razii efectuate de trupele SAS asupra insulei "+d.insula+", au fost reținute mai multe persoane, acestea fiind conduse la secția centrală de poliție în vederea procesării. Printre persoanele reținute a fost identificat(ă) și numitul/numita "+d.nume+", asupra căruia/căreia, în urma percheziției corporale, au fost găsite următoarele:\n1x "+d.arma+"\n"+d.gloante+"x Gloanțe calibrul "+d.calibru+"\nBunurile au fost ridicate în vederea confiscării, iar suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   urmarire:{ label:"Urmărire / evadare cu autovehicul", fields:["data","ora","zona","marca","culoare","nrinm","zonafin","nume"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", s-a încercat oprirea unui vehicul de tip "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". Șoferul nu a oprit la semnalele poliției, motiv pentru care a început o urmărire. Urmărirea s-a desfășurat pe mai multe străzi și s-a încheiat în zona "+d.zonafin+", unde suspectul a fost implicat într-un accident soldat doar cu pagube materiale. Șoferul a fost identificat ca fiind domnul/doamna "+d.nume+". Acesta a fost transportat la secția centrală unde a fost procesat și sancționat conform codului penal, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", s-a efectuat semnal regulamentar de oprire asupra autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". Conducătorul acestuia nu a oprit la semnalele efectuate, motiv pentru care s-a trecut la urmărirea autovehiculului, fiind solicitate echipaje suplimentare. Urmărirea s-a desfășurat pe mai multe artere rutiere și s-a finalizat în zona "+d.zonafin+", unde autovehiculul a fost implicat într-un eveniment rutier soldat exclusiv cu pagube materiale. Conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", fiind imobilizat(ă) și condus(ă) la secția centrală de poliție, unde a fost procesat(ă) și sancționat(ă) conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
   jaf_imobil:{ label:"Jaf imobil (magazin / casă)", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", s-a primit o alertă asupra unui jaf la "+d.locatie+". În urma intervenției echipajelor de ordine, mai mulți suspecți au fost reținuți, unul dintre aceștia fiind identificat drept "+d.nume+". Acesta a fost imobilizat și transportat la secția "+d.sectie+" de poliție, unde în urma percheziției asupra sa au fost găsite: 1x "+d.arma+", "+d.gloante+"x gloanțe "+d.calibru+", 1x Stație. Acestea au fost confiscate iar suspectul a fost sancționat și procesat conform codului penal în vigoare, urmând ca mai apoi să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", prin dispecerat a fost recepționată o alertă privind comiterea unui jaf la "+d.locatie+". Echipajele de ordine publică deplasate la fața locului au procedat la reținerea mai multor suspecți, unul dintre aceștia fiind identificat în persoana numitului/numitei "+d.nume+". Acesta/Aceasta a fost imobilizat(ă) și condus(ă) la secția "+d.sectie+" de poliție, unde, în urma percheziției corporale, asupra sa au fost găsite: 1x "+d.arma+", "+d.gloante+"x gloanțe calibrul "+d.calibru+", 1x stație de emisie-recepție. Bunurile au fost ridicate în vederea confiscării, iar suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   jaf_bancar:{ label:"Jaf bancar", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
-    text:d=>"La data de "+d.data+", în jurul orei "+d.ora+", poliția a fost alertată cu privire la un jaf la Banca "+d.locatie+". Poliția, împreună cu trupele speciale, s-au deplasat de urgență în zonă, unde a început un schimb de focuri cu suspecții. Ulterior, polițiștii au reușit să imobilizeze suspecții și să îi transporte la secția "+d.sectie+" de poliție pentru procesare. Unul dintre suspecți a fost identificat ca fiind domnul/doamna "+d.nume+", iar la percheziția acestuia au fost găsite următoarele: 1x "+d.arma+", "+d.gloante+"x gloanțe "+d.calibru+", 1x stație. Acestea au fost confiscate iar suspectul a fost sancționat și procesat conform codului penal în vigoare, urmând ca mai apoi să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+    text:d=>"La data de "+d.data+", în jurul orei "+d.ora+", organele de poliție au fost sesizate cu privire la comiterea unui jaf armat asupra Băncii "+d.locatie+". La fața locului s-au deplasat de urgență echipaje de poliție împreună cu trupele speciale, între forțele de ordine și suspecți având loc un schimb de focuri. Suspecții au fost imobilizați și conduși la secția "+d.sectie+" de poliție în vederea procesării, unul dintre aceștia fiind identificat în persoana numitului/numitei "+d.nume+". În urma percheziției corporale efectuate, asupra sa au fost găsite: 1x "+d.arma+", "+d.gloante+"x gloanțe calibrul "+d.calibru+", 1x stație de emisie-recepție, bunuri ce au fost ridicate în vederea confiscării. Suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   droguri:{ label:"Percheziție — substanțe/obiecte ilegale", fields:["data","ora","zona","nume","cantitate"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma unei percheziții, domnul/doamna "+d.nume+" a fost găsit(ă) în posesia a "+d.cantitate+". Acestea au fost confiscate, iar suspectul a fost procesat și sancționat conform codului penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea ispășirii sentinței." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma percheziției corporale efectuate asupra numitului/numitei "+d.nume+", s-a constatat că acesta/aceasta deținea asupra sa "+d.cantitate+". Bunurile au fost ridicate în vederea confiscării, iar suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   droguri_amenda:{ label:"Percheziție — contravenție (fără închisoare)", fields:["data","ora","zona","nume","cantitate"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma unei percheziții, domnul/doamna "+d.nume+" a fost găsit(ă) în posesia a "+d.cantitate+". Acestea au fost confiscate, iar contravenientul a fost sancționat conform codului penal în vigoare." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în urma percheziției corporale efectuate asupra numitului/numitei "+d.nume+", s-a constatat că acesta/aceasta deținea asupra sa "+d.cantitate+". Bunurile au fost ridicate în vederea confiscării. Acesta a fost sancționat conform Codului Penal în vigoare." },
   generic:{ label:"Generic (orice infracțiune)", fields:["data","ora","zona","nume","fapta","sectie"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în timpul unei intervenții a echipajului de poliție, s-a constatat că domnul/doamna "+d.nume+" "+d.fapta+". Fapta a fost constatată de ofițerii prezenți la fața locului. Suspectul a fost transportat la secția "+d.sectie+" pentru procesare, fiind sancționat conform Codului Penal în vigoare." },
+    text:d=>{
+      const base="În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", în cadrul unei intervenții a organelor de poliție, s-a constatat că numitul/numita "+d.nume+" "+d.fapta+". Fapta a fost constatată în mod direct de către agenții prezenți la fața locului.";
+      return (cur&&(cur.s||cur.life))
+        ? base+" Suspectul a fost condus la secția "+d.sectie+" de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."
+        : base+" Acesta a fost sancționat conform Codului Penal în vigoare.";
+    } },
 };
 const TPL_ORDER = ["generic","trafic","amenda","viteza","arma","razie","urmarire","jaf_imobil","jaf_bancar","droguri","droguri_amenda"];
 
 /* ---------------- RELATĂRI PROPRII (per articol) pentru descrierile generice ---------------- */
 const STORY={
-  "1.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, un echipaj de poliție l-a observat pe {nume} traversând strada printr-un loc nepermis, punând în pericol atât propria siguranță, cât și siguranța celorlalți participanți la trafic.",
-  "2.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, echipajele de poliție au surprins mai multe autovehicule angajate într-o cursă ilegală de stradă, printre conducători aflându-se și {nume}, care punea în pericol viața celorlalți cetățeni.",
-  "2.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma unui accident rutier, {nume} a părăsit în grabă locul faptei, fără a acorda ajutor ori a anunța autoritățile.",
-  "3.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins purtând un obiect ce îi acoperea complet fața într-un spațiu public, îngreunând identificarea sa.",
-  "3.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a primit o sesizare potrivit căreia {nume} urmărea și hărțuia insistent o altă persoană, provocându-i temere pentru propria siguranță.",
-  "3.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a urmărit și a hărțuit o autospecială de poliție/medici aflată în misiune, punând în pericol buna desfășurare a intervenției.",
-  "3.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} și-a expus organele genitale în public, spre revolta și disconfortul cetățenilor prezenți.",
-  "3.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} practica prostituția, procurându-și mijloacele de existență prin raporturi întreținute contra cost.",
-  "3.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma unei plângeri și a probelor adunate la fața locului, s-a stabilit că {nume} a comis fapta gravă de viol asupra unei persoane.",
-  "3.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a pătruns fără drept într-o proprietate privată și a refuzat să o părăsească la cererea proprietarului.",
-  "3.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, un echipaj de poliție l-a surprins pe {nume} distrugând și deteriorând bunuri care nu îi aparțineau, provocând pagube materiale însemnate.",
-  "3.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a folosit amenințări și presiuni pentru a constrânge o persoană să îi îndeplinească diferite servicii.",
-  "3.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a sustras prin violență un bun aflat în posesia altei persoane, fără consimțământul acesteia.",
-  "3.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins în timp ce sustrăgea, respectiv forța, un autovehicul care nu îi aparținea.",
-  "3.11.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins sustrăgând un autovehicul aparținând Departamentului de Poliție/Spitalului.",
-  "3.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} tulbura liniștea publică prin gălăgie și un limbaj vulgar, stârnind un conflict cu cetățenii din zonă.",
-  "3.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat în mod repetat să părăsească locul indicat de ofițerul de poliție.",
-  "3.15":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} instiga mai mulți cetățeni la revoltă, cu intenția de a distruge bunuri publice și de a răni persoanele din jur.",
-  "3.16":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a răspândit în public afirmații false și defăimătoare la adresa unei persoane, de natură să îi aducă prejudicii.",
-  "3.17":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins răscolind containerele de gunoi din spațiul public.",
-  "3.18":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a indus în eroare o persoană prin afirmații mincinoase, obținând foloase necuvenite și cauzând pagube.",
-  "3.19":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} desfășura un eveniment public fără a deține avizul și acordul Poliției.",
-  "4.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a împiedicat în mod intenționat un ofițer să își îndeplinească atribuțiile, punând în pericol siguranța acestuia și a cetățenilor.",
-  "4.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat să părăsească o instituție a statului la solicitarea repetată a organelor de poliție.",
-  "4.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a adresat cuvinte jignitoare și amenințări unui agent de poliție aflat în exercițiul funcțiunii.",
-  "4.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume}, aflat în custodia ofițerilor, a reușit să evadeze, sustrăgându-se de sub controlul acestora.",
-  "4.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, la momentul reținerii, {nume} a opus rezistență fizică ofițerilor de poliție.",
-  "4.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a refuzat să se identifice în fața ofițerilor, atât cu un act legal, cât și prin declararea numelui său.",
-  "4.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să influențeze decizia unui angajat guvernamental, oferindu-i bunuri și sume de bani.",
-  "4.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} presta servicii într-un domeniu reglementat fără a deține licența sau atestatul necesar.",
-  "4.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să descurajeze un martor de la a da declarații, folosind amenințări și presiuni.",
-  "4.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a folosit un limbaj vulgar cu scopul vădit de a jigni și intimida o altă persoană.",
-  "4.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a apelat în mod abuziv linia de urgență 112, fără a exista o urgență reală.",
-  "4.12":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins vânând, respectiv pescuind ilegal, într-o zonă protejată prin lege.",
-  "4.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a falsificat, respectiv a folosit, un act public fals.",
-  "4.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} nu a achitat amenzile primite în termenul legal de 21 de zile.",
-  "5.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins practicând intervenții medicale asupra unei persoane, fără a deține o licență validă.",
-  "5.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} nu a putut prezenta actul de identificare corespunzător activității pe care o desfășura.",
-  "6.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a amenințat în mod explicit că va comite o faptă gravă împotriva unei persoane, provocându-i temere.",
-  "6.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a încercat să suprime viața unei persoane, fapta fiind întreruptă înainte de producerea decesului.",
-  "6.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a agresat fizic o persoană, provocându-i vătămări corporale.",
-  "6.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a provocat vătămări corporale grave unei persoane, folosind o armă.",
-  "6.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma acțiunilor lui {nume}, o persoană și-a pierdut viața, fără a fi existat intenția de a ucide.",
-  "6.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a suprimat intenționat viața unei persoane.",
-  "6.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a reținut o persoană cu forța și împotriva voinței acesteia, privând-o de libertate.",
-  "6.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a supus o persoană unor suferințe fizice extreme, cu intenția de a-i provoca durere.",
-  "6.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a ascuns și a înstrăinat bunuri pentru a-și prejudicia în mod fraudulos creditorii.",
-  "7.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a fost surprins îndreptând o armă de foc asupra unei persoane, respectiv a unui obiect.",
-  "7.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a descărcat o armă de foc asupra unei persoane, în afara oricărui context de legitimă apărare.",
-  "8.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a organizat, respectiv a participat, la acte de terorism ce au pus în pericol securitatea națională.",
-  "8.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a pătruns ilegal într-o zonă protejată, cu scopul de a aduna informații sensibile.",
-  "8.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a împiedicat desfășurarea activităților guvernamentale, blocând drumurile și atacând oficialii.",
-  "8.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} face parte dintr-un grup paramilitar organizat împotriva autorităților statului.",
-  "8.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a organizat acțiuni prin care incita în mod deschis la violență împotriva instituțiilor statului.",
-  "8.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a falsificat documente guvernamentale oficiale pentru a accesa informații ori locații restricționate.",
-  "8.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a obținut și a transmis informații sensibile către entități externe.",
-  "8.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, {nume} a deteriorat intenționat infrastructură esențială, cu scopul de a crea haos și de a periclita siguranța orașului.",
-  "8.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a stabilit că {nume} a inițiat și a sprijinit un grup infracțional organizat, structurat pentru comiterea de infracțiuni.",
-  "8.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a abuzat de poziția sa pentru a obține foloase necuvenite, subminând integritatea instituțiilor.",
-  "8.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că {nume} a acumulat un număr foarte mare de dosare penale, reprezentând un risc real pentru ordinea și siguranța publică.",
+  "1.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost observat de către un echipaj de poliție în timp ce traversa strada printr-un loc nepermis, punând în pericol atât propria siguranță, cât și pe cea a participanților la trafic.",
+  "2.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, echipajele de poliție au surprins mai multe autovehicule angajate într-o întrecere neautorizată pe drumurile publice, printre conducători fiind identificat și numitul {nume}, ale cărui manevre au pus în pericol siguranța participanților la trafic.",
+  "2.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a părăsit locul unui accident rutier în care a fost implicat, fără a anunța organele competente și fără a acorda sprijin persoanelor implicate.",
+  "3.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost depistat purtând un articol care îi acoperea integral fața într-un spațiu public, îngreunând identificarea sa de către organele de ordine.",
+  "3.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma unei sesizări, s-a constatat că numitul {nume} urmărea în mod repetat și insistent o persoană, fără acordul acesteia, provocându-i o stare de temere.",
+  "3.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a urmărit în mod repetat o autospecială de poliție/medici aflată în exercitarea atribuțiilor de serviciu, îngreunând buna desfășurare a intervențiilor.",
+  "3.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} și-a expus organele genitale într-un spațiu public, fapta fiind constatată în mod direct de către agenți și confirmată de persoanele prezente.",
+  "3.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma verificărilor efectuate, s-a constatat că numitul {nume} practica prostituția, oferind servicii de natură sexuală contra cost.",
+  "3.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate și din declarațiile victimei a rezultat că numitul {nume} a săvârșit fapta de viol, prin constrângerea victimei și profitând de imposibilitatea acesteia de a se apăra.",
+  "3.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a pătruns fără drept într-o proprietate privată și a refuzat să o părăsească la solicitarea expresă a deținătorului legal.",
+  "3.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost surprins în timp ce distrugea și deteriora bunuri aparținând altei persoane, cauzând pagube materiale.",
+  "3.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} a constrâns o persoană, prin amenințări și presiuni repetate, în scopul obținerii unor foloase necuvenite.",
+  "3.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a deposedat prin violență o persoană de bunurile aflate asupra sa, fără consimțământul acesteia, fapta fiind confirmată de declarațiile victimei și ale martorilor.",
+  "3.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost surprins în timp ce forța sistemele de închidere ale unui autovehicul ce nu îi aparținea, în scopul sustragerii acestuia.",
+  "3.11.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost surprins sustrăgând un autovehicul aflat în dotarea Departamentului de Poliție/Spitalului, bun destinat intervențiilor de urgență.",
+  "3.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} tulbura ordinea și liniștea publică prin proferarea de expresii jignitoare și provocarea unui conflict cu cetățenii aflați în zonă.",
+  "3.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a refuzat în mod repetat să părăsească perimetrul indicat de organele de poliție, deși i s-a solicitat expres acest lucru.",
+  "3.15":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a instigat un grup de persoane la acte de violență și revoltă, îndemnând la distrugerea de bunuri publice și la agresarea persoanelor din zonă.",
+  "3.16":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a răspândit în spațiul public afirmații false și defăimătoare la adresa unei persoane, de natură a-i afecta demnitatea și reputația.",
+  "3.17":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost depistat în timp ce răscolea containerele de deșeuri amplasate pe domeniul public.",
+  "3.18":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} a indus în eroare o persoană prin prezentarea ca adevărată a unei împrejurări mincinoase, obținând foloase necuvenite și cauzând un prejudiciu.",
+  "3.19":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} desfășura un eveniment pe domeniul public fără a deține avizele necesare și acordul Poliției.",
+  "4.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a împiedicat în mod deliberat un agent de poliție să își exercite atribuțiile de serviciu, obstrucționând desfășurarea intervenției.",
+  "4.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a refuzat să părăsească incinta unei instituții a statului, în ciuda solicitărilor repetate ale organelor de ordine.",
+  "4.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a proferat amenințări și expresii jignitoare la adresa unui agent de poliție aflat în exercitarea atribuțiilor de serviciu.",
+  "4.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume}, aflat în custodia organelor de poliție, s-a sustras escortării și a evadat, fiind ulterior depistat și reținut.",
+  "4.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, la momentul aplicării măsurii reținerii, numitul {nume} a opus rezistență fizică organelor de poliție, încercând să se sustragă imobilizării.",
+  "4.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a refuzat să își decline identitatea și să prezinte un act de identitate, la solicitarea expresă a organelor de poliție.",
+  "4.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a oferit sume de bani unui angajat guvernamental aflat în exercitarea atribuțiilor de serviciu, în scopul influențării deciziilor acestuia.",
+  "4.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, s-a constatat că numitul {nume} presta servicii într-un domeniu reglementat fără a deține licența sau atestatul prevăzut de lege.",
+  "4.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a exercitat presiuni și amenințări asupra unui martor, în scopul descurajării acestuia de a da declarații în fața organelor competente.",
+  "4.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a utilizat un limbaj vulgar în spațiul public, cu intenția vădită de a aduce atingere demnității unei persoane.",
+  "4.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a apelat în mod abuziv și repetat linia unică de urgență 112, fără existența unei situații de urgență reale.",
+  "4.12":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost depistat desfășurând, fără drept, activități de vânătoare, respectiv pescuit, într-o zonă protejată.",
+  "4.13":"În data de {data}, în jurul orei {ora}, în zona {zona}, din verificările efectuate a rezultat că numitul {nume} a falsificat, respectiv a folosit, un înscris oficial, în scopul producerii de consecințe juridice.",
+  "4.14":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma verificărilor efectuate în evidențe, s-a constatat că numitul {nume} nu a achitat amenzile aplicate în termenul legal de 21 de zile.",
+  "5.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost depistat efectuând manopere medicale asupra unei persoane, fără a deține licența și calificarea prevăzute de lege.",
+  "5.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} nu a putut prezenta, la solicitarea organelor de control, documentele de identificare aferente activității desfășurate.",
+  "6.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a amenințat în mod direct o persoană cu săvârșirea unei fapte grave împotriva sa, provocându-i o stare de temere justificată.",
+  "6.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a întreprins acțiuni menite să suprime viața unei persoane, rezultatul nefiind atins din motive independente de voința sa.",
+  "6.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a agresat fizic o persoană, provocându-i vătămări corporale constatate la fața locului.",
+  "6.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a provocat unei persoane vătămări corporale grave prin folosirea unei arme, victima necesitând îngrijiri medicale.",
+  "6.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma acțiunilor imprudente ale numitului {nume}, o persoană și-a pierdut viața, fără ca fapta să fi fost săvârșită cu intenție.",
+  "6.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} a suprimat cu intenție viața unei persoane.",
+  "6.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a lipsit de libertate o persoană, prin constrângere și împotriva voinței acesteia, reținând-o fără drept.",
+  "6.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} a supus o persoană unor suferințe fizice intense, cu intenția de a-i provoca durere.",
+  "6.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, din verificările efectuate a rezultat că numitul {nume} a ascuns și a înstrăinat bunuri din averea sa, în scopul fraudării creditorilor.",
+  "7.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost surprins îndreptând o armă de foc asupra unei persoane, respectiv asupra unui bun, fără a se afla într-o situație de legitimă apărare.",
+  "7.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a descărcat o armă de foc asupra unei persoane, în afara oricărei situații de legitimă apărare, punând în pericol viața acesteia.",
+  "8.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} a organizat, respectiv a participat la acte de terorism de natură a pune în pericol securitatea națională.",
+  "8.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a pătruns fără drept într-o zonă/clădire aflată sub regim special de protecție, încălcând regimul de securitate al statului.",
+  "8.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a împiedicat desfășurarea activităților guvernamentale prin blocarea căilor de acces și exercitarea de presiuni asupra reprezentanților instituțiilor.",
+  "8.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} face parte dintr-o structură paramilitară organizată, constituită în afara cadrului legal.",
+  "8.5":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a incitat în mod public la acte de violență împotriva instituțiilor statului, prin discursuri și acțiuni organizate.",
+  "8.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, din verificările efectuate a rezultat că numitul {nume} a falsificat documente guvernamentale oficiale, în scopul accesării unor informații sau locații cu regim restricționat.",
+  "8.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} a cules și a transmis informații cu caracter secret către entități neautorizate.",
+  "8.8":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a deteriorat cu intenție elemente de infrastructură esențială, punând în pericol siguranța publică și buna funcționare a serviciilor orașului.",
+  "8.9":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} a inițiat și a sprijinit un grup infracțional organizat, structurat în scopul săvârșirii de infracțiuni.",
+  "8.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} și-a folosit funcția și influența în scopul obținerii de foloase necuvenite, subminând integritatea instituțiilor statului.",
+  "8.11":"În data de {data}, în jurul orei {ora}, în zona {zona}, în urma verificărilor efectuate în evidențele I.P.J. Los Santos, s-a constatat că numitul {nume} a acumulat un număr de peste 50 de dosare penale, reprezentând un pericol grav pentru siguranța publică.",
 };
 
 /* ---------------- STATE ---------------- */
@@ -1403,20 +1429,20 @@ function collapseJoin(arr){
 let descVariant=0;
 function pv(arr,salt){ return arr[((descVariant*13)+(salt||0))%arr.length]; }
 const V={
-  dateOpen:["În data de ","La data de ","În ziua de "],
-  sceneNon:["un echipaj de poliție a intervenit în urma unei sesizări","echipajele de poliție au intervenit la fața locului în urma unei sesizări","o patrulă de poliție a fost direcționată în zonă în urma unei sesizări"],
-  stopVerb:["a tras pe dreapta un autovehicul","a oprit în trafic un autovehicul","a procedat la oprirea unui autovehicul"],
-  legit:["La legitimare s-a constatat că șoferul, identificat ca fiind ","În urma legitimării, s-a constatat că șoferul, identificat ca fiind ","La verificarea actelor s-a constatat că șoferul, identificat ca fiind "],
-  soferId:["Șoferul a fost identificat ca fiind ","Conducătorul auto a fost identificat ca fiind ","La volan a fost identificat "],
-  escal:["Pe parcursul intervenției, ","În timpul intervenției, ","Pe durata acțiunii poliției, "],
-  search:["În urma percheziției corporale, s-a constatat că ","La controlul corporal, s-a constatat că ","În urma percheziției, s-a stabilit că "],
-  crimeFirst:["În urma cercetărilor, s-a stabilit că ","În urma investigațiilor, a reieșit că ","Din cercetările efectuate a rezultat că "],
-  crimeMore:["De asemenea, s-a stabilit că ","Totodată, s-a constatat că ","În plus, a reieșit că "],
-  closePenal:["Suspectul a fost imobilizat, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței.","Suspectul a fost reținut, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores.","În urma celor constatate, suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."],
-  closeLife:["Dată fiind gravitatea faptelor, acesta a fost reținut, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind închisoarea pe viață.","Având în vedere gravitatea deosebită a faptelor, acesta a fost reținut și urmează să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa fiind închisoarea pe viață."],
-  closeContrav:["Acesta a fost sancționat conform Codului Penal în vigoare.","Contravenientul a fost sancționat conform Codului Penal în vigoare.","Fapta a fost sancționată conform Codului Penal în vigoare."],
-  closePenalSingle:[" Acesta a fost condus la secția {sec}, procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."," Acesta a fost transportat la secția {sec} pentru procesare și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores."," În urma celor constatate, acesta a fost procesat la secția {sec} și sancționat conform Codului Penal în vigoare, urmând să ajungă la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței."],
-  tailPenal:["urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței","urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru a-și ispăși pedeapsa","urmând ca ulterior să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores"]
+  dateOpen:["În data de ","La data de ","În fapt, la data de "],
+  sceneNon:["un echipaj de poliție s-a deplasat la fața locului în urma unei sesizări","organele de poliție au intervenit la fața locului ca urmare a unei sesizări primite prin dispecerat","o patrulă de poliție a fost direcționată în zonă în urma unei sesizări"],
+  stopVerb:["a procedat la oprirea regulamentară a unui autovehicul","a efectuat semnal regulamentar de oprire asupra unui autovehicul","a oprit pentru control un autovehicul"],
+  legit:["Cu ocazia legitimării s-a constatat că șoferul, identificat în persoana numitului/numitei ","În urma verificării documentelor s-a constatat că șoferul, identificat în persoana numitului/numitei ","La legitimare s-a stabilit că șoferul, identificat în persoana numitului/numitei "],
+  soferId:["Conducătorul autovehiculului a fost identificat în persoana numitului/numitei ","La volan a fost identificat(ă) numitul/numita ","Șoferul a fost identificat în persoana numitului/numitei "],
+  escal:["Pe parcursul intervenției, ","În timpul desfășurării măsurilor, ","Pe durata intervenției organelor de poliție, "],
+  search:["În urma percheziției corporale efectuate, s-a constatat că ","Cu ocazia controlului corporal efectuat, s-a constatat că ","În urma percheziției efectuate asupra sa, s-a stabilit că "],
+  crimeFirst:["În urma cercetărilor efectuate, s-a stabilit că ","Din verificările efectuate și probele administrate a rezultat că ","În urma investigațiilor desfășurate, s-a stabilit că "],
+  crimeMore:["De asemenea, s-a stabilit că ","Totodată, din cercetări a rezultat că ","În plus, s-a constatat că "],
+  closePenal:["Față de cele constatate, suspectul a fost imobilizat, condus la sediul poliției și procesat, fiind sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.","Suspectul a fost reținut, i-au fost aduse la cunoștință faptele reținute în sarcina sa, iar în urma procesării a fost sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.","În baza probelor administrate, suspectul a fost procesat și sancționat conform Codului Penal în vigoare, fiind ulterior transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."],
+  closeLife:["Având în vedere gravitatea deosebită a faptelor săvârșite, suspectul a fost reținut și transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind detențiunea pe viață.","Față de gravitatea faptelor constatate, s-a dispus reținerea suspectului și transportarea acestuia la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind detențiunea pe viață."],
+  closeContrav:["Acesta a fost sancționat conform Codului Penal în vigoare.","Față de cele constatate, s-a dispus sancționarea contravențională a acestuia, conform Codului Penal în vigoare.","Contravenientul a fost sancționat conform Codului Penal în vigoare."],
+  closePenalSingle:[" Numitul a fost condus la secția {sec} de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."," Suspectul a fost condus la secția {sec} de poliție, i-au fost aduse la cunoștință faptele reținute în sarcina sa, fiind sancționat conform Codului Penal în vigoare și transportat ulterior la Penitenciarul de Maximă Siguranță Sandy Shores."," În urma procesării efectuate la secția {sec}, suspectul a fost sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."],
+  tailPenal:["urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei","fiind ulterior transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru executarea pedepsei aplicate","urmând a fi transferat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței"]
 };
 // variază ușor un șablon fix (deschidere + coada cu penitenciar / încheierea de contravenție)
 function varyTemplate(t, art){
@@ -1579,6 +1605,84 @@ function renderHist(){
 const _hc=document.getElementById('histClear');
 if(_hc)_hc.onclick=function(){ if(confirm('Ștergi tot istoricul de documente?')){ histWrite([]); renderHist(); } };
 renderHist();
+
+/* ---------------- GENERATOR MANDATE (aducere / percheziție / arestare) ---------------- */
+(function(){
+  const sel=document.getElementById('mdType'), box=document.getElementById('mdInputs');
+  const tOut=document.getElementById('mdTitleOut'), bOut=document.getElementById('mdBodyOut');
+  if(!sel||!box) return;
+  const MD={
+    aducere:{
+      label:'Mandat de aducere',
+      hint:'Suspectul este adus la secție pentru audiere. Conform regulamentului, mandatul de aducere este elaborat de SAP / DCCO.',
+      fields:[['nume','Nume suspect','ex: Naomi Black'],['motiv','Fapta cercetată','ex: Tâlhărie'],['sectie','Secția la care e adus','ex: centrală']],
+      text:function(v,dt,agent){
+        return 'MANDAT DE ADUCERE\n\n'
+          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune ADUCEREA numitului/numitei '+v.nume+' la sediul secției '+v.sectie+' de poliție, în vederea audierii în cadrul cercetărilor efectuate sub aspectul săvârșirii faptei de '+v.motiv+'.\n\n'
+          +'Organele de ordine sunt împuternicite să identifice, să legitimeze și să conducă persoana sus-menționată la sediul indicat. În cazul refuzului de a se conforma, aceasta va putea fi adusă prin constrângere, cu respectarea drepturilor legale.\n\n'
+          +'Emis în data de '+dt.data+', ora '+dt.ora+'.\nEmitent: '+agent;
+      }
+    },
+    perchezitie:{
+      label:'Mandat de percheziție',
+      hint:'Se percheziționează o locație confirmată în prealabil. Conform regulamentului, mandatul de percheziție este elaborat de DCCO.',
+      fields:[['nume','Nume suspect / deținător','ex: Naomi Black'],['motiv','Indicii / fapta cercetată','ex: trafic de armament'],['locatie','Locația percheziționată','ex: locuința din Grove Street 12']],
+      text:function(v,dt,agent){
+        return 'MANDAT DE PERCHEZIȚIE\n\n'
+          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune efectuarea unei PERCHEZIȚII asupra locației '+v.locatie+', deținută/utilizată de numitul/numita '+v.nume+', existând indicii temeinice privind '+v.motiv+'.\n\n'
+          +'Percheziția se va efectua cu confirmarea prealabilă a locației, bunurile care fac obiectul confiscării urmând a fi inventariate și ridicate conform procedurilor în vigoare.\n\n'
+          +'Emis în data de '+dt.data+', ora '+dt.ora+'.\nEmitent: '+agent;
+      }
+    },
+    arestare:{
+      label:'Mandat de arestare',
+      hint:'Pentru un cetățean identificat care nu a fost arestat pe loc la momentul constatării faptei.',
+      fields:[['nume','Nume suspect','ex: Naomi Black'],['motiv','Fapta reținută în sarcina sa','ex: Jaf armat']],
+      text:function(v,dt,agent){
+        return 'MANDAT DE ARESTARE\n\n'
+          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune ARESTAREA numitului/numitei '+v.nume+', identificat(ă) în evidențele I.P.J. Los Santos, sub aspectul săvârșirii faptei de '+v.motiv+', persoana în cauză nefiind reținută la momentul constatării faptei.\n\n'
+          +'Organele de poliție sunt împuternicite să procedeze la identificarea, imobilizarea și încarcerarea persoanei sus-menționate, cu respectarea drepturilor legale ale acesteia.\n\n'
+          +'Emis în data de '+dt.data+', ora '+dt.ora+'.\nEmitent: '+agent;
+      }
+    }
+  };
+  let mdVals={};
+  function agentStr(){
+    try{
+      const a=JSON.parse(localStorage.getItem('phAgent')||'null');
+      if(a&&(a.rank||a.name)) return ((a.rank||'')+' '+(a.name||'')).trim()+(a.call?(' · '+a.call):'');
+    }catch(e){}
+    return '[AGENT]';
+  }
+  function build(){
+    const md=MD[sel.value];
+    const v={};
+    md.fields.forEach(function(f){ v[f[0]]=(mdVals[f[0]]||'').trim()||('['+f[1].toUpperCase()+']'); });
+    tOut.value=md.label+' — '+v.nume;
+    bOut.value=md.text(v,nowRO(),agentStr());
+  }
+  function renderFields(){
+    const md=MD[sel.value];
+    document.getElementById('mdHint').textContent=md.hint;
+    box.innerHTML=md.fields.map(function(f){
+      const wide=(f[0]==='motiv'||f[0]==='locatie')?' wide':'';
+      const dl=(f[0]==='nume')?' list="suspectList"':(f[0]==='motiv'?' list="motivList"':'');
+      return '<div class="inp'+wide+'"><label>'+f[1]+'</label><input data-md="'+f[0]+'"'+dl+' placeholder="'+esc(f[2])+'" value="'+esc(mdVals[f[0]]||'')+'"></div>';
+    }).join('');
+    box.querySelectorAll('input[data-md]').forEach(function(inp){
+      inp.addEventListener('input',function(){ mdVals[inp.dataset.md]=inp.value; build(); });
+    });
+    build();
+  }
+  sel.addEventListener('change',renderFields);
+  document.getElementById('mdCopyT').addEventListener('click',function(e){ copy(tOut.value,e.target); });
+  document.getElementById('mdCopyB').addEventListener('click',function(e){ build(); copy(bOut.value,e.target); histSave('Mandat',tOut.value,bOut.value); });
+  // autocomplete pentru „fapta" din lista articolelor Codului Penal
+  const dl=document.createElement('datalist'); dl.id='motivList';
+  dl.innerHTML=A.map(function(a){return '<option value="'+esc(a.name)+'">';}).join('');
+  document.body.appendChild(dl);
+  renderFields();
+})();
 
 /* ---------------- SINCRONIZARE COD PENAL (penal-code.json, generat din wiki) ---------------- */
 (function(){
