@@ -622,6 +622,12 @@
         <div class="set-row"><label>Cache pe disc</label><b id="cacheSize" style="font-family:var(--mono)">—</b></div>
         <div class="set-row"><label></label><button class="btnp" id="cacheClear">Golește cache-ul acum</button></div>
       </div></div>
+      <div class="card" id="dscCard" style="display:none"><div class="cardbox">
+        <h3>🔐 Acces Discord</h3>
+        <div class="cb-sub">Aplicația e rezervată membrilor serverului de Discord. Statusul se reverifică periodic, automat.</div>
+        <div class="set-row"><label>Status</label><b id="dscStatus">—</b></div>
+        <div class="set-row"><label></label><span style="display:flex;gap:8px"><button class="btnp" id="dscRecheck">Reverifică</button><button class="btnp" id="dscLogout" style="color:#ff9aa6">Deconectează</button></span></div>
+      </div></div>
       <div class="card"><div class="cardbox">
         <h3>🗑️ Resetare</h3>
         <div class="cb-sub">Șterge datele salvate local (agent, setări overlay, taste).</div>
@@ -1927,7 +1933,7 @@ renderHist();
     location.reload();
   }
   const setReset=document.getElementById('setReset');
-  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); localStorage.removeItem('mdtHotkeys'); localStorage.removeItem('phHistory'); hardReload(); } };
+  if(setReset) setReset.onclick=()=>{ if(confirm('Sigur ștergi datele salvate local?')){ localStorage.removeItem('phAgent'); localStorage.removeItem('ovCfg'); localStorage.removeItem('mdtHotkeys'); localStorage.removeItem('phHistory'); localStorage.removeItem('phDiscord'); hardReload(); } };
   const setReload=document.getElementById('setReload');
   if(setReload) setReload.onclick=()=>hardReload();
 })();
@@ -2083,6 +2089,129 @@ renderHist();
     });
   };
   refresh();
+})();
+</script>
+<style id="dgcss">
+  #dgate{position:fixed;inset:0;z-index:200000;display:grid;place-items:center;background:rgba(3,7,15,.9);backdrop-filter:blur(8px)}
+  #dgate .dg-box{width:400px;max-width:94vw;text-align:center;background:linear-gradient(180deg,rgba(19,36,74,.95),rgba(9,17,36,.98));border:1px solid rgba(96,165,250,.25);border-radius:20px;padding:30px 26px;box-shadow:0 30px 80px #000c}
+  #dgate .dg-logo{width:92px;height:101px;margin:0 auto 12px;display:block;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+  #dgate h2{margin:0 0 6px;font-size:20px}
+  #dgate p{color:#aebfe0;font-size:13px;line-height:1.55;margin:0 0 16px;min-height:20px}
+  #dgate button{width:100%;padding:12px;border-radius:10px;border:0;background:#5865F2;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:filter .12s}
+  #dgate button:hover{filter:brightness(1.12)}
+  #dgate .dg-note{margin-top:12px;font-size:11px;color:#5f759c;line-height:1.5}
+  html.ovmode #dgate .dg-box{width:320px;padding:20px}
+  html.ovmode #dgate .dg-logo{width:60px;height:66px}
+</style>
+<script>
+/* ---------------- ACCES DOAR PENTRU MEMBRII SERVERULUI DISCORD ----------------
+   Se activează doar când CLIENT_ID e completat (Application ID din Discord
+   Developer Portal, cu redirect URI-ul paginii înregistrat la OAuth2 → Redirects).
+   Confirmă prin OAuth (scope: identify guilds) că utilizatorul e membru al
+   serverului și ține minte rezultatul; se reverifică silențios cât timp
+   tokenul Discord e valabil (~7 zile), apoi cere din nou conectarea. */
+(function(){
+  var cfg=window.__dgateCfg||{};
+  var CLIENT_ID=cfg.clientId!==undefined?cfg.clientId:'';
+  var GUILD_ID=cfg.guildId||'1162871509275119637';
+  var KEY='phDiscord';
+  var FRESH_MS=24*60*60*1000;    // sub 24h de la ultima verificare: acces direct, fără request
+  var GRACE_MS=7*24*60*60*1000;  // fără internet: acceptă ultima verificare reușită, max 7 zile
+  if(!CLIENT_ID || location.protocol==='file:') return;   // dezactivat / mod offline de avarie
+  var card=document.getElementById('dscCard'); if(card) card.style.display='';
+  var OV=document.documentElement.classList.contains('ovmode');
+
+  function readC(){ try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;} }
+  function writeC(o){ try{ if(o)localStorage.setItem(KEY,JSON.stringify(o)); else localStorage.removeItem(KEY); }catch(e){} }
+  function setStatus(t){ var s=document.getElementById('dscStatus'); if(s)s.textContent=t; }
+
+  var gate=null;
+  function showGate(msg,canConnect){
+    if(!gate){
+      gate=document.createElement('div'); gate.id='dgate';
+      gate.innerHTML='<div class="dg-box">'
+        +'<svg viewBox="0 0 120 132" class="dg-logo"><use href="#phFull"/></svg>'
+        +'<h2>Acces pentru membri</h2>'
+        +'<p id="dgMsg"></p>'
+        +(OV?'':'<button id="dgBtn" type="button">Conectează-te cu Discord</button>')
+        +'<div class="dg-note">Police Helper e disponibil doar membrilor serverului de Discord al facțiunii.</div>'
+        +'</div>';
+      document.body.appendChild(gate);
+      var b=document.getElementById('dgBtn'); if(b)b.onclick=goAuth;
+    }
+    document.getElementById('dgMsg').textContent=msg;
+    var b=document.getElementById('dgBtn'); if(b)b.style.display=canConnect?'':'none';
+    gate.style.display='grid';
+  }
+  function hideGate(){ if(gate)gate.style.display='none'; }
+
+  function goAuth(){
+    var st=Math.random().toString(36).slice(2);
+    try{sessionStorage.setItem('dgState',st);}catch(e){}
+    location.href='https://discord.com/oauth2/authorize?client_id='+CLIENT_ID
+      +'&response_type=token&scope=identify%20guilds'
+      +'&redirect_uri='+encodeURIComponent(location.origin+location.pathname)
+      +'&state='+st;
+  }
+
+  function fallback(msg){
+    var c=readC();
+    if(c&&c.ok&&Date.now()-c.t<GRACE_MS){ hideGate(); setStatus('✅ verificat (din cache, fără internet)'); return; }
+    showGate(msg+(OV?' Deschide fereastra principală Police Helper și conectează-te de acolo.':''),!OV);
+    setStatus('—');
+  }
+
+  function verify(token,tokenExp){
+    if(typeof fetch!=='function'){ fallback('Verificarea nu e disponibilă în acest browser.'); return; }
+    setStatus('se verifică…');
+    fetch('https://discord.com/api/users/@me/guilds',{headers:{Authorization:'Bearer '+token}})
+      .then(function(r){ if(!r.ok)throw new Error('http'); return r.json(); })
+      .then(function(gs){
+        var inG=Array.isArray(gs)&&gs.some(function(g){return g&&g.id===GUILD_ID;});
+        if(!inG){
+          writeC(null); setStatus('❌ nu ești membru pe server');
+          showGate('Contul tău de Discord nu e membru al serverului. Intră întâi pe serverul de Discord, apoi conectează-te din nou.',!OV);
+          return;
+        }
+        return fetch('https://discord.com/api/users/@me',{headers:{Authorization:'Bearer '+token}})
+          .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
+          .then(function(u){
+            var nm=(u&&(u.global_name||u.username))||'';
+            writeC({ok:1,t:Date.now(),tok:token,te:tokenExp||0,name:nm});
+            setStatus('✅ verificat'+(nm?(' ca '+nm):''));
+            hideGate();
+          });
+      })
+      .catch(function(){ fallback('Nu am putut contacta Discord (ești offline?).'); });
+  }
+
+  function tokenAlive(c){ return c&&c.tok&&c.te&&Date.now()<c.te-60000; }
+
+  var mTok=location.hash.match(/access_token=([^&]+)/);
+  if(mTok){
+    var tok=decodeURIComponent(mTok[1]);
+    var mExp=location.hash.match(/expires_in=(\d+)/);
+    var exp=Date.now()+(mExp?+mExp[1]*1000:6*24*60*60*1000);
+    var mSt=location.hash.match(/state=([^&]+)/), okSt=true;
+    try{ var want=sessionStorage.getItem('dgState'); okSt=!want||want===decodeURIComponent(mSt?mSt[1]:''); }catch(e){}
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    if(okSt) verify(tok,exp);
+    else showGate('Sesiunea de autentificare nu s-a putut valida — încearcă din nou.',!OV);
+  } else {
+    var c=readC();
+    if(c&&c.ok&&Date.now()-c.t<FRESH_MS){
+      hideGate(); setStatus('✅ verificat'+(c.name?(' ca '+c.name):''));
+    } else if(c&&c.ok&&tokenAlive(c)){
+      verify(c.tok,c.te);   // cache mai vechi de 24h, dar tokenul mai e bun → reverificare silențioasă
+    } else {
+      showGate(OV?'Accesul nu e confirmat.':'Conectează-te cu Discord ca să confirmi că ești membru al serverului.',!OV);
+    }
+  }
+
+  var rb=document.getElementById('dscRecheck');
+  if(rb)rb.onclick=function(){ var c=readC(); if(tokenAlive(c))verify(c.tok,c.te); else goAuth(); };
+  var lb=document.getElementById('dscLogout');
+  if(lb)lb.onclick=function(){ writeC(null); location.reload(); };
 })();
 </script>
 </body>
