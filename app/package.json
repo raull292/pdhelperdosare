@@ -18,6 +18,7 @@
   "build": {
     "appId": "com.raull292.policehelper",
     "productName": "Police Helper",
+    "artifactName": "Police-Helper-Setup-${version}.${ext}",
     "files": [
       "main.js",
       "preload.js",
