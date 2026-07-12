@@ -327,7 +327,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
 </script>
 <div id="app">
   <nav id="sidebar">
-    <div class="sb-brand"><div class="emblem sb-emblem"></div><div><b id="sbDate">—</b><span id="sbVer">—</span></div></div>
+    <div class="sb-brand"><div><b id="sbDate">—</b><span id="sbClock">—</span></div></div>
     <button class="nav-item active" data-page="dashboard"><span class="ni-ic">🏠</span> Dashboard</button>
     <div class="sb-sec">Operativ</div>
     <button class="nav-item" data-page="mdt"><span class="ni-ic">📋</span> MDT Assistant</button>
@@ -811,12 +811,12 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   @media (prefers-reduced-motion: reduce){body::after{animation:none}}
   /* scuturile de brand „respiră" discret albastru↔roșu, ca reflexiile unui girofar */
   @keyframes girofarGlow{0%,100%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(59,130,246,.55))}50%{filter:drop-shadow(0 3px 8px rgba(0,0,0,.6)) drop-shadow(0 0 9px rgba(240,71,94,.5))}}
-  #sidebar .sb-emblem,#appbar .ab-badge{animation:girofarGlow 3.6s ease-in-out infinite}
+  #appbar .ab-badge{animation:girofarGlow 3.6s ease-in-out infinite}
 
   /* sidebar: brand cu scut + secțiuni */
   #sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;margin-bottom:8px;border-bottom:1px solid rgba(96,165,250,.14)}
   #sidebar .sb-brand b{display:block;font-size:12.5px;color:#eaf1fb;letter-spacing:.2px;line-height:1.2}
-  #sidebar .sb-brand span{font-size:10.5px;color:#5b7099}
+  #sidebar .sb-brand span{font-family:var(--mono);font-size:12px;color:#8fa3c8;letter-spacing:1.6px}
   #sidebar .sb-sec{font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:#44587e;font-weight:800;padding:12px 12px 5px}
   .nav-item .ni-ic{transition:transform .15s}
   .nav-item.active .ni-ic{transform:scale(1.15)}
@@ -2073,18 +2073,17 @@ renderHist();
     const m=document.getElementById('main'); if(m) m.scrollTop=0;
   }
   document.addEventListener('click',e=>{ const t=e.target.closest('[data-page]'); if(t) go(t.dataset.page); });
-  const clk=document.getElementById('abClock');
-  function tick(){ if(clk){clk.textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());} }
+  const clk=document.getElementById('abClock'), sbClk=document.getElementById('sbClock');
+  function tick(){
+    const t=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    if(clk)clk.textContent=t;
+    if(sbClk)sbClk.textContent=t;
+  }
   tick(); setInterval(tick,1000);
-  // sidebar: data de azi + versiunea (în locul brandului dublat din bara de sus)
+  // sidebar: data de azi + ora (în locul brandului dublat din bara de sus)
   (function(){
-    const sbD=document.getElementById('sbDate'), sbV=document.getElementById('sbVer');
+    const sbD=document.getElementById('sbDate');
     if(sbD){ try{ const s=new Intl.DateTimeFormat('ro-RO',{timeZone:'Europe/Bucharest',weekday:'long',day:'numeric',month:'long'}).format(new Date()); sbD.textContent=s.charAt(0).toUpperCase()+s.slice(1); }catch(e){} }
-    if(sbV){
-      const da=window.desktopApp;
-      if(da&&da.isApp&&da.updates&&da.updates.version) da.updates.version().then(function(v){ sbV.textContent=v?('Aplicație v'+v):'Aplicație desktop'; });
-      else sbV.textContent='Versiune web · live';
-    }
   })();
   const agentChip=document.getElementById('abAgent'), login=document.getElementById('login');
   function getA(){ try{return JSON.parse(localStorage.getItem('phAgent')||'null');}catch(e){return null;} }
