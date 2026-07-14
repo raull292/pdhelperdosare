@@ -470,6 +470,10 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
     <div class="shared" id="sharedFields"></div>
     <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
     <p class="phelp mut">Ce lași gol apare ca <b>[CÂMP]</b> în text și-l completezi manual în joc.</p>
+    <div id="weaponBox" style="display:none">
+      <div class="dc-title">🔫 Arma de foc găsită asupra suspectului (intră în descriere, cu confiscare)</div>
+      <div class="shared" id="weaponFields"></div>
+    </div>
     <style id="subcss">
       .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
       .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
@@ -1024,7 +1028,7 @@ const A = [
 ];
 
 /* ---------------- TEMPLATES ---------------- */
-const COMMON=["data","ora","zona","nume","marca","culoare","nrinm"];
+const COMMON=["data","ora","zona","nume","marca","culoare","nrinm","arma","gloante","calibru"];
 function fval(f){ return (COMMON.includes(f) ? (shared[f]||"") : (vals[f]||"")); }
 const FLABEL = {
   data:["Data","ex: 30.06.2026"], ora:["Ora","ex: 22:28"], zona:["Zona","ex: MALDIVE / Cazino"],
@@ -1357,7 +1361,7 @@ function showToast(){toastEl.classList.add('show');clearTimeout(toastT);toastT=s
 /* ---------------- DOSAR CUMULAT (COMBO) ---------------- */
 let cart=[]; // [{id, months}]
 let dossierScenario='auto';
-const shared={data:"",ora:"",zona:"",nume:"",marca:"",culoare:"",nrinm:"",locjaf:""};
+const shared={data:"",ora:"",zona:"",nume:"",marca:"",culoare:"",nrinm:"",locjaf:"",arma:"",gloante:"",calibru:""};
 
 // returneaza motivul conflictului intre 2 articole, sau null
 function pairConflict(a,b){
@@ -1447,12 +1451,23 @@ function dlFor(f){ return f==='nume'?' list="suspectList"':(f==='marca'?' list="
 function renderShared(){
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
   // aceleași câmpuri apar și în Panoul 3 (dosar) și în Panoul 4 (amendă rapidă); valorile sunt sincronizate
+  const mk=(box,list)=>{
+    box.innerHTML=list.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+dlFor(f[0])+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+    box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
+  };
   ['sharedFields','sharedFieldsQ'].forEach(function(id){
     const box=document.getElementById(id);
-    if(!box) return;
-    box.innerHTML=F.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+dlFor(f[0])+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
-    box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
+    if(box) mk(box,F);
   });
+  const wf=document.getElementById('weaponFields');
+  if(wf) mk(wf,[["arma","Ce armă","ex: Pistol Combat"],["gloante","Nr. gloanțe","ex: 66"],["calibru","Calibru","ex: 9mm"]]);
+}
+// arma de foc din dosar cere detalii (armă/gloanțe/calibru) — casetă vizibilă doar când e cazul
+const FIREARM_IDS=['7.2','7.3','7.4','7.8'];
+function hasFirearm(){ return cart.some(c=>FIREARM_IDS.includes(c.id)); }
+function updateWeaponBox(){
+  const wb=document.getElementById('weaponBox');
+  if(wb) wb.style.display=hasFirearm()?'':'none';
 }
 
 /* ---------------- AMENDĂ RAPIDĂ (trafic stop) ---------------- */
@@ -1525,6 +1540,7 @@ function initFold(){
 }
 function updateFoldBadges(){
   if(window.__razQNotify) window.__razQNotify(cart.length>0);
+  updateWeaponBox();
   const db=document.getElementById('dossierBadge');
   if(db){
     if(cart.length){
@@ -1701,7 +1717,18 @@ function buildCombinedDesc(){
   // (alertă → deplasare echipaje → reținere), nu o simplă mențiune seacă
   const jafC=(scen==='auto')?ordered.find(c=>{const t=g(c.id).t;return t==='jaf_imobil'||t==='jaf_bancar';}):null;
   const P={1:[],2:[],3:[],4:[],5:[]};
-  ordered.forEach(c=>{ if(jafC&&c.id===jafC.id) return; const a=g(c.id);P[phaseOf(a)].push(a.hint||("a comis fapta de "+a.name.toLowerCase()));});
+  // arma de foc din dosar primește inventar detaliat (armă/gloanțe/calibru din caseta 🔫)
+  let armaDetailed=false;
+  ordered.forEach(c=>{
+    if(jafC&&c.id===jafC.id) return;
+    const a=g(c.id);
+    let h=a.hint||("a comis fapta de "+a.name.toLowerCase());
+    if(!armaDetailed&&FIREARM_IDS.includes(a.id)){
+      armaDetailed=true;
+      h="deținea asupra sa 1x "+(shared.arma||"[ARMĂ]")+", "+(shared.gloante||"[NR. GLOANȚE]")+"x gloanțe calibrul "+(shared.calibru||"[CALIBRU]");
+    }
+    P[phaseOf(a)].push(h);
+  });
   const hasVehCharge=!jafC&&ordered.some(c=>isVehicle(g(c.id)));
   const parts=[];
   let named=false;
@@ -1728,6 +1755,7 @@ function buildCombinedDesc(){
         else s=(anyFact?pv(V.crimeMore,9):pv(V.crimeFirst,8))+S()+" "+joinRo(P[5])+".";
         anyFact=true;
       }
+      if(ph===4&&armaDetailed) s+=" Bunurile au fost ridicate în vederea confiscării.";
       parts.push(s);
     });
   }
@@ -2024,7 +2052,7 @@ renderHist();
   function hasData(){
     if(cur||cart.length||quick.size) return true;
     if(Object.keys(vals).some(function(k){return vals[k];})) return true;
-    if(['zona','nume','marca','culoare','nrinm','locjaf'].some(function(k){return shared[k];})) return true;
+    if(['zona','nume','marca','culoare','nrinm','locjaf','arma','gloante','calibru'].some(function(k){return shared[k];})) return true;
     const s=document.getElementById('search');
     return !!(s&&s.value);
   }
