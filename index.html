@@ -328,6 +328,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   <nav id="sidebar">
     <div class="sb-brand"><div><b id="sbDate">—</b><span id="sbClock">—</span></div></div>
     <button class="nav-item active" data-page="dashboard"><span class="ni-ic">🏠</span> Dashboard</button>
+    <button class="nav-item" data-page="ghid"><span class="ni-ic">🎓</span> Ghid de folosire</button>
     <div class="sb-sec">Operativ</div>
     <button class="nav-item" data-page="mdt"><span class="ni-ic">📋</span> MDT Assistant</button>
     <button class="nav-item" data-page="mandate"><span class="ni-ic">📜</span> Mandate</button>
@@ -346,12 +347,62 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         <h2>Police Helper</h2>
         <div class="dh-sub">I.P.J. Los Santos · B-Zone V</div>
       </div>
+      <div class="dash-guide" data-page="ghid">🎓 <b>Prima dată aici?</b> Deschide ghidul — înveți toată aplicația în 2 minute <span class="dg-arrow">→</span></div>
       <div class="dash-cards">
         <div class="dash-card" data-page="mdt"><div class="dc-ic">📋</div><b>MDT Assistant</b><span>Dosare & amenzi</span></div>
         <div class="dash-card" data-page="overlays"><div class="dc-ic">📡</div><b>Overlays</b><span>Coduri radio peste joc</span></div>
         <div class="dash-card" data-page="setari"><div class="dc-ic">⚙️</div><b>Setări</b><span>Callsign & preferințe</span></div>
         <div class="dash-card" data-page="update"><div class="dc-ic">🔄</div><b>Update</b><span>Versiune & status</span></div>
       </div>
+    </section>
+
+    <section class="page" id="page-ghid">
+      <div class="page-h"><h2>Ghid de folosire</h2><p>Tot ce trebuie să știi, pas cu pas — fără să întrebi pe nimeni.</p></div>
+      <style id="gcss">
+        .gstep{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+        .gstep .gn{flex:0 0 30px;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:14px;color:var(--gold);border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+        .gstep p{margin:2px 0 0;font-size:13.5px;color:#cfe0f7;line-height:1.55}
+        .gstep p b{color:#fff}
+        .gstep p .gk{font-family:var(--mono);font-size:12px;color:#ffd98a}
+        .gtool{border:1px solid rgba(96,165,250,.15);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:rgba(8,16,34,.5)}
+        .gtool b{display:block;font-size:13.5px;margin-bottom:3px}
+        .gtool span{font-size:12.5px;color:#8fa3c8;line-height:1.5}
+        .gauto{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:12.5px;color:#cfe0f7;line-height:1.5}
+        .gauto .ga-ic{flex:0 0 22px;text-align:center}
+      </style>
+      <div class="card"><div class="cardbox">
+        <h3>🚔 Primul tău dosar, în 30 de secunde</h3>
+        <div class="cb-sub">Deschide <b>MDT Assistant</b> din meniu și urmează pașii:</div>
+        <div class="gstep"><div class="gn">1</div><p><b>Caută fapta</b> în Panoul 1 — scrie orice: <span class="gk">viteză</span>, <span class="gk">jaf</span>, <span class="gk">7.2</span> sau <span class="gk">armă</span>. Apesi pe rezultat.</p></div>
+        <div class="gstep"><div class="gn">2</div><p><b>Completează câmpurile</b> apărute în Panoul 2 (nume suspect, zonă etc.). Data și ora se pun singure. Câmpurile marcate <b>(opțional)</b> pot rămâne goale — restul sunt obligatorii.</p></div>
+        <div class="gstep"><div class="gn">3</div><p><b>Alege sentința</b> de pe bară (la dosare penale) — butoanele <span class="gk">Minim / Mediu / Maxim</span> o setează instant.</p></div>
+        <div class="gstep"><div class="gn">4</div><p><b>Copiază pe rând</b> cu butoanele verzi: <span class="gk">Titlu</span> → <span class="gk">Sentință</span> → <span class="gk">Descriere</span>, și lipește-le în MDT-ul din joc (CTRL+V). Dacă lipsește ceva, butonul te anunță exact ce.</p></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>🧰 Cele 3 unelte din MDT — pe care o folosești?</h3>
+        <div class="gtool"><b>📄 Panoul 2 — O singură faptă</b><span>Suspectul a comis o singură infracțiune (ex: doar posesie de armă). Cauți, completezi, copiezi. Cel mai des folosit.</span></div>
+        <div class="gtool"><b>📚 Panoul 3 — Dosar cumulat</b><span>Mai multe fapte pe același suspect (ex: armă + ultraj + droguri). Adaugi fiecare faptă cu butonul auriu „＋ Adaugă la dosar", iar aplicația calculează sentința totală, verifică combinațiile interzise și scrie o singură descriere cu tot firul poveștii. La substanțe alege singură TIP-ul (I–IV) după cantitate.</span></div>
+        <div class="gtool"><b>🚗 Panoul 4 — Amendă rapidă</b><span>Contravenții rutiere la un trafic stop: bifezi ce a încălcat (viteză, folii, parcare...), completezi datele mașinii și primești titlul + suma + descrierea, gata de copiat.</span></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>🛡️ Aplicația te ferește singură de greșeli</h3>
+        <div class="gauto"><div class="ga-ic">⛔</div><div><b>Nu te lasă să copiezi cu câmpuri goale</b> — dacă în text a rămas ceva de tip [NUME SUSPECT], butonul refuză și îți spune ce lipsește.</div></div>
+        <div class="gauto"><div class="ga-ic">🧹</div><div><b>Se golește singur după 5 minute</b> de inactivitate — datele unui caz vechi nu ajung din greșeală în cazul următor. Istoricul copiat rămâne salvat în pagina Istoric.</div></div>
+        <div class="gauto"><div class="ga-ic">🚫</div><div><b>Combinațiile interzise sunt blocate</b> — dacă două fapte nu se cumulează după regulament (ex: Jaful doar cu Ultraj), aplicația te oprește și îți explică.</div></div>
+        <div class="gauto"><div class="ga-ic">📜</div><div><b>Titlurile sunt cele oficiale</b> — exact ca în Codul Penal de pe wiki, cu tot cu diacritice. Codul penal, lista de mașini și sancțiunile se sincronizează automat cu wiki-ul.</div></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>👮 Contul tău</h3>
+        <div class="gauto"><div class="ga-ic">🎮</div><div><b>Accesul</b> se face cu un click pe „Autorizează prin Discord" — se deschide browserul tău (unde ești deja logat) și doar apeși Autorizează. Trebuie să fii membru pe serverul de Discord al facțiunii.</div></div>
+        <div class="gauto"><div class="ga-ic">🎖️</div><div><b>Gradul</b> nu se alege manual — se ia automat din rolul tău de pe Discord și se actualizează singur la avansare.</div></div>
+        <div class="gauto"><div class="ga-ic">✍️</div><div><b>Numele și callsign-ul</b> le scrii o singură dată în <b>Setări → Agent</b> — apar apoi sus în bară și pe mandate ca emitent.</div></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>📡 Overlay peste joc &amp; altele</h3>
+        <div class="gauto"><div class="ga-ic">🕹️</div><div><b>MDT-ul peste joc</b>: din pagina <b>Overlays</b> pornești fereastra transparentă care stă peste GTA (merge în Borderless/Windowed) — poți scrie în ea fără alt-tab. Tastele le alegi tu, tot acolo.</div></div>
+        <div class="gauto"><div class="ga-ic">📜</div><div><b>Mandatele</b> (aducere / percheziție / arestare) au pagina lor — completezi 2-3 câmpuri și textul juridic e gata, cu tine ca emitent.</div></div>
+        <div class="gauto"><div class="ga-ic">🔄</div><div><b>Nu instalezi nimic manual niciodată</b> — aplicația se actualizează singură (verifică la pornire și la fiecare 30 de minute).</div></div>
+      </div></div>
     </section>
 
     <section class="page" id="page-mdt">
@@ -405,7 +456,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
       <div id="output">
         <div class="empty">
           <div class="big">Nimic selectat încă</div>
-          Alege o infracțiune din stânga (sau caută-o) și îți generez automat<br>titlul, sentința și descrierea gata de copiat în joc.
+          Alege o infracțiune din stânga sau caut-o sus: „viteză", „jaf", „armă", „7.2"…<br>Îți generez automat titlul, sentința și descrierea, gata de copiat în joc.
         </div>
       </div>
     </div>
@@ -469,7 +520,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
     <div class="dc-title">✎ Date comune (aceleași apar și în Panoul 2)</div>
     <div class="shared" id="sharedFields"></div>
     <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
-    <p class="phelp mut">Ce lași gol apare ca <b>[CÂMP]</b> în text și-l completezi manual în joc.</p>
+    <p class="phelp mut">Câmpurile cu <b>(opțional)</b> pot rămâne goale. Restul sunt obligatorii — dacă lipsește ceva, butonul „Copiază" te oprește și îți spune exact ce.</p>
     <div id="weaponBox" style="display:none">
       <div class="dc-title">🔫 Arma de foc găsită asupra suspectului (intră în descriere, cu confiscare)</div>
       <div class="shared" id="weaponFields"></div>
@@ -835,6 +886,11 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   .dash-cards .dash-card:nth-child(2) .dc-ic{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08)}
   .dash-cards .dash-card:nth-child(3) .dc-ic{border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.07)}
   .dash-cards .dash-card:nth-child(4) .dc-ic{border-color:rgba(45,212,160,.25);background:rgba(45,212,160,.07)}
+  /* banner „prima dată aici?" → ghid */
+  .dash-guide{width:fit-content;margin:24px auto -12px;padding:10px 22px;border-radius:999px;cursor:pointer;font-size:13px;color:#cfe0f7;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);transition:border-color .15s,box-shadow .15s,transform .12s}
+  .dash-guide:hover{border-color:rgba(251,191,36,.6);box-shadow:0 0 18px rgba(251,191,36,.16);transform:translateY(-1px)}
+  .dash-guide b{color:#ffd98a}
+  .dash-guide .dg-arrow{color:var(--gold);margin-left:4px}
 
   /* stări goale cu filigranul emblemei */
   .empty,.cart-empty,.hempty{position:relative;overflow:hidden}
@@ -1230,6 +1286,7 @@ function renderOutput(){
   h+='</select></div>';
 
   h+='<div class="inputs" id="inputs"></div>';
+  h+='<p class="phelp mut" style="margin:0 0 12px">Toate câmpurile de mai sus intră în descriere. Dacă lași ceva gol, butonul „Copiază" te oprește și îți spune exact ce lipsește.</p>';
   h+='<div id="razQ2"></div>';
   h+=fieldBlock("Descriere (copiază în câmpul „Descriere”)","desc","",true);
   h+='<div style="margin-top:-6px"><button class="pill" id="regenSingle">🔄 Altă formulare</button></div>';
@@ -2067,7 +2124,7 @@ renderHist();
     cur=null; curTpl=null; vals={}; sentVal=null; descVariant=0;
     cart.length=0; quick.clear();
     Object.keys(shared).forEach(function(k){ shared[k]=''; });
-    outEl.innerHTML='<div class="empty"><div class="big">Nimic selectat încă</div>Alege o infracțiune din stânga (sau caută-o) și îți generez automat<br>titlul, sentința și descrierea gata de copiat în joc.</div>';
+    outEl.innerHTML='<div class="empty"><div class="big">Nimic selectat încă</div>Alege o infracțiune din stânga sau caut-o sus: „viteză", „jaf", „armă", „7.2"…<br>Îți generez automat titlul, sentința și descrierea, gata de copiat în joc.</div>';
     modechip.textContent='selectează o faptă'; modechip.classList.remove('penal','amenda');
     const s=document.getElementById('search'); if(s)s.value='';
     dtManual=false; autoDateTime(true);
