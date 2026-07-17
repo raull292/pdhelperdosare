@@ -427,6 +427,10 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
     .fold-btn{pointer-events:none;font-family:inherit;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#bcd8ff;background:#0e2247;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;margin-left:auto;text-transform:uppercase;white-space:nowrap}
     .fold-badge:not([hidden])~.fold-btn{margin-left:10px}
     .panel.fold>h2:hover .fold-btn{border-color:var(--blue);color:#fff}
+    .pstep{display:flex;align-items:center;gap:9px;margin:18px 0 12px;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#8fa3c8;font-weight:800}
+    .pstep .pn{font-family:var(--mono);color:var(--gold,#fbbf24);border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);border-radius:6px;padding:1px 7px;font-size:11px}
+    .pstep .ps-note{text-transform:none;letter-spacing:.2px;font-weight:600;color:#5f759c}
+    .pstep::after{content:"";flex:1;height:1px;background:var(--line)}
     .phelp{font-size:12px;color:#5f759c;line-height:1.45;margin:2px 0 12px}
     .phelp.mut{margin:10px 0 0;color:#516585}
     .phelp b{color:#8ba0c4}
@@ -1249,18 +1253,30 @@ function renderOutput(){
   let h="";
   h+='<div class="out-head"><span class="name">'+esc(cur.name)+'</span>';
   h+=isPenal?'<span class="tag penal">Dosar penal</span>':'<span class="tag amenda">Amendă</span>';
-  h+='<button class="addbtn" id="addToDossier">＋ Adaugă la dosar</button>';
+  h+='<button class="addbtn" id="addToDossier" title="Suspectul are mai multe fapte? Apasă aici după fiecare — se adună în Dosarul cumulat (Panoul 3), cu sentința totală calculată automat.">＋ Adaugă la dosar</button>';
   h+='</div>';
 
   if(cur.combo) h+='<div class="combo"><span class="ci">⚠️</span><div><b>Reguli de cumulare:</b> '+esc(cur.combo)+'</div></div>';
 
-  h+=fieldBlock("Titlu (copiază în câmpul „Titlu”)","title",titleText(),false);
+  // pagina se citește de sus în jos, ca un formular: ① date → ② sentință/amendă → ③ copiere
+  let stepN=1;
+  const pstep=(txt,note)=>'<div class="pstep"><span class="pn">'+(stepN++)+'</span>'+txt+(note?'<span class="ps-note">'+note+'</span>':'')+'</div>';
+
+  h+=pstep('Completează datele faptei');
+  h+='<div class="field"><label>Cum s-a întâmplat? (scenariul descrierii — ales automat; schimbă-l doar dacă situația diferă)</label><select class="tsel" id="tsel">';
+  TPL_ORDER.forEach(k=>{h+='<option value="'+k+'"'+(k===curTpl?" selected":"")+'>'+TPL[k].label+'</option>';});
+  h+='</select></div>';
+  h+='<div class="inputs" id="inputs"></div>';
+  h+='<p class="phelp mut" style="margin:0 0 4px">Toate câmpurile de mai sus intră în descriere. Dacă lași ceva gol, butonul „Copiază" te oprește și îți spune exact ce lipsește.</p>';
+  h+='<div id="razQ2"></div>';
 
   if(cur.life&&!cur.s){
-    h+='<div class="field"><label>Sentință</label><div class="sent-box"><span class="sent-na">Reținere / închisoare pe viață</span></div></div>';
+    h+=pstep('Sentința');
+    h+='<div class="field"><div class="sent-box"><span class="sent-na">Reținere / închisoare pe viață</span></div></div>';
   } else if(cur.s){
     const lifeNote=cur.s[1]>360?' <small>(peste 360 = închisoare pe viață)</small>':(cur.life?' <small>(max = închisoare pe viață)</small>':"");
-    h+='<div class="field"><label>Sentință în luni (copiază în „Sentință în luni”)</label>'
+    h+=pstep('Alege sentința','1 lună = 1 minut de închisoare în joc');
+    h+='<div class="field">'
       +'<div class="sent-box"><div class="sent-top"><div><span class="sent-val" id="sval">'+sentVal+'</span><small>luni</small></div>'
       +'<div class="sent-range">interval: '+cur.s[0]+'–'+cur.s[1]+lifeNote+'</div></div>'
       +'<input type="range" id="srange" min="'+cur.s[0]+'" max="'+capMax+'" value="'+sentVal+'">'
@@ -1269,7 +1285,6 @@ function renderOutput(){
       +'<button class="pill on" data-s="mid">Mediu</button>'
       +'<button class="pill" data-s="max">Maxim ('+capMax+')</button>'
       +'<button class="pill" data-s="rnd">Aleatoriu</button>'
-      +'<button class="cbtn" id="copysent" style="min-width:70px">Copiază</button>'
       +'</div></div></div>';
   }
 
@@ -1277,32 +1292,32 @@ function renderOutput(){
   if(cur.f&&cur.f!=="—"){ const pn=fineToNum(cur.f); chips+='<div class="chip mo" data-copyfine="'+pn+'" title="Copiază suma (fără punct)">Amendă (fără punct)<b>'+pn+'$</b></div>'; }
   if(cur.pct) chips+='<div class="chip warn">Puncte penalizare<b>'+cur.pct+'</b></div>';
   if(cur.permis) chips+='<div class="chip warn">Permis / măsură<b style="font-size:12px">'+esc(cur.permis)+'</b></div>';
-  if(chips) h+='<div class="chips">'+chips+'</div>';
+  if(chips){
+    if(!isPenal) h+=pstep('Amenda calculată','apasă pe sumă ca s-o copiezi — fără punct, cum o cere MDT-ul');
+    h+='<div class="chips">'+chips+'</div>';
+  }
 
-  h+='<div class="divider"></div>';
-
-  h+='<div class="field"><label>Model descriere</label><select class="tsel" id="tsel">';
-  TPL_ORDER.forEach(k=>{h+='<option value="'+k+'"'+(k===curTpl?" selected":"")+'>'+TPL[k].label+'</option>';});
-  h+='</select></div>';
-
-  h+='<div class="inputs" id="inputs"></div>';
-  h+='<p class="phelp mut" style="margin:0 0 12px">Toate câmpurile de mai sus intră în descriere. Dacă lași ceva gol, butonul „Copiază" te oprește și îți spune exact ce lipsește.</p>';
-  h+='<div id="razQ2"></div>';
+  h+=pstep('Copiază în MDT, în ordinea din joc'+(isPenal&&cur.s?': Titlu → Sentință → Descriere':': Titlu → Descriere'));
+  h+=fieldBlock("Titlu (copiază în câmpul „Titlu”)","title",titleText(),false);
+  if(cur.s){
+    h+='<div class="field"><label>Sentință în luni (copiază în „Sentință în luni”)</label><div class="copyrow"><input data-out="sent2" readonly value="'+sentVal+'"><button class="cbtn" id="copysent">Copiază</button></div></div>';
+  }
   h+=fieldBlock("Descriere (copiază în câmpul „Descriere”)","desc","",true);
-  h+='<div style="margin-top:-6px"><button class="pill" id="regenSingle">🔄 Altă formulare</button></div>';
+  h+='<div style="margin-top:-6px"><button class="pill" id="regenSingle" title="Reformulează profesional descrierea — faptele rămân aceleași">🔄 Altă formulare</button></div>';
 
   outEl.innerHTML=h;
 
   if(cur.s){
     const range=document.getElementById('srange');
-    range.addEventListener('input',()=>{sentVal=+range.value;document.getElementById('sval').textContent=sentVal;clearPills();});
+    const showSent=()=>{document.getElementById('sval').textContent=sentVal;const s2=document.querySelector('[data-out="sent2"]');if(s2)s2.value=sentVal;};
+    range.addEventListener('input',()=>{sentVal=+range.value;showSent();clearPills();});
     document.querySelectorAll('.pill[data-s]').forEach(p=>p.addEventListener('click',()=>{
       const m=p.dataset.s;
       if(m==="min")sentVal=cur.s[0];
       else if(m==="max")sentVal=capMax;
       else if(m==="mid")sentVal=Math.round((cur.s[0]+capMax)/2);
       else sentVal=cur.s[0]+Math.floor(Math.random()*(capMax-cur.s[0]+1));
-      range.value=sentVal;document.getElementById('sval').textContent=sentVal;
+      range.value=sentVal;showSent();
       clearPills();p.classList.add('on');
     }));
     document.getElementById('copysent').addEventListener('click',e=>copy(String(sentVal),e.target));
