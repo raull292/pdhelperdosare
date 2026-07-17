@@ -468,9 +468,74 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
 
   <div class="panel dossier fold collapsed" id="dossierPanel">
     <h2><span class="n">3</span> Dosar cumulat — mai multe capete de acuzare <span class="fold-badge" id="dossierBadge" hidden></span><button class="fold-btn" type="button" tabindex="-1">▸ Extinde</button></h2>
-    <p class="phelp">Mai multe fapte pe același suspect. Adaugă-le cu „＋ Adaugă la dosar" din Panoul 2. Datele comune (suspect, dată, oră, locație) le completezi mai jos.</p>
+    <p class="phelp">Toate faptele unui suspect, într-un singur dosar: sentința totală se calculează singură, combinațiile interzise sunt verificate, iar descrierea spune toată întâmplarea.</p>
+    <style id="scencss">
+      .scenrow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+      .scenrow label{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;white-space:nowrap}
+      .scenrow select{flex:1;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
+      .scenhint{font-size:11.5px;color:#5f759c;margin-bottom:14px;line-height:1.4;min-height:14px}
+      .scenhint.warn{color:#e8a838}
+      .razq{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#2a1b0c;border:1px solid #6d4a17;border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#f2d59a}
+      .razq .rz-t{flex:1;min-width:220px;line-height:1.45}
+      .razq .rz-t b{color:#ffcf7a}
+      .subbox.glow{border-color:#f0b93c!important;box-shadow:0 0 0 3px rgba(240,185,60,.28)!important;transition:box-shadow .3s,border-color .3s}
+      .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
+      .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
+      .subbox .sub-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+      .subbox select{flex:1;min-width:210px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit;cursor:pointer}
+      .subbox input{width:120px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit}
+      .subbox .sub-hint{font-size:11.5px;color:#5f759c;margin-top:9px;line-height:1.45}
+      .subbox .sub-hint.ok{color:#26c281}.subbox .sub-hint.warn{color:#e8a838}
+    </style>
+
+    <div class="pstep"><span class="pn">1</span>Faptele din dosar</div>
+    <div id="cartList"></div>
+    <div class="subbox" id="subBox">
+      <div class="sub-title">➕ Substanțe găsite la suspect? Alege felul + cantitatea — TIP-ul (I–IV) se alege singur</div>
+      <div class="sub-row">
+        <select id="subType">
+          <option value="frunze">Frunze / Semințe (5.1)</option>
+          <option value="risc">Droguri de risc — jointuri (5.3)</option>
+          <option value="mare">Droguri mare risc — plicuri (5.4)</option>
+          <option value="tigari">Țiări de contrabandă (5.2)</option>
+          <option value="money">Bani murdari / Blood Money — $ (5.5)</option>
+        </select>
+        <input type="number" id="subQty" placeholder="cantitate" min="0">
+        <button class="btnp green" id="subAdd">Adaugă la dosar</button>
+      </div>
+      <div class="sub-hint" id="subHint">Se adaugă în dosar ca faptă, cu sentința TIP-ului corect după cantitate.</div>
+    </div>
+
+    <div class="pstep"><span class="pn">2</span>Datele cazului</div>
+    <div class="scenrow">
+      <label for="dossierScen">Cum a început?</label>
+      <select id="dossierScen">
+        <option value="auto">Automat (după faptele din dosar)</option>
+        <option value="trafic">Trafic stop (oprire în trafic)</option>
+        <option value="razie">Razie SAS pe insulă (Cayo/Maldive)</option>
+        <option value="focuri">Schimb de focuri (10-11)</option>
+        <option value="sesizare">Sesizare / intervenție</option>
+      </select>
+    </div>
+    <div class="scenhint" id="scenHint"></div>
+    <div class="razq" id="razQ" style="display:none">
+      <div class="rz-t"><b>Razie:</b> suspectul mai are ceva asupra lui în afară de armă și gloanțe (droguri, țigări de contrabandă, bani murdari)?</div>
+      <button class="btnp green" id="razYes" type="button">Da, are</button>
+      <button class="btnp" id="razNo" type="button">Nu, doar arma</button>
+    </div>
+    <div class="shared" id="sharedFields"></div>
+    <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
+    <p class="phelp mut">Câmpurile cu <b>(opțional)</b> pot rămâne goale. Restul sunt obligatorii — dacă lipsește ceva, butonul „Copiază" te oprește și îți spune exact ce.</p>
+    <div id="weaponBox" style="display:none">
+      <div class="dc-title">🔫 Arma de foc găsită asupra suspectului (intră în descriere, cu confiscare)</div>
+      <div class="shared" id="weaponFields"></div>
+    </div>
+
+    <div class="pstep"><span class="pn">3</span>Rezultatul — copiază în MDT</div>
+    <div id="cartOut"></div>
+
     <details class="ref">
-      <summary>Structură &amp; detalii (reguli server)</summary>
+      <summary>ℹ️ Regulile serverului pe scurt (amenzi · dosare · mandate)</summary>
       <div class="refbody">
         <div class="refcol a">
           <h4>＄ AMENDĂ</h4>
@@ -494,66 +559,6 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         </div>
       </div>
     </details>
-    <style id="scencss">
-      .scenrow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-      .scenrow label{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;white-space:nowrap}
-      .scenrow select{flex:1;padding:9px 11px;border-radius:8px;border:1px solid var(--line2);background:#0a1830;color:#eaf1fb;font-size:13.5px;font-family:inherit;cursor:pointer}
-      .scenhint{font-size:11.5px;color:#5f759c;margin-bottom:14px;line-height:1.4;min-height:14px}
-      .scenhint.warn{color:#e8a838}
-      .razq{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#2a1b0c;border:1px solid #6d4a17;border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#f2d59a}
-      .razq .rz-t{flex:1;min-width:220px;line-height:1.45}
-      .razq .rz-t b{color:#ffcf7a}
-      .subbox.glow{border-color:#f0b93c!important;box-shadow:0 0 0 3px rgba(240,185,60,.28)!important;transition:box-shadow .3s,border-color .3s}
-    </style>
-    <div class="scenrow">
-      <label for="dossierScen">Scenariu dosar</label>
-      <select id="dossierScen">
-        <option value="auto">Automat (după fapte)</option>
-        <option value="trafic">Trafic stop (oprire în trafic)</option>
-        <option value="razie">Razie SAS pe insulă (Cayo/Maldive)</option>
-        <option value="focuri">Schimb de focuri (10-11)</option>
-        <option value="sesizare">Sesizare / intervenție</option>
-      </select>
-    </div>
-    <div class="scenhint" id="scenHint"></div>
-    <div class="razq" id="razQ" style="display:none">
-      <div class="rz-t"><b>Razie:</b> suspectul mai are ceva asupra lui în afară de armă și gloanțe (droguri, țigări de contrabandă, bani murdari)?</div>
-      <button class="btnp green" id="razYes" type="button">Da, are</button>
-      <button class="btnp" id="razNo" type="button">Nu, doar arma</button>
-    </div>
-    <div class="dc-title">✎ Date comune (aceleași apar și în Panoul 2)</div>
-    <div class="shared" id="sharedFields"></div>
-    <button id="dtNow" title="Pune data și ora curentă din România">🕒 Data &amp; ora de acum</button>
-    <p class="phelp mut">Câmpurile cu <b>(opțional)</b> pot rămâne goale. Restul sunt obligatorii — dacă lipsește ceva, butonul „Copiază" te oprește și îți spune exact ce.</p>
-    <div id="weaponBox" style="display:none">
-      <div class="dc-title">🔫 Arma de foc găsită asupra suspectului (intră în descriere, cu confiscare)</div>
-      <div class="shared" id="weaponFields"></div>
-    </div>
-    <style id="subcss">
-      .subbox{background:#0a1830;border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:14px}
-      .subbox .sub-title{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:#8ba0c4;font-weight:700;margin-bottom:10px}
-      .subbox .sub-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-      .subbox select{flex:1;min-width:210px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit;cursor:pointer}
-      .subbox input{width:120px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0e2247;color:#eaf1fb;font-size:13px;font-family:inherit}
-      .subbox .sub-hint{font-size:11.5px;color:#5f759c;margin-top:9px;line-height:1.45}
-      .subbox .sub-hint.ok{color:#26c281}.subbox .sub-hint.warn{color:#e8a838}
-    </style>
-    <div class="subbox" id="subBox">
-      <div class="sub-title">➕ Substanțe ilegale găsite la suspect (auto-tier)</div>
-      <div class="sub-row">
-        <select id="subType">
-          <option value="frunze">Frunze / Semințe (5.1)</option>
-          <option value="risc">Droguri de risc — jointuri (5.3)</option>
-          <option value="mare">Droguri mare risc — plicuri (5.4)</option>
-          <option value="tigari">Țiări de contrabandă (5.2)</option>
-          <option value="money">Bani murdari / Blood Money — $ (5.5)</option>
-        </select>
-        <input type="number" id="subQty" placeholder="cantitate" min="0">
-        <button class="btnp green" id="subAdd">Adaugă la dosar</button>
-      </div>
-      <div class="sub-hint" id="subHint">Alege substanța și scrie cantitatea — aleg singur TIP-ul corect (I–IV) cu sentința aferentă și îl adaug în dosar.</div>
-    </div>
-    <div id="cartArea"></div>
   </div>
 
   <div class="panel dossier fold collapsed" id="quickPanel">
@@ -1634,8 +1639,13 @@ function updateFoldBadges(){
 
 function renderCart(){
   updateFoldBadges();
-  const area=document.getElementById('cartArea');
-  if(!cart.length){ area.innerHTML='<div class="cart-empty">Niciun cap de acuzare adăugat. Selectează o infracțiune sus și apasă „＋ Adaugă la dosar".</div>'; return; }
+  const list=document.getElementById('cartList');
+  const out=document.getElementById('cartOut');
+  if(!cart.length){
+    list.innerHTML='<div class="cart-empty">Dosarul e gol. Caută fapta în Panoul 1, apoi apasă butonul auriu „＋ Adaugă la dosar" din Panoul 2 — repetă pentru fiecare faptă a suspectului.</div>';
+    out.innerHTML='<div class="cart-empty">Aici apar sentința totală, titlurile și descrierea — după ce adaugi fapte la pasul 1.</div>';
+    return;
+  }
   const g=id=>A.find(a=>a.id===id);
 
   // conflicte
@@ -1661,8 +1671,10 @@ function renderCart(){
     h+='<div class="charge'+bad+'"><span class="cid">'+a.id+'</span>'
       +'<span class="cnm">'+esc(a.name)+'<small>CAP '+a.cap+' · '+fineToNum(a.f)+'$'+(a.pct?' · '+a.pct+' pct':'')+'</small></span>'
       +'<div style="text-align:center">'+moInput+'</div>'
-      +'<button class="rm" data-rm="'+a.id+'" title="Elimină">×</button></div>';
+      +'<button class="rm" data-rm="'+a.id+'" title="Elimină din dosar">×</button></div>';
   });
+  list.innerHTML=h;
+  h="";
 
   // grupuri
   const penal=cart.filter(c=>{const a=g(c.id);return a.s||a.life;});
@@ -1696,11 +1708,11 @@ function renderCart(){
   h+=fieldBlock("Descriere (aceeași pentru dosar și amenda aferentă)","ddesc","",true);
   h+='<div style="margin-top:-6px"><button class="pill" id="regenCombo">🔄 Altă formulare</button></div>';
 
-  area.innerHTML=h;
+  out.innerHTML=h;
 
   // wire
-  area.querySelectorAll('input[data-mo]').forEach(inp=>inp.addEventListener('input',()=>{const c=cart.find(x=>x.id===inp.dataset.mo);if(c)c.months=Math.min(+inp.value||0,360);recalcTotals();}));
-  area.querySelectorAll('button[data-rm]').forEach(b=>b.addEventListener('click',()=>removeFromCart(b.dataset.rm)));
+  list.querySelectorAll('input[data-mo]').forEach(inp=>inp.addEventListener('input',()=>{const c=cart.find(x=>x.id===inp.dataset.mo);if(c)c.months=Math.min(+inp.value||0,360);recalcTotals();}));
+  list.querySelectorAll('button[data-rm]').forEach(b=>b.addEventListener('click',()=>removeFromCart(b.dataset.rm)));
   document.getElementById('copyTotMonths').addEventListener('click',()=>{ if(!hasLife) copy(String(cappedMonths)); else flash("Sentință pe viață — nu se completează în luni."); });
   document.getElementById('copyTotFine').addEventListener('click',()=>copy(String(totFine)));
   const dt=document.querySelector('[data-copy="dtitle"]'); if(dt)dt.onclick=e=>copy(document.querySelector('[data-out="dtitle"]').value,e.target);
@@ -1919,7 +1931,7 @@ function resolveSub(type,qty){
 })();
 (function(){
   const scenSel=document.getElementById('dossierScen'), scenHint=document.getElementById('scenHint');
-  const HINTS={auto:'Alege scenariul dacă vrei un început anume; „Automat” decide după fapte.',trafic:'Completează datele mașinii (model, culoare, nr.) mai jos.',razie:'Pune numele insulei (Cayo/Maldive) în câmpul „Locație / Zonă” de mai jos.',focuri:'Descrie schimbul de focuri; armele găsite apar din capetele de acuzare.',sesizare:'Intervenție în urma unei sesizări, fără oprire în trafic.'};
+  const HINTS={auto:'Se alege singur, potrivit faptelor din dosar. Schimbă-l doar dacă vrei ca descrierea să înceapă altfel.',trafic:'Completează datele mașinii (model, culoare, nr.) mai jos.',razie:'Pune numele insulei (Cayo/Maldive) în câmpul „Locație / Zonă” de mai jos.',focuri:'Descrie schimbul de focuri; armele găsite apar din capetele de acuzare.',sesizare:'Intervenție în urma unei sesizări, fără oprire în trafic.'};
   function upd(){ if(scenHint) scenHint.textContent=HINTS[scenSel?scenSel.value:'auto']||''; if(scenHint) scenHint.className='scenhint'+(scenSel&&scenSel.value==='razie'?' warn':''); }
   if(scenSel){ scenSel.addEventListener('change',function(){ dossierScenario=scenSel.value; upd(); if(window.__razQReset)window.__razQReset(); buildCombinedDesc(); }); upd(); }
 })();
