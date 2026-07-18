@@ -309,6 +309,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   <div class="ab-badge emblem"></div>
   <div class="ab-tt"><b>Police Helper</b><span>B-Zone V · Poliția Los Santos</span></div>
   <div class="ab-agent" id="abAgent" data-page="setari">Neconectat</div>
+  <button class="ab-cmdk" id="abCmdk" type="button" title="Bara de comandă rapidă — construiește un dosar dintr-o singură linie">⌨️ <span class="ck-k">Ctrl+K</span></button>
   <div class="ab-sp"></div>
   <div class="ab-btns">
     <button class="ab-btn" id="abMin" title="Minimizează">&#8211;</button>
@@ -377,6 +378,12 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         <div class="gstep"><div class="gn">2</div><p><b>Completează câmpurile</b> apărute în Panoul 2 (nume suspect, zonă etc.). Data și ora se pun singure. Câmpurile marcate <b>(opțional)</b> pot rămâne goale — restul sunt obligatorii.</p></div>
         <div class="gstep"><div class="gn">3</div><p><b>Alege sentința</b> de pe bară (la dosare penale) — butoanele <span class="gk">Minim / Mediu / Maxim</span> o setează instant.</p></div>
         <div class="gstep"><div class="gn">4</div><p><b>Copiază pe rând</b> cu butoanele verzi: <span class="gk">Titlu</span> → <span class="gk">Sentință</span> → <span class="gk">Descriere</span>, și lipește-le în MDT-ul din joc (CTRL+V). Dacă lipsește ceva, butonul te anunță exact ce.</p></div>
+      </div></div>
+      <div class="card"><div class="cardbox">
+        <h3>⌨️ Bara de comandă rapidă (Ctrl+K) — dosar dintr-o singură linie</h3>
+        <div class="cb-sub">Apasă <b>Ctrl+K</b> oriunde în aplicație (sau butonul din bara de sus) și scrie tot ce știi într-o singură linie.</div>
+        <div class="gstep"><div class="gn">1</div><p><b>Scrie totul odată:</b> <span class="gk">Popescu_Ion furt auto 60</span> — numele cu <b>_</b> între prenume și nume, fapta cu orice cuvânt (merge și numărul articolului), lunile ca număr simplu. Aplicația recunoaște singură fiecare bucată și îți arată sub bară ce a înțeles.</p></div>
+        <div class="gstep"><div class="gn">2</div><p><b>Enter</b> deschide fapta în Panoul 2 cu numele pus peste tot și sentința setată. <b>Shift+Enter</b> o adaugă direct la Dosarul cumulat — ideal la razie, când introduci mai multe fapte una după alta.</p></div>
       </div></div>
       <div class="card"><div class="cardbox">
         <h3>🧰 Cele 3 unelte din MDT — pe care o folosești?</h3>
@@ -1471,7 +1478,7 @@ function addToCart(id,months){
     const r=pairConflict(art,other);
     if(r){ flash("⚠️ Nu se poate adăuga: "+r); return; }
   }
-  cart.push({id, months: months!=null?months : (art.s?Math.round((art.s[0]+art.s[1])/2):0)});
+  cart.push({id, months: months!=null?months : (art.s?Math.min(360,Math.round((art.s[0]+Math.min(art.s[1],360))/2)):0)});
   renderDossier();
   applyFold('dossierPanel',true);
   document.getElementById('dossierPanel').scrollIntoView({behavior:"smooth",block:"nearest"});
@@ -2160,7 +2167,172 @@ renderHist();
     note('🧹 MDT golit automat după 5 minute de inactivitate.');
   }
   window.__mdtWipe=wipe; // hook pentru teste
+  window.__mdtTouch=touch; // bara de comandă rapidă e în afara #page-mdt — marchează activitatea prin acest hook
   setInterval(function(){ if(Date.now()-lastUse>=IDLE_MS && hasData()){ wipe(); lastUse=Date.now(); } },30*1000);
+})();
+</script>
+<style id="cmdkcss">
+  #appbar .ab-cmdk{z-index:1;-webkit-app-region:no-drag;cursor:pointer;display:flex;align-items:center;gap:7px;margin-left:8px;padding:5px 11px;border-radius:999px;background:#0a1a34;border:1px solid #24406e;color:#9fb8de;font-size:11.5px;font-family:inherit;white-space:nowrap}
+  #appbar .ab-cmdk:hover{border-color:rgba(251,191,36,.55);color:#ffd98a;box-shadow:0 0 14px rgba(251,191,36,.12)}
+  #appbar .ab-cmdk .ck-k{font-family:var(--mono);font-size:10.5px;font-weight:700;color:#ffd98a;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.32);border-radius:6px;padding:1px 7px}
+  #cmdk{position:fixed;inset:0;display:none;z-index:9000;background:rgba(3,9,22,.62);backdrop-filter:blur(3px);align-items:flex-start;justify-content:center;padding-top:13vh}
+  #cmdk.on{display:flex}
+  .ck-box{width:min(640px,92vw);background:linear-gradient(180deg,#0e1f40,#0a1730);border:1px solid rgba(96,165,250,.38);border-radius:15px;box-shadow:0 26px 90px #000d,0 0 60px rgba(59,130,246,.12);overflow:hidden}
+  .ck-inprow{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid rgba(96,165,250,.16)}
+  .ck-inprow .ck-ic{font-size:15px}
+  #cmdkInp{flex:1;background:transparent;border:0;outline:0;color:#eef4ff;font-size:15px;font-family:inherit;min-width:0}
+  #cmdkInp::placeholder{color:#54719e}
+  .ck-inprow .ck-esc{font-family:var(--mono);font-size:10.5px;color:#8fa8cf;border:1px solid #24406e;border-radius:6px;padding:2px 8px;flex:0 0 auto}
+  .ck-chips{display:flex;gap:8px;padding:11px 15px 0;flex-wrap:wrap}
+  .ck-chips:empty{display:none}
+  .ck-chip{font-size:12px;color:#ffd98a;background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.3);border-radius:999px;padding:3px 11px}
+  .ck-list{padding:10px;max-height:46vh;overflow:auto}
+  .ck-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:9px 11px;cursor:pointer;color:#dce7fa;font-family:inherit;font-size:13.5px}
+  .ck-item+.ck-item{margin-top:2px}
+  .ck-item .ck-id{font-family:var(--mono);font-size:11px;font-weight:700;color:#ffd98a;background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.3);padding:2px 8px;border-radius:7px;flex:0 0 auto}
+  .ck-item .ck-nm{flex:1;font-weight:600;min-width:0}
+  .ck-item .ck-tag{font-size:11px;color:#8fa8cf;white-space:nowrap;flex:0 0 auto}
+  .ck-item.act,.ck-item:hover{background:rgba(59,130,246,.15);border-color:rgba(96,165,250,.4)}
+  .ck-item.ck-ex .ck-nm{font-family:var(--mono);font-size:12.5px;font-weight:500;color:#bcd6ff}
+  .ck-empty{padding:13px 14px;color:#8fa8cf;font-size:12.5px;line-height:1.5}
+  .ck-empty b{color:#ffd98a}
+  .ck-foot{display:flex;gap:16px;flex-wrap:wrap;padding:10px 15px;border-top:1px solid rgba(96,165,250,.13);font-size:11px;color:#7d93b8}
+  .ck-foot b{color:#ffd98a;font-weight:700;font-family:var(--mono);font-size:10.5px}
+</style>
+<div id="cmdk">
+  <div class="ck-box">
+    <div class="ck-inprow"><span class="ck-ic">⌨️</span><input id="cmdkInp" type="text" spellcheck="false" autocomplete="off" placeholder="ex: Popescu_Ion furt auto 60 — nume_cu_underscore, fapta, luni"><span class="ck-esc">Esc</span></div>
+    <div class="ck-chips" id="cmdkChips"></div>
+    <div class="ck-list" id="cmdkList"></div>
+    <div class="ck-foot"><span><b>Enter</b> — deschide fapta în Panoul 2</span><span><b>Shift+Enter</b> — adaugă la Dosarul cumulat</span><span><b>↑↓</b> — alegi din listă</span></div>
+  </div>
+</div>
+<script>
+/* Bara de comandă rapidă (Ctrl+K): scrii „Popescu_Ion furt auto 60" într-o
+   singură linie și dosarul e gata — fapta selectată, sentința setată, numele
+   pus în toate panourile. Shift+Enter adaugă fapta la Dosarul cumulat. */
+(function(){
+  const root=document.getElementById('cmdk');
+  if(!root) return;
+  const inp=document.getElementById('cmdkInp'), box=document.getElementById('cmdkList'), chipsEl=document.getElementById('cmdkChips');
+  let matches=[], act=0;
+  const EX=['Popescu_Ion furt auto 60','7.2 40','Gigi_Vulpe evadare 80'];
+
+  // desparte linia în: nume (tokenul cu _), luni (număr simplu), cuvinte de căutare
+  function parse(q){
+    const toks=String(q).trim().split(/\s+/).filter(Boolean);
+    let name=null, months=null, words=[];
+    toks.forEach(function(t){
+      if(t.indexOf('_')>=0){ name=t.replace(/_/g,' ').replace(/\s+/g,' ').trim(); }
+      else if(/^\d+$/.test(t)){ months=parseInt(t,10); }
+      else words.push(t);
+    });
+    return {name:name, months:months, q:words.join(' ')};
+  }
+  function findArts(qs){
+    if(!qs) return [];
+    const words=norm(qs).split(/\s+/).filter(Boolean);
+    const out=[];
+    A.forEach(function(a){
+      const nm=norm(a.name), tl=norm(a.title||''), ht=norm(a.hint||''), id=a.id.toLowerCase();
+      let score=0;
+      for(const w of words){
+        let s=0;
+        if(id===w) s=100; else if(/\d/.test(w)&&id.indexOf(w)===0) s=60;
+        if(nm.indexOf(w)>=0) s=Math.max(s, nm.indexOf(w)===0?50:(nm.indexOf(' '+w)>=0?40:30));
+        if(s<25&&tl.indexOf(w)>=0) s=25;
+        if(s<12&&ht.indexOf(w)>=0) s=12;
+        if(!s){ score=0; break; }
+        score+=s;
+      }
+      if(score) out.push([score,a]);
+    });
+    out.sort(function(x,y){ return y[0]-x[0]||x[1].name.length-y[1].name.length; });
+    return out.slice(0,6).map(function(x){ return x[1]; });
+  }
+  function tagFor(a){
+    if(a.s) return 'penal · '+a.s[0]+'–'+Math.min(a.s[1],360)+' luni';
+    if(a.life) return 'penal · pe viață';
+    return 'amendă · '+(a.f||'—');
+  }
+  function render(){
+    const p=parse(inp.value);
+    matches=findArts(p.q);
+    if(act>=matches.length) act=0;
+    let ch='';
+    if(p.name) ch+='<span class="ck-chip">👤 '+esc(p.name)+'</span>';
+    if(p.months!=null) ch+='<span class="ck-chip">⏱ '+p.months+' luni</span>';
+    chipsEl.innerHTML=ch;
+    if(!p.q){
+      box.innerHTML='<div class="ck-empty">Scrie totul într-o singură linie — numele cu <b>_</b>, fapta, lunile. Încearcă un exemplu:</div>'
+        +EX.map(function(e){ return '<button type="button" class="ck-item ck-ex" data-ex="'+esc(e)+'"><span class="ck-id">ex</span><span class="ck-nm">'+esc(e)+'</span></button>'; }).join('');
+    } else if(!matches.length){
+      box.innerHTML='<div class="ck-empty">Nicio faptă găsită pentru „'+esc(p.q)+'”'+((p.name||p.months!=null)?' — <b>Enter</b> aplică doar restul (nume/sentință)':' — încearcă alt cuvânt (ex: furt, armă, 7.2)')+'.</div>';
+    } else {
+      box.innerHTML=matches.map(function(a,i){
+        return '<button type="button" class="ck-item'+(i===act?' act':'')+'" data-i="'+i+'"><span class="ck-id">'+esc(a.id)+'</span><span class="ck-nm">'+esc(a.name)+'</span><span class="ck-tag">'+esc(tagFor(a))+'</span></button>';
+      }).join('');
+    }
+    box.querySelectorAll('.ck-ex').forEach(function(b){ b.addEventListener('click',function(){ inp.value=b.dataset.ex; act=0; render(); inp.focus(); }); });
+    box.querySelectorAll('.ck-item[data-i]').forEach(function(b){ b.addEventListener('click',function(e){ exec(matches[+b.dataset.i],e.shiftKey); }); });
+  }
+  function setMonths(m){
+    if(m==null) return;
+    const r=document.getElementById('srange');
+    if(r){ r.value=String(m); r.dispatchEvent(new Event('input',{bubbles:true})); }
+  }
+  function fillName(nm){
+    if(!nm) return;
+    const t=document.querySelector('#inputs input[data-sh="nume"]')||document.querySelector('input[data-sh="nume"]');
+    if(t){ t.value=nm; t.dispatchEvent(new Event('input',{bubbles:true})); }
+  }
+  // sentința rămâne sub plafonul de 360 al aplicației chiar și când minimul articolului e peste el (ex: 8.11)
+  function clampM(s,m){ return Math.min(360,Math.max(s[0],Math.min(Math.min(s[1],360),m))); }
+  function exec(art,addMode){
+    const p=parse(inp.value);
+    if(window.__mdtTouch) window.__mdtTouch(); // datele create din paletă contează ca activitate pentru auto-golire
+    if(art||p.name||p.months!=null){
+      const nav=document.querySelector('.nav-item[data-page="mdt"]');
+      if(nav) nav.click();
+    }
+    if(art){
+      const m=(art.s&&p.months!=null)?clampM(art.s,p.months):null;
+      if(addMode){ addToCart(art.id,m); }
+      // minim peste 360 (ex: 8.11): sliderul nu acceptă valori sub minim — rămâne implicitul aplicației (360 / pe viață)
+      else { select(art.id); if(art.s&&art.s[0]<=360) setMonths(m); }
+    } else if(p.months!=null&&typeof cur!=='undefined'&&cur&&cur.s&&cur.s[0]<=360){
+      setMonths(clampM(cur.s,p.months));
+    }
+    fillName(p.name);
+    close_();
+  }
+  function open_(){
+    if(document.documentElement.classList.contains('ovmode')) return;
+    const lg=document.getElementById('login');
+    if(lg&&lg.classList.contains('on')) return;
+    const dg=document.getElementById('dgate');
+    if(dg&&dg.style.display!=='none') return; // poarta Discord acoperă tot — paleta nu se deschide sub ea
+    root.classList.add('on');
+    act=0; render();
+    inp.focus(); inp.select();
+  }
+  function close_(){ root.classList.remove('on'); }
+  document.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key==='k'||e.key==='K')){ e.preventDefault(); root.classList.contains('on')?close_():open_(); return; }
+    if(e.key==='Escape'&&root.classList.contains('on')) close_();
+  });
+  inp.addEventListener('input',function(){ act=0; render(); if(window.__mdtTouch) window.__mdtTouch(); });
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='ArrowDown'){ e.preventDefault(); if(matches.length){ act=(act+1)%matches.length; render(); } }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); if(matches.length){ act=(act-1+matches.length)%matches.length; render(); } }
+    else if(e.key==='Enter'){ e.preventDefault(); exec(matches[act],e.shiftKey); }
+  });
+  // focusul nu părăsește paleta cu Tab — altfel ar ajunge pe controalele invizibile de sub fundal
+  root.addEventListener('keydown',function(e){ if(e.key==='Tab'){ e.preventDefault(); inp.focus(); } });
+  root.addEventListener('pointerdown',function(e){ if(e.target===root) close_(); });
+  const chip=document.getElementById('abCmdk');
+  if(chip) chip.addEventListener('click',open_);
+  window.__cmdk={open:open_,close:close_,parse:parse,find:findArts}; // hook pentru teste
 })();
 </script>
 <div id="login">
@@ -2352,6 +2524,7 @@ renderHist();
       if(!r) return;
       if(r.unsup){ inp.value='⚠️ tastă nesuportată — alege alta (litere, cifre, F1–F24…)'; return; }
       if(r.warn){ inp.value='⚠️ adaugă Ctrl sau Alt (sau folosește F1–F24)'; return; }
+      if(r.acc==='Control+K'){ inp.value='⚠️ Ctrl+K e rezervată barei de comandă rapidă — alege alta'; return; }
       hk[prop]=r.acc; save(); show(); push(); inp.blur();
     });
   }
