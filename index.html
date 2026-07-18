@@ -636,7 +636,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
           <div class="set-row"><label></label><button class="btnp" id="hkResetC">Reset taste (Ctrl+Shift+1 / 2 / 3)</button></div>
           <div class="cb-sub" id="hkStatusC" style="margin:0"></div>
         </div>
-        <div class="cb-sub" style="margin:14px 0 0">Regula e simplă: dacă <b style="color:#cfe0f7">Dosarul cumulat</b> are fapte, se copiază din el (titlul de dosar, sentința totală, descrierea comună); altfel din <b style="color:#cfe0f7">Panoul 2</b> — fapta selectată (la amenzi, tasta de sentință copiază suma fără punct). Descrierea copiată intră în Istoric, exact ca de la buton.</div>
+        <div class="cb-sub" style="margin:14px 0 0">Regula e simplă: dacă <b style="color:#cfe0f7">Dosarul cumulat</b> are fapte, se copiază din el (titlul de dosar, sentința totală, descrierea comună); altfel, dacă ai contravenții bifate la <b style="color:#cfe0f7">Amenda rapidă</b>, din ea (titlu + sumă fără punct + descriere); altfel din <b style="color:#cfe0f7">Panoul 2</b> — fapta selectată. Descrierea copiată intră în Istoric, exact ca de la buton.</div>
       </div></div>
     </section>
 
@@ -2203,6 +2203,22 @@ renderHist();
       if(miss.length) return {ok:false,err:'Completează întâi: '+miss.join(' ')};
       histSave('Dosar cumulat',(dte&&dte.value)||(ate&&ate.value)||'',v);
       return {ok:true,label:'Descriere dosar cumulat',text:v};
+    }
+    if(quick.size){
+      const arts=QUICK_IDS.filter(function(id){ return quick.has(id); }).map(function(id){ return A.find(function(a){ return a.id===id; }); });
+      const qTitle=arts.map(function(a){ return a.title||a.name; }).join(' + ');
+      if(kind==='title') return {ok:true,label:'Titlu amendă rapidă',text:qTitle};
+      if(kind==='sent'){
+        let tot=0; arts.forEach(function(a){ tot+=fineToNum(a.f); });
+        return {ok:true,label:'Sumă amendă rapidă (fără punct)',text:String(tot)};
+      }
+      const ta=document.querySelector('[data-out="qdesc"]');
+      const v=ta?ta.value:'';
+      if(!v) return {ok:false,err:'Descrierea amenzii nu e generată încă.'};
+      const miss=missingFields(v);
+      if(miss.length) return {ok:false,err:'Completează întâi: '+miss.join(' ')};
+      histSave('Amendă rapidă',qTitle,v);
+      return {ok:true,label:'Descriere amendă rapidă',text:v};
     }
     if(cur){
       if(kind==='title') return {ok:true,label:'Titlu',text:titleText()};
