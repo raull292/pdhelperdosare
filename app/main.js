@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, globalShortcut, session } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, globalShortcut, session, clipboard, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -156,8 +156,41 @@ ipcMain.on('mdt-overlay-close', () => { if (mdtWin) mdtWin.close(); });
 ipcMain.on('mdt-overlay-clickthrough', (e, on) => setMdtClickThrough(on));
 ipcMain.on('mdt-overlay-opacity', (e, v) => { if (mdtWin) mdtWin.setOpacity(Math.max(0.2, Math.min(1, Number(v) || 1))); });
 
+// ---- copiere din joc: shell-ul cere piesa (titlu/sentinta/descriere) ferestrei
+//      principale, care o calculeaza cu guard-urile ei; raspunsul intra in
+//      clipboard si se confirma printr-o notificare Windows ----
+function requestPiece(kind) {
+  if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('copy-piece', kind);
+}
+function notifyCopy(title, body) {
+  try { new Notification({ title, body, silent: true, icon: path.join(__dirname, 'icon.ico') }).show(); } catch (err) {}
+}
+ipcMain.on('copy-piece-result', (e, r) => {
+  r = r || {};
+  if (r.ok && typeof r.text === 'string') {
+    clipboard.writeText(r.text);
+    const p = String(r.text).replace(/\s+/g, ' ').trim();
+    notifyCopy('📋 ' + (r.label || 'Copiat') + ' — lipește cu CTRL+V', p.length > 80 ? p.slice(0, 77) + '…' : p);
+  } else {
+    notifyCopy('⛔ Nu copiez', String(r.err || 'Eroare'));
+  }
+});
+
 // ---- taste configurabile (alese de utilizator din pagina Overlays) ----
-const DEFAULT_HOTKEYS = { toggle: 'Control+Shift+D', clickthrough: 'Control+Shift+E' };
+const DEFAULT_HOTKEYS = {
+  toggle: 'Control+Shift+D',
+  clickthrough: 'Control+Shift+E',
+  copyTitle: 'Control+Shift+1',
+  copySent: 'Control+Shift+2',
+  copyDesc: 'Control+Shift+3'
+};
+const HOTKEY_ACTIONS = {
+  toggle: () => toggleMdtOverlay(),
+  clickthrough: () => setMdtClickThrough(!mdtClickThrough),
+  copyTitle: () => requestPiece('title'),
+  copySent: () => requestPiece('sent'),
+  copyDesc: () => requestPiece('desc')
+};
 let hotkeys = Object.assign({}, DEFAULT_HOTKEYS);
 function hotkeysFile() { return path.join(app.getPath('userData'), 'hotkeys.json'); }
 function loadHotkeys() {
@@ -170,19 +203,18 @@ function saveHotkeys() {
 // (re)inregistreaza scurtaturile; sir gol = tasta dezactivata; intoarce ce s-a putut inregistra
 function applyHotkeys(hk) {
   hk = hk || {};
-  const next = {
-    toggle: (typeof hk.toggle === 'string') ? hk.toggle : DEFAULT_HOTKEYS.toggle,
-    clickthrough: (typeof hk.clickthrough === 'string') ? hk.clickthrough : DEFAULT_HOTKEYS.clickthrough
-  };
-  globalShortcut.unregisterAll();
-  const res = { toggle: true, clickthrough: true };
-  if (next.toggle) {
-    try { res.toggle = !!globalShortcut.register(next.toggle, () => toggleMdtOverlay()); }
-    catch (err) { res.toggle = false; }
+  const next = {};
+  for (const k of Object.keys(DEFAULT_HOTKEYS)) {
+    next[k] = (typeof hk[k] === 'string') ? hk[k] : DEFAULT_HOTKEYS[k];
   }
-  if (next.clickthrough) {
-    try { res.clickthrough = !!globalShortcut.register(next.clickthrough, () => setMdtClickThrough(!mdtClickThrough)); }
-    catch (err) { res.clickthrough = false; }
+  globalShortcut.unregisterAll();
+  const res = {};
+  for (const k of Object.keys(DEFAULT_HOTKEYS)) {
+    res[k] = true;
+    if (next[k]) {
+      try { res[k] = !!globalShortcut.register(next[k], HOTKEY_ACTIONS[k]); }
+      catch (err) { res[k] = false; }
+    }
   }
   hotkeys = next;
   saveHotkeys();

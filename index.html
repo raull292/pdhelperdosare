@@ -400,6 +400,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
       <div class="card"><div class="cardbox">
         <h3>📡 Overlay peste joc &amp; altele</h3>
         <div class="gauto"><div class="ga-ic">🕹️</div><div><b>MDT-ul peste joc</b>: din pagina <b>Overlays</b> pornești fereastra transparentă care stă peste GTA (merge în Borderless/Windowed) — poți scrie în ea fără alt-tab. Tastele le alegi tu, tot acolo.</div></div>
+        <div class="gauto"><div class="ga-ic">⚡</div><div><b>Copiezi din joc, fără alt-tab</b>: pregătești dosarul, apoi în GTA apeși <b>Ctrl+Shift+1 / 2 / 3</b> — Titlul / Sentința / Descrierea intră direct în clipboard și doar le lipești în MDT. Confirmarea apare ca notificare Windows (doar în aplicația desktop; tastele se schimbă din Overlays).</div></div>
         <div class="gauto"><div class="ga-ic">📜</div><div><b>Mandatele</b> (aducere / percheziție / arestare) au pagina lor — completezi 2-3 câmpuri și textul juridic e gata, cu tine ca emitent.</div></div>
         <div class="gauto"><div class="ga-ic">🔄</div><div><b>Nu instalezi nimic manual niciodată</b> — aplicația se actualizează singură (verifică la pornire și la fiecare 30 de minute).</div></div>
       </div></div>
@@ -624,6 +625,18 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
           <div class="cb-sub" id="hkStatus" style="margin:0"></div>
         </div>
         <div class="cb-sub" style="margin:14px 0 0">Scurtăturile merg global (și când ești în joc) și <b style="color:#cfe0f7">ți le alegi tu</b>: click pe câmp și apasă combinația dorită — <b style="color:#cfe0f7">Esc</b> anulează, <b style="color:#cfe0f7">Backspace</b> dezactivează tasta. Tragi fereastra de bara de sus; „×” o ascunde. Rulează jocul pe <b style="color:#cfe0f7">borderless / fără chenar</b> ca overlay-ul să fie vizibil.</div>
+      </div></div>
+      <div class="card"><div class="cardbox" id="copyHkCard">
+        <h3>⚡ Copiere din joc — fără alt-tab</h3>
+        <div class="cb-sub">Pregătești dosarul în aplicație o singură dată, apoi rămâi în joc: apeși scurtătura, bucata e deja în clipboard și doar o lipești (CTRL+V) în câmpul din MDT. Confirmarea vine ca notificare Windows — iar dacă un câmp a rămas necompletat, te anunță în loc să copieze greșit.</div>
+        <div id="copyHkControls">
+          <div class="set-row"><label>Copiază Titlul</label><input type="text" class="hkin" id="hkC1" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label>Copiază Sentința / Amenda</label><input type="text" class="hkin" id="hkC2" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label>Copiază Descrierea</label><input type="text" class="hkin" id="hkC3" readonly placeholder="click aici + apasă tastele"></div>
+          <div class="set-row"><label></label><button class="btnp" id="hkResetC">Reset taste (Ctrl+Shift+1 / 2 / 3)</button></div>
+          <div class="cb-sub" id="hkStatusC" style="margin:0"></div>
+        </div>
+        <div class="cb-sub" style="margin:14px 0 0">Regula e simplă: dacă <b style="color:#cfe0f7">Dosarul cumulat</b> are fapte, se copiază din el (titlul de dosar, sentința totală, descrierea comună); altfel din <b style="color:#cfe0f7">Panoul 2</b> — fapta selectată (la amenzi, tasta de sentință copiază suma fără punct). Descrierea copiată intră în Istoric, exact ca de la buton.</div>
       </div></div>
     </section>
 
@@ -2162,6 +2175,59 @@ renderHist();
   window.__mdtWipe=wipe; // hook pentru teste
   setInterval(function(){ if(Date.now()-lastUse>=IDLE_MS && hasData()){ wipe(); lastUse=Date.now(); } },30*1000);
 })();
+
+/* ---------------- COPIERE DIN JOC (scurtături globale, doar desktop) ----------------
+   Ctrl+Shift+1/2/3 copiază Titlul / Sentința / Descrierea dosarului curent fără să
+   părăsești jocul; shell-ul scrie clipboard-ul și confirmă printr-o notificare Windows.
+   Regula: dosarul cumulat are prioritate dacă are fapte, altfel fapta din Panoul 2. */
+(function(){
+  function piece(kind){
+    if(cart.length){
+      const g=function(id){ return A.find(function(a){ return a.id===id; }); };
+      const dte=document.querySelector('[data-out="dtitle"]'), ate=document.querySelector('[data-out="atitle"]');
+      if(kind==='title'){
+        const v=(dte&&dte.value)||(ate&&ate.value)||'';
+        return v?{ok:true,label:'Titlu dosar cumulat',text:v}:{ok:false,err:'Dosarul nu are titlu încă.'};
+      }
+      if(kind==='sent'){
+        let sum=0,hasLife=false;
+        cart.forEach(function(c){ const a=g(c.id); if(a.life)hasLife=true; if(a.s)sum+=(+c.months||0); });
+        if(hasLife) return {ok:false,err:'Sentință pe viață — nu se completează în luni.'};
+        if(!sum) return {ok:false,err:'Doar contravenții în dosar — tasta de sentință nu are ce copia.'};
+        return {ok:true,label:'Sentință dosar cumulat',text:String(Math.min(sum,360))};
+      }
+      const ta=document.querySelector('[data-out="ddesc"]');
+      const v=ta?ta.value:'';
+      if(!v) return {ok:false,err:'Descrierea nu e generată încă.'};
+      const miss=missingFields(v);
+      if(miss.length) return {ok:false,err:'Completează întâi: '+miss.join(' ')};
+      histSave('Dosar cumulat',(dte&&dte.value)||(ate&&ate.value)||'',v);
+      return {ok:true,label:'Descriere dosar cumulat',text:v};
+    }
+    if(cur){
+      if(kind==='title') return {ok:true,label:'Titlu',text:titleText()};
+      if(kind==='sent'){
+        if(cur.s) return {ok:true,label:'Sentință în luni',text:String(sentVal)};
+        if(cur.life) return {ok:false,err:'Sentință pe viață — nu se completează în luni.'};
+        const pn=fineToNum(cur.f);
+        return pn?{ok:true,label:'Amendă (fără punct)',text:String(pn)}:{ok:false,err:'Fapta selectată nu are amendă.'};
+      }
+      const ta=document.querySelector('[data-out="desc"]');
+      const v=ta?ta.value:'';
+      if(!v) return {ok:false,err:'Descrierea nu e generată încă.'};
+      const miss=missingFields(v);
+      if(miss.length) return {ok:false,err:'Completează întâi: '+miss.join(' ')};
+      histSave((cur.s||cur.life)?'Dosar':'Amendă',titleText(),v);
+      return {ok:true,label:'Descriere',text:v};
+    }
+    return {ok:false,err:'Nimic selectat — alege o faptă sau construiește dosarul întâi.'};
+  }
+  window.__copyPiece=piece; // hook pentru teste
+  const da=window.desktopApp;
+  if(da&&da.isApp&&da.copyPieces&&da.copyPieces.onRequest){
+    da.copyPieces.onRequest(function(kind){ da.copyPieces.result(Object.assign({kind:kind},piece(kind))); });
+  }
+})();
 </script>
 <div id="login">
   <div class="login-box">
@@ -2292,27 +2358,37 @@ renderHist();
 /* ---- taste configurabile pentru MDT overlay (alegi ce combinații vrei) ---- */
 (function(){
   const iT=document.getElementById('hkToggle'), iC=document.getElementById('hkCT'), stat=document.getElementById('hkStatus');
+  const c1=document.getElementById('hkC1'), c2=document.getElementById('hkC2'), c3=document.getElementById('hkC3'), statC=document.getElementById('hkStatusC');
   if(!iT||!iC) return;
   const da=window.desktopApp;
-  const DEF={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E'};
+  const DEF={toggle:'Control+Shift+D',clickthrough:'Control+Shift+E',copyTitle:'Control+Shift+1',copySent:'Control+Shift+2',copyDesc:'Control+Shift+3'};
+  const FIELD={toggle:iT,clickthrough:iC,copyTitle:c1,copySent:c2,copyDesc:c3};
+  const LBL={toggle:'arată/ascunde',clickthrough:'click-through',copyTitle:'copiază titlu',copySent:'copiază sentință',copyDesc:'copiază descriere'};
   let hk=Object.assign({},DEF);
   try{const s=localStorage.getItem('mdtHotkeys');if(s)hk=Object.assign({},DEF,JSON.parse(s));}catch(e){}
   let lastGood=Object.assign({},hk); // ultima configurație acceptată de aplicație — pentru revenire la eșec
   const nice=a=>a?String(a).replace(/Control/g,'Ctrl'):'— dezactivată —';
-  function show(){ iT.value=nice(hk.toggle); iC.value=nice(hk.clickthrough); }
+  function show(){ for(const k in FIELD){ if(FIELD[k]) FIELD[k].value=nice(hk[k]); } }
   function save(){ try{localStorage.setItem('mdtHotkeys',JSON.stringify(hk));}catch(e){} }
-  function msg(t,ok){ if(stat){stat.textContent=t; stat.style.color=ok?'#26c281':'#e8a838';} }
+  function msg(t,ok){ [stat,statC].forEach(function(s){ if(s){s.textContent=t; s.style.color=ok?'#26c281':'#e8a838';} }); }
   function push(afterRollback){
     if(!(da&&da.isApp)){ msg('Scurtăturile globale merg doar în aplicația desktop.',false); return; }
     if(!(da.mdtOverlay&&da.mdtOverlay.setHotkeys)){ msg('Necesită update aplicație (rebuild .exe) pentru taste personalizate.',false); return; }
-    const sent={toggle:hk.toggle,clickthrough:hk.clickthrough}; // snapshot: hk se poate schimba până se rezolvă promisiunea
+    const sent={}; for(const k in DEF) sent[k]=hk[k]; // snapshot: hk se poate schimba până se rezolvă promisiunea
     Promise.resolve(da.mdtOverlay.setHotkeys(sent)).then(function(r){
-      const failT=!!(r&&r.toggle===false), failC=!!(r&&r.clickthrough===false);
-      if(!failT&&!failC){ lastGood=sent; if(!afterRollback) msg('✓ Scurtături active.',true); return; }
-      const bad=[]; if(failT)bad.push(nice(sent.toggle)+' (arată/ascunde)'); if(failC)bad.push(nice(sent.clickthrough)+' (click-through)');
+      const failed=Object.keys(DEF).filter(function(k){ return !!(r&&r[k]===false); });
+      if(!failed.length){
+        lastGood=sent;
+        if(afterRollback) return;
+        // shell vechi: nu știe încă de tastele de copiere — anunță update-ul, restul merge
+        if(r&&r.copyTitle===undefined&&(sent.copyTitle||sent.copySent||sent.copyDesc)) msg('Tastele de copiere din joc cer update de aplicație (.exe) — restul funcționează.',false);
+        else msg('✓ Scurtături active.',true);
+        return;
+      }
+      const bad=failed.map(function(k){ return nice(sent[k])+' ('+LBL[k]+')'; });
       if(!afterRollback){
         // revino la ultima combinație funcțională — nu rămâi fără tastă
-        if(failT)hk.toggle=lastGood.toggle; if(failC)hk.clickthrough=lastGood.clickthrough;
+        failed.forEach(function(k){ hk[k]=lastGood[k]; });
         save(); show();
         msg('⚠️ '+bad.join(' și ')+' e folosită de alt program — am păstrat tasta anterioară.',false);
         push(true);
@@ -2355,9 +2431,11 @@ renderHist();
       hk[prop]=r.acc; save(); show(); push(); inp.blur();
     });
   }
-  arm(iT,'toggle'); arm(iC,'clickthrough');
+  for(const k in FIELD){ if(FIELD[k]) arm(FIELD[k],k); }
   const rst=document.getElementById('hkReset');
-  if(rst) rst.onclick=function(){ hk=Object.assign({},DEF); lastGood=Object.assign({},DEF); save(); show(); push(); };
+  if(rst) rst.onclick=function(){ ['toggle','clickthrough'].forEach(function(k){ hk[k]=DEF[k]; lastGood[k]=DEF[k]; }); save(); show(); push(); };
+  const rstC=document.getElementById('hkResetC');
+  if(rstC) rstC.onclick=function(){ ['copyTitle','copySent','copyDesc'].forEach(function(k){ hk[k]=DEF[k]; lastGood[k]=DEF[k]; }); save(); show(); push(); };
   show();
   // pe fallback-ul local (file://) localStorage e alt siloz — nu suprascriem tastele salvate cu implicite
   if(location.protocol!=='file:') push();
