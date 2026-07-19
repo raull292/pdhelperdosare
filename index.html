@@ -939,6 +939,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
 <datalist id="suspectList"></datalist>
 <datalist id="carList"></datalist>
 <datalist id="zoneList"></datalist>
+<datalist id="weaponList"></datalist>
 
 
 <script>
@@ -1544,7 +1545,14 @@ function renderZoneList(){
   const dl=document.getElementById("zoneList");
   if(dl) dl.innerHTML=ZONES.map(z=>'<option value="'+esc(z)+'">').join("");
 }
-function dlFor(f){ if(f==='nume') return ' list="suspectList"'; if(f==='marca') return ' list="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' list="zoneList"'; return ''; }
+/* armele de pe server (listă dată de utilizator; câmpul rămâne liber pentru
+   ce nu e încă aici — se completează pe măsură ce mai aflăm nume) */
+const WEAPONS=["Assault Rifle Mk II","Assault SMG","Combat MG","Combat Pistol","Compact Rifle","Double Action Revolver","Gusenberg Sweeper","Heavy Revolver","Machine Pistol","MG","Micro SMG","Mini SMG","Navy Revolver","Pistol","Pistol Mk II","SMG Mk II","SNS Pistol","Vintage Pistol"];
+function renderWeaponList(){
+  const dl=document.getElementById("weaponList");
+  if(dl) dl.innerHTML=WEAPONS.map(z=>'<option value="'+esc(z)+'">').join("");
+}
+function dlFor(f){ if(f==='nume') return ' list="suspectList"'; if(f==='marca') return ' list="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' list="zoneList"'; if(f==='arma') return ' list="weaponList"'; return ''; }
 
 function renderShared(){
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
@@ -1987,6 +1995,7 @@ function resolveSub(type,qty){
 initFold();
 renderCarList();
 renderZoneList();
+renderWeaponList();
 renderList();
 renderDossier();
 renderQuickList();

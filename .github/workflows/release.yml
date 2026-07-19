@@ -52,11 +52,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # o copie cu nume FIX pe langa exe-ul versionat -> link permanent de share:
+          # https://github.com/raull292/pdhelperdosare/releases/latest/download/Police-Helper-Setup.exe
+          # (exe-ul versionat ramane pentru latest.yml / auto-updater)
+          cp app/dist/*.exe Police-Helper-Setup.exe
           # --generate-notes umple "What's Changed" din titlurile PR-urilor;
           # --notes pune deasupra instructiunea de descarcare in romana
           gh release create "v2.0.${{ github.run_number }}" \
-            app/dist/*.exe app/dist/*.blockmap app/dist/latest.yml \
+            Police-Helper-Setup.exe app/dist/*.exe app/dist/*.blockmap app/dist/latest.yml \
             --target "${{ github.sha }}" \
             --title "Police Helper v2.0.${{ github.run_number }}" \
             --generate-notes \
-            --notes "📥 **Instalare:** descarcă \`Police-Helper-Setup-2.0.${{ github.run_number }}.exe\` de mai jos (Assets). Dacă ai deja aplicația instalată, nu descărca nimic — se actualizează singură."
+            --notes "📥 **Descarcă doar \`Police-Helper-Setup.exe\`** — sau folosește linkul permanent, mereu ultima versiune: https://github.com/raull292/pdhelperdosare/releases/latest/download/Police-Helper-Setup.exe — Restul fișierelor țin de sistemul de auto-update, iar arhivele «Source code» le adaugă GitHub automat la orice release și nu pot fi șterse — ignoră-le. Dacă ai deja aplicația, nu descărca nimic: se actualizează singură."
