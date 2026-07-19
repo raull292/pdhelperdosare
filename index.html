@@ -948,6 +948,10 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
   #dlDrop::-webkit-scrollbar-thumb:hover{background:rgba(96,165,250,.55)}
   #dlDrop .dld-it{padding:7px 11px;font-size:13px;color:#dce7fa;border-radius:7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #dlDrop .dld-it:hover,#dlDrop .dld-it.act{background:rgba(59,130,246,.16);color:#fff}
+  .gsel{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
+  .gsel .gbtn{font-family:inherit;font-size:10.5px;line-height:1;padding:2px 8px;border-radius:999px;border:1px solid #24406e;background:#0a1a34;color:#7d93b8;cursor:pointer;transition:all .12s}
+  .gsel .gbtn.on{border-color:rgba(96,165,250,.6);color:#fff;background:rgba(59,130,246,.28)}
+  .gsel .gbtn[data-g="f"].on{border-color:rgba(244,114,182,.65);background:rgba(236,72,153,.24)}
 </style>
 
 
@@ -1380,9 +1384,10 @@ function renderInputs(){
     if(f==="fapta"&&!vals[f]&&cur.hint) v=cur.hint;
     const attr=isCommon?('data-sh="'+f+'"'):('data-f="'+f+'"');
     const dlAttr=dlFor(f);
-    h+='<div class="inp'+wide+'"><label>'+meta[0]+'</label><input '+attr+dlAttr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
+    h+='<div class="inp'+wide+'"><label>'+meta[0]+(f==='nume'?GSEL:'')+'</label><input '+attr+dlAttr+' placeholder="'+esc(meta[1])+'" value="'+esc(v)+'"></div>';
   });
   box.innerHTML=h;
+  updateGenderUI();
   box.querySelectorAll('input[data-f]').forEach(inp=>{
     vals[inp.dataset.f]=inp.value;
     inp.addEventListener('input',()=>{vals[inp.dataset.f]=inp.value;updateDesc();});
@@ -1443,9 +1448,9 @@ function updateDesc(){
     if(cur.life) closing=" "+pv(V.closeLife,10);
     else if(cur.s) closing=pv(V.closePenalSingle,20).replace("{sec}", d.sectie);
     else closing=" "+pv(V.closeContrav,12);
-    ta.value=core+closing;
+    ta.value=gfix(core+closing);
   } else {
-    ta.value=varyTemplate(tpl.text(d), cur);
+    ta.value=gfix(varyTemplate(tpl.text(d), cur));
   }
 }
 
@@ -1535,6 +1540,8 @@ function wireSharedInput(inp){
   inp.addEventListener('input',()=>{
     shared[inp.dataset.sh]=inp.value;
     if(inp.dataset.sh==='data'||inp.dataset.sh==='ora') dtManual=true;
+    // genul se ghicește din prenume cât timp nu a fost ales manual
+    if(inp.dataset.sh==='nume'&&!gGen.manual){ const g=guessGender(inp.value); if(g!==gGen.v){ gGen.v=g; updateGenderUI(); } }
     syncSharedInputs(inp);
     renderCart(); renderQuick();
     if(document.querySelector('[data-out="desc"]')) updateDesc();
@@ -1561,14 +1568,75 @@ function renderWeaponList(){
   const dl=document.getElementById("weaponList");
   if(dl) dl.innerHTML=WEAPONS.map(z=>'<option value="'+esc(z)+'">').join("");
 }
+
+/* ---------------- GENUL SUSPECTULUI (descrieri la feminin) ----------------
+   Ghicit automat din prenume când scrii numele; butoanele ♂/♀ de lângă câmp
+   îl corectează dintr-un click (alegerea manuală rămâne până la golire).
+   Descrierile se generează la masculin și sunt trecute la feminin la final —
+   în română doar substantivele/pronumele și participiile diferă. */
+let gGen={v:'m',manual:false};
+const FEM_NAMES=['carmen','naomi','noemi','ines','inez','iris','ingrid','astrid','miriam','ruth','karin','karen','nicole','michelle','denise','lili','vivien','ester','esther','dolores','abigail','jasmin','yasmin','beatrice','alice','catrinel','irinel'];
+const MASC_A=['luca','mircea','toma','horea','mihnea','nea','baba'];
+function guessGender(name){
+  const toks=norm(String(name)).split(/[^a-z]+/).filter(Boolean);
+  let f=false;
+  toks.forEach(function(t){
+    if(MASC_A.indexOf(t)>=0) return;
+    if(FEM_NAMES.indexOf(t)>=0||(t.length>=3&&t.charAt(t.length-1)==='a')) f=true;
+  });
+  return f?'f':'m';
+}
+// margini de cuvânt care înțeleg diacriticele (\b e doar ASCII)
+function gw(w){ return new RegExp('(?<![A-Za-zăâîșțĂÂÎȘȚ])'+w+'(?![A-Za-zăâîșțĂÂÎȘȚ])','g'); }
+const GEN_DUAL=[[gw('numitului\\/numitei'),{m:'numitului',f:'numitei'}],[gw('numitul\\/numita'),{m:'numitul',f:'numita'}]];
+const GEN_F=[
+  // fraze întregi întâi — „acestuia" rămâne masculin când se referă la
+  // autovehicul, martor sau funcționar, nu la suspectă
+  [gw('reținerea suspectului și transportarea acestuia'),'reținerea suspectei și transportarea acesteia'],
+  [gw('sancționarea contravențională a acestuia'),'sancționarea contravențională a acesteia'],
+  [gw('numitului'),'numitei'],[gw('Numitului'),'Numitei'],
+  [gw('numitul'),'numita'],[gw('Numitul'),'Numita'],
+  [gw('acesta'),'aceasta'],[gw('Acesta'),'Aceasta'],
+  [gw('suspectului'),'suspectei'],[gw('suspectul'),'suspecta'],[gw('Suspectul'),'Suspecta'],
+  [gw('șoferul'),'șoferița'],[gw('Șoferul'),'Șoferița'],
+  [gw('conducătorul auto'),'conducătoarea auto'],[gw('Conducătorul auto'),'Conducătoarea auto'],
+  [gw('în care a fost implicat'),'în care a fost implicată'],
+  [gw('unul dintre aceștia fiind identificat'),'una dintre aceștia fiind identificată'],
+  [gw('(procesat|sancționat|identificat|imobilizat|depistat|reținut|arestat|observat|surprins|condus la secția)'),'$1FEM'],
+];
+function gfix(t){
+  t=String(t);
+  GEN_DUAL.forEach(function(r){ t=t.replace(r[0],r[1][gGen.v]); });
+  if(gGen.v!=='f') return t;
+  GEN_F.forEach(function(r){
+    t=t.replace(r[0], r[1]==='$1FEM'
+      ? function(m){ return m==='condus la secția'?'condusă la secția':m+'ă'; }
+      : r[1]);
+  });
+  return t;
+}
+const GSEL=' <span class="gsel" title="Genul suspectului — intră în formulările descrierii"><button type="button" class="gbtn" data-g="m">♂ el</button><button type="button" class="gbtn" data-g="f">♀ ea</button></span>';
+function updateGenderUI(){
+  document.querySelectorAll('.gsel .gbtn').forEach(function(b){ b.classList.toggle('on',b.dataset.g===gGen.v); });
+}
+document.addEventListener('click',function(e){
+  const b=e.target.closest&&e.target.closest('.gsel .gbtn');
+  if(!b) return;
+  gGen.v=b.dataset.g; gGen.manual=true;
+  updateGenderUI();
+  renderCart(); renderQuick();
+  if(document.querySelector('[data-out="desc"]')) updateDesc();
+});
+window.__gender={g:gGen,guess:guessGender,fix:gfix}; // hook pentru teste
 function dlFor(f){ if(f==='nume') return ' data-dl="suspectList"'; if(f==='marca') return ' data-dl="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' data-dl="zoneList"'; if(f==='arma') return ' data-dl="weaponList"'; return ''; }
 
 function renderShared(){
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
   // aceleași câmpuri apar și în Panoul 3 (dosar) și în Panoul 4 (amendă rapidă); valorile sunt sincronizate
   const mk=(box,list)=>{
-    box.innerHTML=list.map(f=>'<div class="inp"><label>'+f[1]+'</label><input data-sh="'+f[0]+'"'+dlFor(f[0])+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
+    box.innerHTML=list.map(f=>'<div class="inp"><label>'+f[1]+(f[0]==='nume'?GSEL:'')+'</label><input data-sh="'+f[0]+'"'+dlFor(f[0])+' placeholder="'+f[2]+'" value="'+esc(shared[f[0]])+'"></div>').join("");
     box.querySelectorAll('input[data-sh]').forEach(inp=>wireSharedInput(inp));
+    updateGenderUI();
   };
   ['sharedFields','sharedFieldsQ'].forEach(function(id){
     const box=document.getElementById(id);
@@ -1624,7 +1692,7 @@ function renderQuick(){
   box.innerHTML=h;
   document.getElementById('qFine').onclick=()=>copy(String(totFine));
   const qt=document.querySelector('[data-copy="qtitle"]'); if(qt)qt.onclick=e=>copy(title,e.target);
-  document.querySelector('[data-out="qdesc"]').value=desc;
+  document.querySelector('[data-out="qdesc"]').value=gfix(desc);
   const qd=document.querySelector('[data-copy="qdesc"]'); if(qd)qd.onclick=e=>{const v=document.querySelector('[data-out="qdesc"]').value;if(!guardCopy(v))return;copy(v,e.target);histSave('Amendă rapidă',title,v);};
   const rq=document.getElementById('regenQuick'); if(rq)rq.onclick=()=>{descVariant++;renderQuick();};
 }
@@ -1924,7 +1992,7 @@ function buildCombinedDesc(){
   else closing=pv(V.closeContrav,12);
   parts.push(closing);
 
-  ta.value=parts.join(" ");
+  ta.value=gfix(parts.join(" "));
 }
 
 function flash(msg){ toastEl.textContent=msg; toastEl.style.background="#7a2a35"; toastEl.style.borderColor="#e0475a"; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>{toastEl.classList.remove('show'); setTimeout(()=>{toastEl.textContent="Copiat!";toastEl.style.background="";toastEl.style.borderColor="";},250);},1900); }
@@ -2191,6 +2259,7 @@ renderHist();
     cur=null; curTpl=null; vals={}; sentVal=null; descVariant=0;
     cart.length=0; quick.clear();
     Object.keys(shared).forEach(function(k){ shared[k]=''; });
+    gGen.v='m'; gGen.manual=false; updateGenderUI();
     outEl.innerHTML='<div class="empty"><div class="big">Nimic selectat încă</div>Alege o infracțiune din stânga sau caut-o sus: „viteză", „jaf", „armă", „7.2"…<br>Îți generez automat titlul, sentința și descrierea, gata de copiat în joc.</div>';
     modechip.textContent='selectează o faptă'; modechip.classList.remove('penal','amenda');
     const s=document.getElementById('search'); if(s)s.value='';
