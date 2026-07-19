@@ -940,6 +940,15 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
 <datalist id="carList"></datalist>
 <datalist id="zoneList"></datalist>
 <datalist id="weaponList"></datalist>
+<style id="dldropcss">
+  #dlDrop{position:fixed;z-index:8000;display:none;overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(180deg,#0e1f40,#0a1730);border:1px solid rgba(96,165,250,.38);border-radius:10px;box-shadow:0 18px 50px #000b;padding:3px}
+  #dlDrop::-webkit-scrollbar{width:8px}
+  #dlDrop::-webkit-scrollbar-track{background:transparent}
+  #dlDrop::-webkit-scrollbar-thumb{background:rgba(96,165,250,.35);border-radius:8px}
+  #dlDrop::-webkit-scrollbar-thumb:hover{background:rgba(96,165,250,.55)}
+  #dlDrop .dld-it{padding:7px 11px;font-size:13px;color:#dce7fa;border-radius:7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #dlDrop .dld-it:hover,#dlDrop .dld-it.act{background:rgba(59,130,246,.16);color:#fff}
+</style>
 
 
 <script>
@@ -1552,7 +1561,7 @@ function renderWeaponList(){
   const dl=document.getElementById("weaponList");
   if(dl) dl.innerHTML=WEAPONS.map(z=>'<option value="'+esc(z)+'">').join("");
 }
-function dlFor(f){ if(f==='nume') return ' list="suspectList"'; if(f==='marca') return ' list="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' list="zoneList"'; if(f==='arma') return ' list="weaponList"'; return ''; }
+function dlFor(f){ if(f==='nume') return ' data-dl="suspectList"'; if(f==='marca') return ' data-dl="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' data-dl="zoneList"'; if(f==='arma') return ' data-dl="weaponList"'; return ''; }
 
 function renderShared(){
   const F=[["data","Data","ex: 30.06.2026"],["ora","Ora","ex: 22:28"],["zona","Locație / Zonă","ex: Cazino"],["nume","Nume suspect","ex: Naomi Black"],["marca","Model auto (opțional)","ex: Ubermacht F90"],["culoare","Culoare auto (opțional)","ex: Albastru"],["nrinm","Nr. înmatriculare (opțional)","ex: LS05QZPN"]];
@@ -2099,7 +2108,7 @@ renderHist();
     document.getElementById('mdHint').textContent=md.hint;
     box.innerHTML=md.fields.map(function(f){
       const wide=(f[0]==='motiv'||f[0]==='locatie')?' wide':'';
-      const dl=(f[0]==='nume')?' list="suspectList"':(f[0]==='motiv'?' list="motivList"':'');
+      const dl=(f[0]==='nume')?' data-dl="suspectList"':(f[0]==='motiv'?' data-dl="motivList"':'');
       return '<div class="inp'+wide+'"><label>'+f[1]+'</label><input data-md="'+f[0]+'"'+dl+' placeholder="'+esc(f[2])+'" value="'+esc(mdVals[f[0]]||'')+'"></div>';
     }).join('');
     box.querySelectorAll('input[data-md]').forEach(function(inp){
@@ -2261,6 +2270,87 @@ renderHist();
   if(da&&da.isApp&&da.copyPieces&&da.copyPieces.onRequest){
     da.copyPieces.onRequest(function(kind){ da.copyPieces.result(Object.assign({kind:kind},piece(kind))); });
   }
+})();
+
+/* ---------------- DROPDOWN CU SCROLL PENTRU LISTE (mașini, zone, arme, suspecți) ----------------
+   Dropdown-ul nativ de <datalist> nu se poate stila și nu are scroll vizibil.
+   Inputurile marcate cu data-dl="<id>" primesc unul propriu: listă derulabilă,
+   căutare fără diacritice oriunde în nume, săgeți + Enter, click. Sursa de date
+   rămâne <datalist>-ul cu acel id (deja randat de renderCarList & co). */
+(function(){
+  let box=null, items=[], act=-1, inp=null;
+  function ensure(){
+    if(box) return box;
+    box=document.createElement('div');
+    box.id='dlDrop';
+    document.body.appendChild(box);
+    // pointerdown (nu click): alege înainte ca inputul să piardă focusul
+    box.addEventListener('pointerdown',function(e){
+      const it=e.target.closest('.dld-it');
+      if(!it) return;
+      e.preventDefault();
+      pick(items[+it.dataset.i]);
+    });
+    return box;
+  }
+  function close_(){ if(box) box.style.display='none'; items=[]; act=-1; inp=null; }
+  function pick(v){
+    if(!inp||v==null) return;
+    const t=inp;
+    t.value=v;
+    t.dispatchEvent(new Event('input',{bubbles:true}));
+    close_();
+    t.focus();
+  }
+  function show(t){
+    const dl=document.getElementById(t.dataset.dl||'');
+    const all=dl?Array.prototype.map.call(dl.querySelectorAll('option'),function(o){return o.value;}):[];
+    const q=norm(t.value.trim());
+    items=q?all.filter(function(v){ return norm(v).indexOf(q)>=0; }):all;
+    if(!items.length){ close_(); return; }
+    inp=t; act=-1;
+    const b=ensure();
+    b.innerHTML=items.map(function(v,i){ return '<div class="dld-it" data-i="'+i+'">'+esc(v)+'</div>'; }).join('');
+    const r=t.getBoundingClientRect();
+    const h=Math.min(226, items.length*31+6);
+    b.style.display='block';
+    b.style.left=r.left+'px';
+    b.style.width=Math.max(r.width,180)+'px';
+    b.style.maxHeight='226px';
+    // sub input; dacă nu încape jos dar încape sus, deasupra
+    if(r.bottom+h+8>window.innerHeight && r.top>h+8) b.style.top=(r.top-h-4)+'px';
+    else b.style.top=(r.bottom+4)+'px';
+    b.scrollTop=0;
+  }
+  function mark(){
+    if(!box) return;
+    Array.prototype.forEach.call(box.children,function(el,i){ el.classList.toggle('act',i===act); });
+    const a=box.children[act];
+    if(a&&a.scrollIntoView) a.scrollIntoView({block:'nearest'});
+  }
+  document.addEventListener('focusin',function(e){
+    const t=e.target;
+    if(t&&t.matches&&t.matches('input[data-dl]')) show(t);
+    else if(inp) close_();
+  });
+  document.addEventListener('input',function(e){
+    if(inp&&e.target===inp) show(inp);
+    else if(e.target&&e.target.matches&&e.target.matches('input[data-dl]')&&document.activeElement===e.target) show(e.target);
+  });
+  document.addEventListener('keydown',function(e){
+    if(!inp||e.target!==inp) return;
+    if(e.key==='ArrowDown'){ e.preventDefault(); if(items.length){ act=(act+1)%items.length; mark(); } }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); if(items.length){ act=(act-1+items.length)%items.length; mark(); } }
+    else if(e.key==='Enter'){ if(act>=0&&items[act]!=null){ e.preventDefault(); pick(items[act]); } else close_(); }
+    else if(e.key==='Escape'||e.key==='Tab'){ close_(); }
+  },true);
+  document.addEventListener('focusout',function(e){
+    if(e.target===inp) setTimeout(function(){ if(!inp||document.activeElement!==inp) close_(); },0);
+  });
+  // orice scroll în pagină închide dropdown-ul (poziția e fixă) — mai puțin scrollul din el
+  window.addEventListener('scroll',function(e){ if(inp&&e.target!==box) close_(); },true);
+  window.addEventListener('resize',function(){ if(inp) close_(); });
+  window.__dlDrop={show:show,pick:pick}; // hook pentru teste
 })();
 </script>
 <div id="login">
