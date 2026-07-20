@@ -1588,7 +1588,13 @@ function guessGender(name){
 }
 // margini de cuvânt care înțeleg diacriticele (\b e doar ASCII)
 function gw(w){ return new RegExp('(?<![A-Za-zăâîșțĂÂÎȘȚ])'+w+'(?![A-Za-zăâîșțĂÂÎȘȚ])','g'); }
-const GEN_DUAL=[[gw('numitului\\/numitei'),{m:'numitului',f:'numitei'}],[gw('numitul\\/numita'),{m:'numitul',f:'numita'}]];
+const GEN_DUAL=[
+  [gw('numitului\\/numitei'),{m:'numitului',f:'numitei'}],
+  [gw('numitul\\/numita'),{m:'numitul',f:'numita'}],
+  [gw('căruia\\/căreia'),{m:'căruia',f:'căreia'}],
+  [gw('acesta\\/aceasta'),{m:'acesta',f:'aceasta'}],
+  [gw('Acesta\\/Aceasta'),{m:'Acesta',f:'Aceasta'}],
+];
 const GEN_F=[
   // fraze întregi întâi — „acestuia" rămâne masculin când se referă la
   // autovehicul, martor sau funcționar, nu la suspectă
@@ -1607,6 +1613,9 @@ const GEN_F=[
 function gfix(t){
   t=String(t);
   GEN_DUAL.forEach(function(r){ t=t.replace(r[0],r[1][gGen.v]); });
+  // formele cu paranteză din șabloane — „identificat(ă)", „condus(ă)" — se
+  // rezolvă la forma genului curent (nu rămân niciodată cu paranteza în text)
+  t=t.replace(/([a-zăâîșțA-ZĂÂÎȘȚ]+)\(ă\)/g, gGen.v==='f'?'$1ă':'$1');
   if(gGen.v!=='f') return t;
   GEN_F.forEach(function(r){
     t=t.replace(r[0], r[1]==='$1FEM'
@@ -1626,6 +1635,7 @@ document.addEventListener('click',function(e){
   updateGenderUI();
   renderCart(); renderQuick();
   if(document.querySelector('[data-out="desc"]')) updateDesc();
+  if(window.__mdBuild) window.__mdBuild();
 });
 window.__gender={g:gGen,guess:guessGender,fix:gfix}; // hook pentru teste
 function dlFor(f){ if(f==='nume') return ' data-dl="suspectList"'; if(f==='marca') return ' data-dl="carList"'; if(f==='zona'||f==='locjaf'||f==='locatie') return ' data-dl="zoneList"'; if(f==='arma') return ' data-dl="weaponList"'; return ''; }
@@ -2169,7 +2179,7 @@ renderHist();
     const v={};
     md.fields.forEach(function(f){ v[f[0]]=(mdVals[f[0]]||'').trim()||('['+f[1].toUpperCase()+']'); });
     tOut.value=md.label+' — '+v.nume;
-    bOut.value=md.text(v,nowRO(),agentStr());
+    bOut.value=gfix(md.text(v,nowRO(),agentStr()));
   }
   function renderFields(){
     const md=MD[sel.value];
@@ -2177,13 +2187,20 @@ renderHist();
     box.innerHTML=md.fields.map(function(f){
       const wide=(f[0]==='motiv'||f[0]==='locatie')?' wide':'';
       const dl=(f[0]==='nume')?' data-dl="suspectList"':(f[0]==='motiv'?' data-dl="motivList"':'');
-      return '<div class="inp'+wide+'"><label>'+f[1]+'</label><input data-md="'+f[0]+'"'+dl+' placeholder="'+esc(f[2])+'" value="'+esc(mdVals[f[0]]||'')+'"></div>';
+      return '<div class="inp'+wide+'"><label>'+f[1]+(f[0]==='nume'?GSEL:'')+'</label><input data-md="'+f[0]+'"'+dl+' placeholder="'+esc(f[2])+'" value="'+esc(mdVals[f[0]]||'')+'"></div>';
     }).join('');
     box.querySelectorAll('input[data-md]').forEach(function(inp){
-      inp.addEventListener('input',function(){ mdVals[inp.dataset.md]=inp.value; build(); });
+      inp.addEventListener('input',function(){
+        mdVals[inp.dataset.md]=inp.value;
+        // genul se ghicește și din numele de pe mandat (cât timp nu e ales manual)
+        if(inp.dataset.md==='nume'&&!gGen.manual){ const g=guessGender(inp.value); if(g!==gGen.v){ gGen.v=g; updateGenderUI(); } }
+        build();
+      });
     });
+    updateGenderUI();
     build();
   }
+  window.__mdBuild=build; // butoanele ♂/♀ re-generează și mandatul
   sel.addEventListener('change',renderFields);
   document.getElementById('mdCopyT').addEventListener('click',function(e){ copy(tOut.value,e.target); });
   document.getElementById('mdCopyB').addEventListener('click',function(e){ build(); if(!guardCopy(bOut.value))return; copy(bOut.value,e.target); histSave('Mandat',tOut.value,bOut.value); });
