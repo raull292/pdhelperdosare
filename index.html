@@ -1008,14 +1008,14 @@ const A = [
   {id:"1.3",cap:1,name:"Nerespectarea marcajelor rutiere",f:"4.000$",pct:3,s:null,t:"amenda",hint:"nu a respectat marcajele rutiere"},
   {id:"1.4",cap:1,name:"Neacordare de prioritate",title:"Neacordare de Prioritate",f:"4.000$",pct:3,s:null,t:"amenda",hint:"nu a acordat prioritate"},
   {id:"1.5",cap:1,name:"Nerespectarea semnelor Polițistului",title:"Nerespectarea semnelor de circulatie ale Polițistului",f:"4.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a respectat semnele de circulație impuse de polițist"},
-  {id:"1.6",cap:1,name:"Nerespectarea semnalelor luminoase/sonore",title:"Nerespectarea semnalelor luminoase și sonore",f:"8.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a tras pe dreapta la semnalele autospecialei"},
-  {id:"1.7",cap:1,name:"Parcare ilegală",f:"2.500$",permis:"Ridicarea autovehiculului",s:null,t:"amenda",hint:"a parcat neregulamentar (pe bordură/trotuar)"},
+  {id:"1.6",cap:1,name:"Nerespectarea semnalelor luminoase/sonore",title:"Nerespectarea semnalelor luminoase și sonore",f:"8.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a oprit la semnalele luminoase și sonore ale autospecialei"},
+  {id:"1.7",cap:1,name:"Parcare ilegală",f:"2.500$",permis:"Ridicarea autovehiculului",s:null,t:"amenda",hint:"era staționat neregulamentar (pe bordură/trotuar)"},
   {id:"1.8",cap:1,name:"Traversarea interzisă",f:"1.000$",s:null,t:"generic",hint:"a traversat printr-un loc nepermis"},
   {id:"1.9",cap:1,name:"Acoperirea feței la volan",f:"5.000$",permis:"Percheziție persoană + vehicul",s:null,t:"amenda",hint:"purta un obiect ce îi acoperea fața la volan"},
-  {id:"1.10",cap:1,name:"Folosirea telefonului în timpul condusului",f:"1.500$",s:null,t:"amenda",hint:"folosea telefonul în timpul condusului"},
+  {id:"1.10",cap:1,name:"Folosirea telefonului în timpul condusului",f:"1.500$",s:null,t:"amenda",hint:"folosea telefonul mobil în timpul conducerii"},
   {id:"1.11",cap:1,name:"Claxonarea excesivă",f:"5.000$",s:null,t:"amenda",hint:"a claxonat excesiv"},
   {id:"1.12",cap:1,name:"Geamuri fumurii",f:"3.000$",s:null,t:"amenda",hint:"avea montate geamuri fumurii care împiedicau recunoașterea conducătorului"},
-  {id:"1.13",cap:1,name:"Neoane montate sub autovehicul",title:"Neoane",f:"5.000$",s:null,t:"amenda",hint:"avea montate neoane sub autovehicul"},
+  {id:"1.13",cap:1,name:"Neoane montate sub autovehicul",title:"Neoane",f:"5.000$",s:null,t:"amenda",hint:"avea montate neoane pe partea inferioară a caroseriei"},
   {id:"1.14",cap:1,name:"Claxon neomologat",f:"3.000$",s:null,t:"amenda",hint:"avea montat un claxon neomologat"},
   {id:"1.15",cap:1,name:"Xenoane / iluminat neomologat",title:"Xenoane",f:"4.500$",s:null,t:"amenda",hint:"avea montate xenoane / iluminat neomologat"},
   {id:"1.16",cap:1,name:"Nerespectarea culorii semaforului",title:"Nerespectarea culorii a semaforului",f:"8.000$",permis:"Anulare permis",s:null,t:"amenda",hint:"nu a respectat culoarea semaforului"},
@@ -1028,7 +1028,7 @@ const A = [
   {id:"2.4",cap:2,name:"Curse ilegale",f:"15.000$",permis:"Anulare permis",s:[60,100],t:"generic",hint:"participa la o cursă ilegală pe stradă"},
   {id:"2.5",cap:2,name:"Părăsirea locului accidentului/unei scene",title:"Părăsirea locului accidentului sau a unei scene",f:"5.500$",permis:"Anulare permis",s:[40,60],t:"generic",hint:"a părăsit locul accidentului fără a anunța autoritățile"},
   {id:"2.6",cap:2,name:"Condusul fără permis",f:"6.000$",s:[50,80],t:"trafic",hint:"avea permisul auto expirat/inexistent"},
-  {id:"2.7",cap:2,name:"Evadarea de un ofițer cu un autovehicul",title:"Evadarea de un ofiţer cu un autovehicul",f:"7.000$",permis:"Anulare permis",s:[60,120],t:"urmarire",combo:"4.5 Rezistență la Arest înlocuiește acest articol când fuga e folosită pentru a evita arestul.",hint:"nu a oprit la semnalele poliției și a încercat să evadeze cu autovehiculul"},
+  {id:"2.7",cap:2,name:"Evadarea de un ofițer cu un autovehicul",title:"Evadarea de un ofiţer cu un autovehicul",f:"7.000$",permis:"Anulare permis",s:[60,120],t:"urmarire",combo:"4.5 Rezistență la Arest înlocuiește acest articol când fuga e folosită pentru a evita arestul.",hint:"nu a oprit la semnalele poliției și a încercat să se sustragă urmăririi cu autovehiculul"},
 
   {id:"3.1",cap:3,name:"Acoperirea feței",f:"3.000$",permis:"Percheziție obligatorie",s:null,t:"generic",hint:"își acoperea zona facială într-un spațiu public"},
   {id:"3.2",cap:3,name:"Urmărirea unei persoane fără acord",f:"7.000$",s:[40,60],t:"generic",hint:"urmărea și hărțuia o altă persoană"},
@@ -1134,19 +1134,35 @@ const FLABEL = {
   cantitate:["Cantitate găsită","ex: 5 joint-uri"], fapta:["Descriere faptă (liber)","ex: avea permisul auto expirat"]
 };
 
+// culoarea din formular: literă mică + acordul la feminin pentru culorile simple („Albastru" -> „albastră")
+const COL_F={albastru:'albastră',negru:'neagră',alb:'albă','roșu':'roșie',rosu:'roșie',galben:'galbenă',portocaliu:'portocalie',argintiu:'argintie',auriu:'aurie','vișiniu':'vișinie',visiniu:'vișinie','cenușiu':'cenușie',cenusiu:'cenușie'};
+function colF(c){ c=String(c||'').trim(); if(!c) return c; const low=c.charAt(0).toLowerCase()+c.slice(1); if(/\s/.test(c)) return low; return COL_F[low.toLowerCase()]||low; }
 const TPL = {
   amenda:{ label:"Amendă / contravenție rutieră", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", un echipaj de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+", întrucât s-a constatat că acesta "+d.fapta+". În urma legitimării, conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare." },
+    text:d=>{
+      // dotările/starea vehiculului rămân pe „acesta"; acțiunile de la volan trec pe conducător
+      const veh=cur&&["1.12","1.13","1.14","1.15","1.17"].includes(cur.id);
+      let fap=d.fapta, who=veh?"acesta":"conducătorul acestuia";
+      if(cur&&cur.id==="2.1"&&fap===cur.hint){ who="acesta"; fap="nu figura ca fiind înmatriculat"; }
+      if(cur&&cur.id==="1.7")
+        return "În data de "+d.data+", în jurul orei "+d.ora+", un echipaj de poliție aflat în serviciul de patrulare în zona "+d.zona+" a identificat autovehiculul marca "+d.marca+", de culoare "+colF(d.culoare)+", cu numărul de înmatriculare "+d.nrinm+", care "+fap+". În urma verificărilor efectuate, conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul sancționării. Acesta a fost sancționat conform Codului Penal în vigoare.";
+      return "În data de "+d.data+", în jurul orei "+d.ora+", un echipaj de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+colF(d.culoare)+", cu numărul de înmatriculare "+d.nrinm+", întrucât s-a constatat că "+who+" "+fap+". În urma legitimării, conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare.";
+    } },
   trafic:{ label:"Oprire în trafic (dosar penal)", fields:["data","ora","zona","marca","culoare","nrinm","nume","fapta","sectie"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", echipajul de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". În urma legitimării, conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", iar din verificările efectuate a rezultat că acesta/aceasta "+d.fapta+". Suspectul a fost condus la secția "+d.sectie+" de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", echipajul de poliție aflat în serviciul de patrulare în zona "+d.zona+" a procedat la oprirea regulamentară a autovehiculului marca "+d.marca+", de culoare "+colF(d.culoare)+", cu numărul de înmatriculare "+d.nrinm+". În urma legitimării, conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", iar din verificările efectuate a rezultat că acesta/aceasta "+d.fapta+". Suspectul a fost condus la secția "+d.sectie+" de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
   viteza:{ label:"Limită de viteză depășită", fields:["data","ora","zona","marca","culoare","nrinm","nume","viteza","limita"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", cu ocazia acțiunilor de supraveghere a traficului rutier desfășurate în zona "+d.zona+", a fost oprit autovehiculul marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+", înregistrat circulând cu viteza de "+d.viteza+" km/h pe un sector de drum cu limita maximă admisă de "+d.limita+" km/h. Conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", cu ocazia acțiunilor de supraveghere a traficului rutier desfășurate în zona "+d.zona+", a fost oprit autovehiculul marca "+d.marca+", de culoare "+colF(d.culoare)+", cu numărul de înmatriculare "+d.nrinm+", înregistrat circulând cu viteza de "+d.viteza+" km/h pe un sector de drum cu limita maximă admisă de "+d.limita+" km/h. Conducătorul autovehiculului a fost identificat în persoana numitului/numitei "+d.nume+", căruia/căreia i-a fost adus la cunoștință motivul opririi. Acesta a fost sancționat conform Codului Penal în vigoare." },
   arma:{ label:"Percheziție — armă găsită (schimb de focuri)", fields:["data","ora","zona","sursa","nume","arma","gloante","calibru"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", prin dispecerat a fost recepționată o alertă transmisă de "+d.sursa+", privind executarea de focuri de armă în zona "+d.zona+". La sosirea echipajelor de poliție, între forțele de ordine și mai mulți suspecți a avut loc un schimb de focuri, printre participanți fiind identificat(ă) și numitul/numita "+d.nume+", care a fost imobilizat(ă) și condus(ă) la secția centrală de poliție. În urma percheziției corporale efectuate, asupra sa au fost găsite: 1x "+d.arma+" și "+d.gloante+" gloanțe calibrul "+d.calibru+", bunuri ce au fost ridicate în vederea confiscării. Suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
+    text:d=>{
+      // arma albă (7.1) nu poate porni de la focuri de armă — narativ de control corporal
+      if(cur&&cur.id==="7.1")
+        return "În data de "+d.data+", în jurul orei "+d.ora+", în urma unei sesizări privind un conflict în zona "+d.zona+", echipajele de poliție au procedat la legitimarea și controlul corporal al persoanelor implicate. Asupra numitului/numitei "+d.nume+" a fost găsită 1x "+d.arma+", armă albă deținută fără drept, bun ce a fost ridicat în vederea confiscării. Suspectul a fost condus la secția centrală de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.";
+      return "În data de "+d.data+", în jurul orei "+d.ora+", prin dispecerat a fost recepționată o alertă transmisă de "+d.sursa+", privind executarea de focuri de armă în zona "+d.zona+". La sosirea echipajelor de poliție, între forțele de ordine și mai mulți suspecți a avut loc un schimb de focuri, printre participanți fiind identificat(ă) și numitul/numita "+d.nume+", care a fost imobilizat(ă) și condus(ă) la secția centrală de poliție. În urma percheziției corporale efectuate, asupra sa au fost găsite: 1x "+d.arma+" și "+d.gloante+" gloanțe calibrul "+d.calibru+", bunuri ce au fost ridicate în vederea confiscării. Suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.";
+    } },
   razie:{ label:"Razie SAS pe insulă (Cayo / Maldive)", fields:["data","ora","insula","nume","arma","gloante","calibru"],
     text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în cadrul unei razii efectuate de trupele SAS asupra insulei "+d.insula+", au fost reținute mai multe persoane, acestea fiind conduse la secția centrală de poliție în vederea procesării. Printre persoanele reținute a fost identificat(ă) și numitul/numita "+d.nume+", asupra căruia/căreia, în urma percheziției corporale, au fost găsite următoarele:\n1x "+d.arma+"\n"+d.gloante+"x Gloanțe calibrul "+d.calibru+"\nBunurile au fost ridicate în vederea confiscării, iar suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   urmarire:{ label:"Urmărire / evadare cu autovehicul", fields:["data","ora","zona","marca","culoare","nrinm","zonafin","nume"],
-    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", s-a efectuat semnal regulamentar de oprire asupra autovehiculului marca "+d.marca+", de culoare "+d.culoare+", cu numărul de înmatriculare "+d.nrinm+". Conducătorul acestuia nu a oprit la semnalele efectuate, motiv pentru care s-a trecut la urmărirea autovehiculului, fiind solicitate echipaje suplimentare. Urmărirea s-a desfășurat pe mai multe artere rutiere și s-a finalizat în zona "+d.zonafin+", unde autovehiculul a fost implicat într-un eveniment rutier soldat exclusiv cu pagube materiale. Conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", fiind imobilizat(ă) și condus(ă) la secția centrală de poliție, unde a fost procesat(ă) și sancționat(ă) conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
+    text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", în zona "+d.zona+", s-a efectuat semnal regulamentar de oprire asupra autovehiculului marca "+d.marca+", de culoare "+colF(d.culoare)+", cu numărul de înmatriculare "+d.nrinm+". Conducătorul acestuia nu a oprit la semnalele efectuate, motiv pentru care s-a trecut la urmărirea autovehiculului, fiind solicitate echipaje suplimentare. Urmărirea s-a desfășurat pe mai multe artere rutiere și s-a finalizat în zona "+d.zonafin+", unde autovehiculul a fost implicat într-un eveniment rutier soldat exclusiv cu pagube materiale. Conducătorul a fost identificat în persoana numitului/numitei "+d.nume+", fiind imobilizat(ă) și condus(ă) la secția centrală de poliție, unde a fost procesat(ă) și sancționat(ă) conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei." },
   jaf_imobil:{ label:"Jaf imobil (magazin / casă)", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
     text:d=>"În data de "+d.data+", în jurul orei "+d.ora+", prin dispecerat a fost recepționată o alertă privind comiterea unui jaf la "+d.locatie+". Echipajele de ordine publică deplasate la fața locului au procedat la reținerea mai multor suspecți, unul dintre aceștia fiind identificat în persoana numitului/numitei "+d.nume+". Acesta/Aceasta a fost imobilizat(ă) și condus(ă) la secția "+d.sectie+" de poliție, unde, în urma percheziției corporale, asupra sa au fost găsite: 1x "+d.arma+", "+d.gloante+"x gloanțe calibrul "+d.calibru+", 1x stație de emisie-recepție. Bunurile au fost ridicate în vederea confiscării, iar suspectul a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul Sandy Shores în vederea executării pedepsei." },
   jaf_bancar:{ label:"Jaf bancar", fields:["data","ora","locatie","nume","arma","gloante","calibru","sectie"],
@@ -1216,7 +1232,7 @@ const STORY={
   "6.10":"În data de {data}, în jurul orei {ora}, în zona {zona}, din verificările efectuate a rezultat că numitul {nume} a ascuns și a înstrăinat bunuri din averea sa, în scopul fraudării creditorilor.",
   "7.6":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a fost surprins îndreptând o armă de foc asupra unei persoane, respectiv asupra unui bun, fără a se afla într-o situație de legitimă apărare.",
   "7.7":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a descărcat o armă de foc asupra unei persoane, în afara oricărei situații de legitimă apărare, punând în pericol viața acesteia.",
-  "8.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} a organizat, respectiv a participat la acte de terorism de natură a pune în pericol securitatea națională.",
+  "8.1":"În data de {data}, în jurul orei {ora}, în zona {zona}, din probele administrate a rezultat că numitul {nume} a organizat acte de terorism, respectiv a participat la astfel de acțiuni, de natură a pune în pericol securitatea națională.",
   "8.2":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a pătruns fără drept într-o zonă/clădire aflată sub regim special de protecție, încălcând regimul de securitate al statului.",
   "8.3":"În data de {data}, în jurul orei {ora}, în zona {zona}, numitul {nume} a împiedicat desfășurarea activităților guvernamentale prin blocarea căilor de acces și exercitarea de presiuni asupra reprezentanților instituțiilor.",
   "8.4":"În data de {data}, în jurul orei {ora}, în zona {zona}, din cercetările efectuate a rezultat că numitul {nume} face parte dintr-o structură paramilitară organizată, constituită în afara cadrului legal.",
@@ -1600,15 +1616,21 @@ const GEN_F=[
   // autovehicul, martor sau funcționar, nu la suspectă
   [gw('reținerea suspectului și transportarea acestuia'),'reținerea suspectei și transportarea acesteia'],
   [gw('sancționarea contravențională a acestuia'),'sancționarea contravențională a acesteia'],
+  [gw('ale cărui manevre'),'ale cărei manevre'],
+  [gw('aflat în custodia'),'aflată în custodia'],
   [gw('numitului'),'numitei'],[gw('Numitului'),'Numitei'],
   [gw('numitul'),'numita'],[gw('Numitul'),'Numita'],
-  [gw('acesta'),'aceasta'],[gw('Acesta'),'Aceasta'],
+  // „acesta" rămâne masculin când e vorba de autovehicul (dotările/starea lui)
+  [new RegExp('(?<![A-Za-zăâîșțĂÂÎȘȚ])acesta(?![A-Za-zăâîșțĂÂÎȘȚ])(?! (avea montat|nu figura|circula))','g'),'aceasta'],[gw('Acesta'),'Aceasta'],
   [gw('suspectului'),'suspectei'],[gw('suspectul'),'suspecta'],[gw('Suspectul'),'Suspecta'],
   [gw('șoferul'),'șoferița'],[gw('Șoferul'),'Șoferița'],
   [gw('conducătorul auto'),'conducătoarea auto'],[gw('Conducătorul auto'),'Conducătoarea auto'],
+  [/(C|c)onducătorul (autovehiculului|acestuia|a fost)/g,'$1onducătoarea $2'],
+  [gw('Contravenientul'),'Contravenienta'],[gw('contravenientul'),'contravenienta'],
   [gw('în care a fost implicat'),'în care a fost implicată'],
   [gw('unul dintre aceștia fiind identificat'),'una dintre aceștia fiind identificată'],
-  [gw('(procesat|sancționat|identificat|imobilizat|depistat|reținut|arestat|observat|surprins|condus la secția)'),'$1FEM'],
+  // participiile suspectei; „(?<![Aa]u? )" lasă în pace perfectul compus („au surprins", „a identificat")
+  [new RegExp('(?<![A-Za-zăâîșțĂÂÎȘȚ])(?<![Aa] )(?<![Aa]u )(procesat|sancționat|identificat|imobilizat|depistat|reținut|arestat|observat|surprins|transportat|transferat|condus la secția|condus la sediul)(?![A-Za-zăâîșțĂÂÎȘȚ])','g'),'$1FEM'],
 ];
 function gfix(t){
   t=String(t);
@@ -1619,7 +1641,7 @@ function gfix(t){
   if(gGen.v!=='f') return t;
   GEN_F.forEach(function(r){
     t=t.replace(r[0], r[1]==='$1FEM'
-      ? function(m){ return m==='condus la secția'?'condusă la secția':m+'ă'; }
+      ? function(m){ return m.indexOf('condus la ')===0?m.replace('condus','condusă'):m+'ă'; }
       : r[1]);
   });
   return t;
@@ -1687,7 +1709,7 @@ function renderQuick(){
   const retine=arts.some(a=>a.permis && /anulare permis/i.test(a.permis));
   const title=arts.map(a=>a.title||a.name).join(" + ");
   const d=shared.data||"[DATA]",o=shared.ora||"[ORA]",z=shared.zona||"[LOCAȚIA]",n=shared.nume||"[NUME SUSPECT]";
-  const mk=shared.marca||"[MODEL]",cl=shared.culoare||"[CULOARE]",nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
+  const mk=shared.marca||"[MODEL]",cl=colF(shared.culoare)||"[CULOARE]",nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
   const clauses=arts.map(a=>a.hint||("a încălcat "+(a.title||a.name).toLowerCase()));
   const desc=pv(V.dateOpen,1)+d+", la ora "+o+", în zona "+z+", echipajul de poliție "+pv(V.stopVerb,2)+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr+", care "+collapseJoin(clauses)+". "+pv(V.soferId,4)+n+". "+pv(V.closeContrav,12);
   let h='';
@@ -1887,14 +1909,14 @@ const V={
   legit:["Cu ocazia legitimării s-a constatat că șoferul, identificat în persoana numitului/numitei ","În urma verificării documentelor s-a constatat că șoferul, identificat în persoana numitului/numitei ","La legitimare s-a stabilit că șoferul, identificat în persoana numitului/numitei "],
   soferId:["Conducătorul autovehiculului a fost identificat în persoana numitului/numitei ","La volan a fost identificat(ă) numitul/numita ","Șoferul a fost identificat în persoana numitului/numitei "],
   escal:["Pe parcursul intervenției, ","În timpul desfășurării măsurilor, ","Pe durata intervenției organelor de poliție, "],
-  search:["În urma percheziției corporale efectuate, s-a constatat că ","Cu ocazia controlului corporal efectuat, s-a constatat că ","În urma percheziției efectuate asupra sa, s-a stabilit că "],
+  search:["În urma percheziției corporale efectuate, s-a constatat că ","Cu ocazia controlului corporal efectuat, s-a constatat că ","În urma percheziției corporale, s-a stabilit că "],
   crimeFirst:["În urma cercetărilor efectuate, s-a stabilit că ","Din verificările efectuate și probele administrate a rezultat că ","În urma investigațiilor desfășurate, s-a stabilit că "],
   crimeMore:["De asemenea, s-a stabilit că ","Totodată, din cercetări a rezultat că ","În plus, s-a constatat că "],
   closePenal:["Față de cele constatate, suspectul a fost imobilizat, condus la sediul poliției și procesat, fiind sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.","Suspectul a fost reținut, i-au fost aduse la cunoștință faptele reținute în sarcina sa, iar în urma procesării a fost sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei.","În baza probelor administrate, suspectul a fost procesat și sancționat conform Codului Penal în vigoare, fiind ulterior transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."],
   closeLife:["Având în vedere gravitatea deosebită a faptelor săvârșite, suspectul a fost reținut și transportat la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind detențiunea pe viață.","Față de gravitatea faptelor constatate, s-a dispus reținerea suspectului și transportarea acestuia la Penitenciarul de Maximă Siguranță Sandy Shores, pedeapsa aplicată fiind detențiunea pe viață."],
   closeContrav:["Acesta a fost sancționat conform Codului Penal în vigoare.","Față de cele constatate, s-a dispus sancționarea contravențională a acestuia, conform Codului Penal în vigoare.","Contravenientul a fost sancționat conform Codului Penal în vigoare."],
   closePenalSingle:[" Numitul a fost condus la secția {sec} de poliție, unde a fost procesat și sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."," Suspectul a fost condus la secția {sec} de poliție, i-au fost aduse la cunoștință faptele reținute în sarcina sa, fiind sancționat conform Codului Penal în vigoare și transportat ulterior la Penitenciarul de Maximă Siguranță Sandy Shores."," În urma procesării efectuate la secția {sec}, suspectul a fost sancționat conform Codului Penal în vigoare, urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei."],
-  tailPenal:["urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei","fiind ulterior transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru executarea pedepsei aplicate","urmând a fi transferat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii sentinței"]
+  tailPenal:["urmând să fie transportat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea executării pedepsei","fiind ulterior transportat la Penitenciarul de Maximă Siguranță Sandy Shores pentru executarea pedepsei aplicate","urmând a fi transferat la Penitenciarul de Maximă Siguranță Sandy Shores în vederea ispășirii pedepsei"]
 };
 // variază ușor un șablon fix (deschidere + coada cu penitenciar / încheierea de contravenție)
 function varyTemplate(t, art){
@@ -1971,11 +1993,14 @@ function buildCombinedDesc(){
     named=true;
     blocks([3,4,5], true);
   } else if(useTrafic){
-    const mk=shared.marca||"[MODEL]", cl=shared.culoare||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
-    const verb=ordered.some(c=>c.id==="2.7")?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
+    const mk=shared.marca||"[MODEL]", cl=colF(shared.culoare)||"[CULOARE]", nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
+    const a27=ordered.some(c=>c.id==="2.7")?A.find(a=>a.id==="2.7"):null;
+    const verb=a27?"a încercat oprirea unui autovehicul":pv(V.stopVerb,2);
     let s1=open+"echipajul de poliție "+verb+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr;
     if(P[1].length) s1+=", care "+collapseJoin(P[1]);
     s1+=".";
+    // fuga se întâmplă înainte de legitimare — o povestim imediat după semnalul de oprire
+    if(a27){ P[3]=P[3].filter(h=>h!==a27.hint); s1+=" Conducătorul acestuia nu a oprit la semnalele poliției și a încercat să se sustragă urmăririi, fiind necesară intervenția mai multor echipaje pentru oprirea autovehiculului."; }
     parts.push(s1);
     if(P[2].length) parts.push(pv(V.legit,3)+n+", "+collapseJoin(P[2])+".");
     else parts.push(pv(V.soferId,4)+n+".");
@@ -2138,7 +2163,7 @@ renderHist();
       fields:[['nume','Nume suspect','ex: Naomi Black'],['motiv','Fapta cercetată','ex: Tâlhărie'],['sectie','Secția la care e adus','ex: centrală']],
       text:function(v,dt,agent){
         return 'MANDAT DE ADUCERE\n\n'
-          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune ADUCEREA numitului/numitei '+v.nume+' la sediul secției '+v.sectie+' de poliție, în vederea audierii în cadrul cercetărilor efectuate sub aspectul săvârșirii faptei de '+v.motiv+'.\n\n'
+          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune ADUCEREA numitului/numitei '+v.nume+' la secția '+v.sectie+' de poliție, în vederea audierii în cadrul cercetărilor efectuate sub aspectul săvârșirii faptei de '+v.motiv+'.\n\n'
           +'Organele de ordine sunt împuternicite să identifice, să legitimeze și să conducă persoana sus-menționată la sediul indicat. În cazul refuzului de a se conforma, aceasta va putea fi adusă prin constrângere, cu respectarea drepturilor legale.\n\n'
           +'Emis în data de '+dt.data+', ora '+dt.ora+'.\nEmitent: '+agent;
       }
@@ -2149,7 +2174,7 @@ renderHist();
       fields:[['nume','Nume suspect / deținător','ex: Naomi Black'],['motiv','Indicii / fapta cercetată','ex: trafic de armament'],['locatie','Locația percheziționată','ex: locuința din Grove Street 12']],
       text:function(v,dt,agent){
         return 'MANDAT DE PERCHEZIȚIE\n\n'
-          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune efectuarea unei PERCHEZIȚII asupra locației '+v.locatie+', deținută/utilizată de numitul/numita '+v.nume+', existând indicii temeinice privind '+v.motiv+'.\n\n'
+          +'În temeiul atribuțiilor conferite de Codul Penal și de procedurile I.P.J. Los Santos, se dispune efectuarea unei PERCHEZIȚII asupra următoarei locații: '+v.locatie+', deținută/utilizată de numitul/numita '+v.nume+', existând indicii temeinice privind săvârșirea faptei de '+v.motiv+'.\n\n'
           +'Percheziția se va efectua cu confirmarea prealabilă a locației, bunurile care fac obiectul confiscării urmând a fi inventariate și ridicate conform procedurilor în vigoare.\n\n'
           +'Emis în data de '+dt.data+', ora '+dt.ora+'.\nEmitent: '+agent;
       }
