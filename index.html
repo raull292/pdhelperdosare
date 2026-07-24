@@ -1710,8 +1710,18 @@ function renderQuick(){
   const title=arts.map(a=>a.title||a.name).join(" + ");
   const d=shared.data||"[DATA]",o=shared.ora||"[ORA]",z=shared.zona||"[LOCAȚIA]",n=shared.nume||"[NUME SUSPECT]";
   const mk=shared.marca||"[MODEL]",cl=colF(shared.culoare)||"[CULOARE]",nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
-  const clauses=arts.map(a=>a.hint||("a încălcat "+(a.title||a.name).toLowerCase()));
-  const desc=pv(V.dateOpen,1)+d+", la ora "+o+", în zona "+z+", echipajul de poliție "+pv(V.stopVerb,2)+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr+", care "+collapseJoin(clauses)+". "+pv(V.soferId,4)+n+". "+pv(V.closeContrav,12);
+  // 1.8 (traversare) e faptă de pieton — nu se leagă niciodată de autovehicul
+  const pietArts=arts.filter(a=>a.id==="1.8"), vehArts=arts.filter(a=>a.id!=="1.8");
+  const hintOf=a=>a.hint||("a încălcat "+(a.title||a.name).toLowerCase());
+  const clauses=vehArts.map(hintOf), pietCl=pietArts.map(hintOf);
+  let desc;
+  if(!vehArts.length){
+    desc=pv(V.dateOpen,1)+d+", la ora "+o+", în zona "+z+", numitul/numita "+n+" a fost depistat în timp ce "+joinRo(pietCl)+". "+pv(V.closeContrav,12);
+  } else {
+    desc=pv(V.dateOpen,1)+d+", la ora "+o+", în zona "+z+", echipajul de poliție "+pv(V.stopVerb,2)+" de tip "+mk+", de culoare "+cl+", cu numărul de înmatriculare "+nr+", care "+collapseJoin(clauses)+". "+pv(V.soferId,4)+n+".";
+    if(pietCl.length) desc+=" De asemenea, s-a constatat că acesta "+joinRo(pietCl)+".";
+    desc+=" "+pv(V.closeContrav,12);
+  }
   let h='';
   h+='<div class="totals">'
     +'<div class="tot mo" id="qFine"><div class="tl">Sumă amendă (fără punct)</div><div class="tv">'+totFine+'<small>$</small></div><div class="tcopy">clic = copiază</div></div>'
@@ -1876,9 +1886,10 @@ function joinRo(arr){
   if(arr.length===1)return arr[0];
   return arr.slice(0,-1).join(", ")+" și "+arr[arr.length-1];
 }
-function isVehicle(a){ return a.cap===1||a.cap===2||a.id==="3.11"||a.id==="3.11.1"; }
+function isVehicle(a){ return (a.cap===1&&a.id!=="1.8")||a.cap===2||a.id==="3.11"||a.id==="3.11.1"; }
 // ordine cronologica pentru descriere: motiv oprire -> escaladare -> ce s-a gasit -> restul
 function phaseOf(a){
+  if(a.id==="1.8") return 5;                                                // pieton — nu se leagă de autovehicul
   if(a.cap===1) return 1;                                                   // motivul opririi (folii/neoane/viteza)
   if(["2.7","4.1","4.2","4.4","4.5","4.6","4.3","3.14","4.10","5.7"].includes(a.id)) return 3; // escaladare/refuz
   if(a.cap===2) return 2;                                                   // alte fapte rutiere la oprire
