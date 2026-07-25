@@ -375,7 +375,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         <div class="cb-sub">Deschide <b>MDT Assistant</b> din meniu și urmează pașii:</div>
         <div class="gstep"><div class="gn">1</div><p><b>Caută fapta</b> în Panoul 1 — scrie orice: <span class="gk">viteză</span>, <span class="gk">jaf</span>, <span class="gk">7.2</span> sau <span class="gk">armă</span>. Apesi pe rezultat.</p></div>
         <div class="gstep"><div class="gn">2</div><p><b>Completează câmpurile</b> apărute în Panoul 2 (nume suspect, zonă etc.). Data și ora se pun singure. Câmpurile marcate <b>(opțional)</b> pot rămâne goale — restul sunt obligatorii.</p></div>
-        <div class="gstep"><div class="gn">3</div><p><b>Alege sentința</b> de pe bară (la dosare penale) — butoanele <span class="gk">Minim / Mediu / Maxim</span> o setează instant.</p></div>
+        <div class="gstep"><div class="gn">3</div><p><b>Alege sentința</b> de pe bară (la dosare penale) — pornește pe <span class="gk">Minim</span>; butonul <span class="gk">Maxim</span> o schimbă instant.</p></div>
         <div class="gstep"><div class="gn">4</div><p><b>Copiază pe rând</b> cu butoanele verzi: <span class="gk">Titlu</span> → <span class="gk">Sentință</span> → <span class="gk">Descriere</span>, și lipește-le în MDT-ul din joc (CTRL+V). Dacă lipsește ceva, butonul te anunță exact ce.</p></div>
       </div></div>
       <div class="card"><div class="cardbox">
@@ -1281,7 +1281,7 @@ function select(id){
   curTpl=cur.t;
   razP2Done=false;
   vals={};
-  sentVal=cur.s?Math.min(360,Math.round((cur.s[0]+Math.min(cur.s[1],360))/2)):null;
+  sentVal=cur.s?Math.min(360,cur.s[0]):null;
   renderList(document.getElementById('search').value);
   renderOutput();
 }
@@ -1330,10 +1330,8 @@ function renderOutput(){
       +'<div class="sent-range">interval: '+cur.s[0]+'–'+cur.s[1]+lifeNote+'</div></div>'
       +'<input type="range" id="srange" min="'+cur.s[0]+'" max="'+capMax+'" value="'+sentVal+'">'
       +'<div class="sent-btns">'
-      +'<button class="pill" data-s="min">Minim ('+cur.s[0]+')</button>'
-      +'<button class="pill on" data-s="mid">Mediu</button>'
+      +'<button class="pill on" data-s="min">Minim ('+cur.s[0]+')</button>'
       +'<button class="pill" data-s="max">Maxim ('+capMax+')</button>'
-      +'<button class="pill" data-s="rnd">Aleatoriu</button>'
       +'</div></div></div>';
   }
 
@@ -1362,10 +1360,7 @@ function renderOutput(){
     range.addEventListener('input',()=>{sentVal=+range.value;showSent();clearPills();});
     document.querySelectorAll('.pill[data-s]').forEach(p=>p.addEventListener('click',()=>{
       const m=p.dataset.s;
-      if(m==="min")sentVal=cur.s[0];
-      else if(m==="max")sentVal=capMax;
-      else if(m==="mid")sentVal=Math.round((cur.s[0]+capMax)/2);
-      else sentVal=cur.s[0]+Math.floor(Math.random()*(capMax-cur.s[0]+1));
+      sentVal=(m==="min")?Math.min(360,cur.s[0]):capMax;
       range.value=sentVal;showSent();
       clearPills();p.classList.add('on');
     }));
@@ -1516,7 +1511,7 @@ function addToCart(id,months){
     const r=pairConflict(art,other);
     if(r){ flash("⚠️ Nu se poate adăuga: "+r); return; }
   }
-  cart.push({id, months: months!=null?months : (art.s?Math.round((art.s[0]+art.s[1])/2):0)});
+  cart.push({id, months: months!=null?months : (art.s?Math.min(360,art.s[0]):0)});
   renderDossier();
   applyFold('dossierPanel',true);
   document.getElementById('dossierPanel').scrollIntoView({behavior:"smooth",block:"nearest"});
