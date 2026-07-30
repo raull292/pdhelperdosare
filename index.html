@@ -1703,7 +1703,7 @@ function renderQuick(){
   let totFine=0,totPct=0; arts.forEach(a=>{totFine+=fineToNum(a.f);totPct+=(a.pct||0);});
   const pctShown=Math.min(totPct,9);
   const retine=arts.some(a=>a.permis && /anulare permis/i.test(a.permis));
-  const title=arts.map(a=>a.title||a.name).join(" + ");
+  const title=arts.map(a=>a.title||a.name).join(", ");
   const d=shared.data||"[DATA]",o=shared.ora||"[ORA]",z=shared.zona||"[LOCAȚIA]",n=shared.nume||"[NUME SUSPECT]";
   const mk=shared.marca||"[MODEL]",cl=colF(shared.culoare)||"[CULOARE]",nr=shared.nrinm||"[NR. ÎNMATRICULARE]";
   // 1.8 (traversare) e faptă de pieton — nu se leagă niciodată de autovehicul
@@ -1841,11 +1841,11 @@ function renderCart(){
   if(penal.length){
     const sortedP=[...penal].sort((x,y)=>sevOf(y)-sevOf(x));
     const maxCap=Math.max(...sortedP.map(c=>g(c.id).cap));
-    const dTitle=sortedP.map(c=>{const a=g(c.id);return a.title||a.name;}).join(" + ")+" – CAP "+maxCap;
+    const dTitle=sortedP.map(c=>{const a=g(c.id);return a.title||a.name;}).join(", ")+" – CAP "+maxCap;
     h+=fieldBlock("Titlu DOSAR PENAL (nume – capitolul cel mai mare · ordine descrescătoare)","dtitle",dTitle,false);
   }
   // titlu AMENDA (doar nume, fara capitol/suspect)
-  const aTitle=ordered.map(c=>{const a=g(c.id);return a.title||a.name;}).join(" + ");
+  const aTitle=ordered.map(c=>{const a=g(c.id);return a.title||a.name;}).join(", ");
   h+=fieldBlock("Titlu AMENDĂ (doar nume · fără capitol/suspect)","atitle",aTitle,false);
 
   // descriere comuna (dosar + amenda aferenta)
@@ -2351,7 +2351,7 @@ renderHist();
     }
     if(quick.size){
       const arts=QUICK_IDS.filter(function(id){ return quick.has(id); }).map(function(id){ return A.find(function(a){ return a.id===id; }); });
-      const qTitle=arts.map(function(a){ return a.title||a.name; }).join(' + ');
+      const qTitle=arts.map(function(a){ return a.title||a.name; }).join(', ');
       if(kind==='title') return {ok:true,label:'Titlu amendă rapidă',text:qTitle};
       if(kind==='sent'){
         let tot=0; arts.forEach(function(a){ tot+=fineToNum(a.f); });
