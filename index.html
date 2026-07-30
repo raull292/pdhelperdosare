@@ -389,7 +389,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         <div class="gauto"><div class="ga-ic">⛔</div><div><b>Câmpuri uitate goale.</b> Nu te lasă să copiezi un text cu [NUME SUSPECT] în el. Îți spune exact ce lipsește.</div></div>
         <div class="gauto"><div class="ga-ic">♀</div><div><b>Fată sau băiat.</b> Scrii numele și descrierea iese automat la feminin sau masculin. A ghicit greșit? Un click pe ♂/♀ de lângă nume.</div></div>
         <div class="gauto"><div class="ga-ic">🚫</div><div><b>Combinații interzise.</b> Două fapte care nu se cumulează după regulament (ex: Jaful merge doar cu Ultraj)? Te oprește și îți explică de ce.</div></div>
-        <div class="gauto"><div class="ga-ic">🧹</div><div><b>Curățenie între cazuri.</b> După 5 minute fără activitate, totul se golește — nu amesteci suspecții. Ce ai copiat rămâne salvat în pagina Istoric.</div></div>
+        <div class="gauto"><div class="ga-ic">🧹</div><div><b>Curățenie între cazuri.</b> După 10 minute fără activitate, totul se golește — nu amesteci suspecții. Ce ai copiat rămâne salvat în pagina Istoric.</div></div>
         <div class="gauto"><div class="ga-ic">📜</div><div><b>Titluri oficiale.</b> Exact ca în Codul Penal de pe wiki, cu diacritice. Codul, mașinile și sancțiunile se actualizează singure de pe wiki.</div></div>
       </div></div>
       <div class="card"><div class="cardbox">
@@ -443,7 +443,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
     <span class="fx"><b>1</b> Caută fapta</span><span class="fxa">→</span>
     <span class="fx"><b>2</b> Completează datele</span><span class="fxa">→</span>
     <span class="fx"><b>3</b> Copiază Titlu / Sentință / Descriere în MDT</span>
-    <span class="fxn">🧹 se golește singur după 5 min de inactivitate</span>
+    <span class="fxn">🧹 se golește singur după 10 min de inactivitate</span>
   </div>
   <div class="grid">
     <div class="panel">
@@ -646,7 +646,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
       </style>
       <div class="card"><div class="cardbox">
         <h3>🗂️ Documente generate <span style="flex:1"></span><button class="btnp" id="histClear" style="font-size:12px">Șterge istoricul</button></h3>
-        <div class="cb-sub">Se salvează automat aici tot ce copiezi (descrieri de dosare și amenzi) — ultimele 30, local pe calculatorul tău. Golirea automată a MDT-ului după 5 minute <b>nu</b> șterge istoricul.</div>
+        <div class="cb-sub">Se salvează automat aici tot ce copiezi (descrieri de dosare și amenzi) — ultimele 30, local pe calculatorul tău. Golirea automată a MDT-ului după 10 minute <b>nu</b> șterge istoricul.</div>
         <div id="histList"></div>
       </div></div>
     </section>
@@ -2270,12 +2270,12 @@ renderHist();
   }catch(e){}
 })();
 
-/* ---------------- AUTO-GOLIRE MDT (5 min de inactivitate) ----------------
+/* ---------------- AUTO-GOLIRE MDT (10 min de inactivitate) ----------------
    Datele scrise (suspect, fapte, dosar, amenzi bifate) se șterg singure dacă
-   MDT-ul nu e folosit 5 minute — să nu ajungă datele unui caz vechi în altul. */
+   MDT-ul nu e folosit 10 minute — să nu ajungă datele unui caz vechi în altul. */
 (function(){
   const page=document.getElementById('page-mdt'); if(!page) return;
-  const IDLE_MS=5*60*1000;
+  const IDLE_MS=10*60*1000;
   let lastUse=Date.now();
   const touch=function(){ lastUse=Date.now(); };
   ['pointerdown','keydown','input','change','wheel'].forEach(function(ev){ page.addEventListener(ev,touch,true); });
@@ -2302,7 +2302,7 @@ renderHist();
     dtManual=false; autoDateTime(true);
     renderList('');
     renderDossier(); renderQuickList(); renderQuick();
-    note('🧹 MDT golit automat după 5 minute de inactivitate.');
+    note('🧹 MDT golit automat după 10 minute de inactivitate.');
   }
   window.__mdtWipe=wipe; // hook pentru teste
   setInterval(function(){ if(Date.now()-lastUse>=IDLE_MS && hasData()){ wipe(); lastUse=Date.now(); } },30*1000);
