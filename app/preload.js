@@ -18,10 +18,6 @@ contextBridge.exposeInMainWorld('desktopApp', {
     toggle: () => ipcRenderer.send('mdt-overlay-toggle'),
     setHotkeys: (hk) => ipcRenderer.invoke('mdt-hotkeys', hk)
   },
-  copyPieces: {
-    onRequest: (cb) => ipcRenderer.on('copy-piece', (e, kind) => cb(kind)),
-    result: (r) => ipcRenderer.send('copy-piece-result', r)
-  },
   updates: {
     version: () => ipcRenderer.invoke('app-version').catch(() => null),
     check: () => ipcRenderer.invoke('update-check').catch(() => false),
