@@ -31,5 +31,8 @@ contextBridge.exposeInMainWorld('desktopApp', {
   discord: {
     auth: (url) => ipcRenderer.send('discord-auth-start', url),
     onToken: (cb) => ipcRenderer.on('discord-token', (e, d) => cb(d))
+  },
+  pdf: {
+    save: (name) => ipcRenderer.invoke('dcco-pdf', name)
   }
 });

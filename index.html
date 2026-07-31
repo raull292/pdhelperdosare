@@ -3190,7 +3190,7 @@ renderHist();
   // fiecare job are un numar propriu: un job vechi (afterprint intarziat sau plasa
   // de siguranta de 60s) nu mai poate sterge continutul unui job nou
   var printJob=0, printTimer=null, printDone=null;
-  function doPrint(pages){
+  function doPrint(pages,fname,notify){
     var box=$('dccoPrint'), job=++printJob;
     if(printTimer){ clearTimeout(printTimer); printTimer=null; }
     if(printDone){ window.removeEventListener('afterprint',printDone); }
@@ -3205,9 +3205,26 @@ renderHist();
       printDone=null;
     };
     printDone=done;
-    window.addEventListener('afterprint',done);
-    setTimeout(function(){ try{window.print()}catch(e){done()} },60);
-    printTimer=setTimeout(done,60000);  // plasă de siguranță dacă afterprint nu vine
+    var api=(window.desktopApp&&window.desktopApp.pdf&&window.desktopApp.pdf.save)?window.desktopApp.pdf:null;
+    if(api){
+      // aplicația desktop: shell-ul generează PDF-ul direct (dialog „Salvează ca"),
+      // fără dialogul de imprimantă — window.print() e nesigur în Electron
+      setTimeout(function(){
+        api.save(fname||'document.pdf').then(function(res){
+          done();
+          if(notify) notify(res&&res.ok?'saved':(res&&res.canceled?'canceled':'error'));
+        },function(){
+          // shell vechi, fără handler (EXE-ul nu s-a actualizat încă): print clasic
+          window.addEventListener('afterprint',done);
+          try{window.print()}catch(e){done()}
+        });
+      },80);
+      printTimer=setTimeout(done,120000);
+    } else {
+      window.addEventListener('afterprint',done);
+      setTimeout(function(){ try{window.print()}catch(e){done()} },60);
+      printTimer=setTimeout(done,60000);  // plasă de siguranță dacă afterprint nu vine
+    }
   }
 
   // ---- textul pentru site ----
@@ -3364,7 +3381,13 @@ renderHist();
     writeAll(all); renderList(); flashOk('✅ salvat');
   };
   $('drCopy').onclick=function(){ copyText(siteText(collect()),function(){flashOk('✅ copiat')},function(){flashOk('⚠️ nu s-a putut copia')}); };
-  $('drPrint').onclick=function(){ doPrint([raportHtml(collect(),true)]); };
+  $('drPrint').onclick=function(){
+    var r=collect();
+    doPrint([raportHtml(r,true)], nrFull(r).replace(/\//g,'-')+'.pdf', function(k){
+      if(k==='saved') flashOk('✅ PDF salvat');
+      else if(k==='error') flashOk('⚠️ eroare la salvare');
+    });
+  };
   $('drNew').onclick=newReport;
   $('ddPrint').onclick=function(){
     var all=readAll();
@@ -3378,7 +3401,11 @@ renderHist();
     var pages=[coverHtml(meta)];
     if(reps.length>1) pages.push(cuprinsHtml(reps));
     reps.forEach(function(r){ pages.push(raportHtml(r,false)); });
-    doPrint(pages);
+    doPrint(pages, meta.nr.replace(/\//g,'-')+'.pdf', function(k){
+      if(k==='saved') $('ddInfo').textContent='✅ Dosarul a fost salvat ca PDF.';
+      else if(k==='error') $('ddInfo').textContent='⚠️ Eroare la salvarea PDF-ului — încearcă din nou.';
+      else updateDdInfo();
+    });
   };
 
   newReport(); renderList();
