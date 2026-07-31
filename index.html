@@ -3056,7 +3056,52 @@ renderHist();
     var a=null; try{a=JSON.parse(localStorage.getItem('phAgent')||'null')}catch(e){}
     var cs=(a&&a.call?String(a.call):'').trim();
     if(!cs) return 'Agent DCCO D-';
-    return 'Agent DCCO '+(/^d[- ]?\d/i.test(cs)?cs.toUpperCase().replace(/\s+/g,''):'D-'+cs);
+    var m=cs.match(/^d[-\s]*(\d+)$/i);
+    if(m) return 'Agent DCCO D-'+m[1];
+    if(/^\d+$/.test(cs)) return 'Agent DCCO D-'+cs;
+    return 'Agent DCCO '+cs;
+  }
+
+  // ---- sabloane pe tip de raport: text de pornire pe care agentul il editeaza ----
+  // la schimbarea tipului, un camp e inlocuit doar daca e gol sau neatins (inca egal cu un sablon)
+  var TPL={
+    'FILAJ':{
+      sub:'filajul efectuat în zona [ZONA]',
+      s1:'În continuarea activităților de monitorizare a grupurilor infracționale de pe raza municipiului Los Santos, subsemnatul, aflat în misiune de filaj în civil, am efectuat supravegherea zonei [ZONA].',
+      s2:'În intervalul orar [INTERVAL] au fost observate următoarele: [DESCRIE CE AI VĂZUT — persoane, mașini (model, culoare, numere), activități]. Întreaga activitate a fost filmată integral.',
+      s3:'Cele constatate indică [ex: existența unei activități de distribuție de substanțe interzise / prezența unui grup de persoane înarmate] și se coroborează cu informațiile existente în dosar.'
+    },
+    'JAF':{
+      sub:'jaful comis asupra [BANCĂ / MAGAZIN] din data de [DATA]',
+      s1:'În data de [DATA], în jurul orei [ORA], a fost declanșată alarma la [BANCĂ / MAGAZIN], unitățile de poliție intervenind la fața locului.',
+      s2:'La fața locului au fost observate: [numărul de suspecți, mașinile folosite (model, culoare, numere), armamentul, direcția de retragere]. Persoane prezente / reținute: [NUME + CNP].',
+      s3:'Raportul documentează modul de operare al grupului și vehiculele/persoanele implicate, elemente utile pentru identificarea membrilor organizației.'
+    },
+    'FLAGRANT':{
+      sub:'flagrantul efectuat asupra numitului [NUME] (CNP [CNP])',
+      s1:'În urma informațiilor obținute [pe stație / de la un informator / prin supraveghere], s-a organizat prinderea în flagrant a numitului [NUME], în zona [ZONA].',
+      s2:'Suspectul a fost imobilizat și încătușat, iar obiectele ilegale au fost confiscate din meniu, conform procedurii: [LISTA OBIECTELOR]. Marfa confiscată a fost predată Coordonatorilor DCCO.',
+      s3:'Fapta confirmă implicarea suspectului în [activitatea ilegală] și susține acuzațiile formulate în baza Codului Penal.'
+    },
+    'RAPORT':{
+      sub:'[interogatoriul numitului NUME / informațiile obținute] privind [ORGANIZAȚIA]',
+      s1:'În data de [DATA], subsemnatul am procedat la [interogarea numitului NUME (CNP) / obținerea de informații de la un colaborator] în legătură cu [SUBIECT].',
+      s2:'Au rezultat următoarele informații: [structura grupării — lanț de comandă, persoane și porecle, locații de interes, mod de comunicare (stația), activități și afaceri]. Suspectul [a dorit / nu a dorit] să colaboreze.',
+      s3:'Informațiile obținute completează datele existente despre [ORGANIZAȚIE] și pot fundamenta măsuri ulterioare: [filaj / percheziție / mandat].'
+    }
+  };
+  function tplUntouched(val){
+    val=String(val||'').trim();
+    if(!val) return true;
+    for(var k in TPL){ var t=TPL[k]; if(val===t.sub||val===t.s1||val===t.s2||val===t.s3) return true; }
+    return false;
+  }
+  function applyTpl(tip){
+    var t=TPL[tip]; if(!t) return;
+    if(tplUntouched($('drSub').value)) $('drSub').value=t.sub;
+    if(tplUntouched($('drS1').value)) $('drS1').value=t.s1;
+    if(tplUntouched($('drS2').value)) $('drS2').value=t.s2;
+    if(tplUntouched($('drS3').value)) $('drS3').value=t.s3;
   }
   function collect(){
     return {
@@ -3142,18 +3187,27 @@ renderHist();
   }
 
   // ---- print: umple #dccoPrint, printeaza, curata ----
+  // fiecare job are un numar propriu: un job vechi (afterprint intarziat sau plasa
+  // de siguranta de 60s) nu mai poate sterge continutul unui job nou
+  var printJob=0, printTimer=null, printDone=null;
   function doPrint(pages){
-    var box=$('dccoPrint');
+    var box=$('dccoPrint'), job=++printJob;
+    if(printTimer){ clearTimeout(printTimer); printTimer=null; }
+    if(printDone){ window.removeEventListener('afterprint',printDone); }
     box.innerHTML=pages.map(function(h){return '<div class="dpage dcpaper">'+h+'</div>'}).join('');
     document.documentElement.classList.add('dcco-printing');
     var done=function(){
+      if(job!==printJob) return;
       document.documentElement.classList.remove('dcco-printing');
       box.innerHTML='';
       window.removeEventListener('afterprint',done);
+      if(printTimer){ clearTimeout(printTimer); printTimer=null; }
+      printDone=null;
     };
+    printDone=done;
     window.addEventListener('afterprint',done);
     setTimeout(function(){ try{window.print()}catch(e){done()} },60);
-    setTimeout(done,60000);  // plasă de siguranță dacă afterprint nu vine
+    printTimer=setTimeout(done,60000);  // plasă de siguranță dacă afterprint nu vine
   }
 
   // ---- textul pentru site ----
@@ -3177,15 +3231,18 @@ renderHist();
       'Ancheta intocmita de Directia de Combatere a Criminalitatii Organizate.'
     ].join('\n');
   }
-  function copyText(t,after){
+  function copyText(t,after,onFail){
     var ok=function(){ if(after)after(); };
+    var ko=function(){ if(onFail)onFail(); };
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok,function(){fallback()}); }
     else fallback();
     function fallback(){
+      var copied=false;
       try{
         var ta=document.createElement('textarea'); ta.value=t;
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); ok();
-      }catch(e){}
+        document.body.appendChild(ta); ta.select(); copied=document.execCommand('copy'); ta.remove();
+      }catch(e){ copied=false; }
+      if(copied) ok(); else ko();
     }
   }
 
@@ -3220,6 +3277,9 @@ renderHist();
   // ---- lista de rapoarte salvate ----
   function renderList(){
     var box=$('drList'), all=readAll();
+    // curata bifele ramase de la rapoarte sterse sau evacuate de plafonul de 50
+    var ids={}; all.forEach(function(r){ ids[r.id]=1; });
+    Object.keys(selected).forEach(function(k){ if(!ids[k]) delete selected[k]; });
     box.innerHTML='';
     if(!all.length){ box.innerHTML='<div class="drx-empty">Niciun raport salvat încă. Completează formularul și apasă „Salvează".</div>'; updateDdInfo(); return; }
     all.forEach(function(r){
@@ -3268,17 +3328,21 @@ renderHist();
   function newReport(){
     var st=stampNow();
     cur={id:null,tip:'FILAJ',cls:'CLASIFICAT',probe:[],stamp:st};
+    // urmatorul numar liber: max(R#)+1, ca sa nu se repete dupa stergeri
+    var maxN=0;
+    readAll().forEach(function(r){ var m=/^R(\d+)$/i.exec(r.nrR||''); if(m) maxN=Math.max(maxN,+m[1]); });
     $('drOrg').value='NEIDENTIFICATA'; $('drSub').value=''; $('drAgent').value=agentDefault();
-    $('drNr').value='R'+(readAll().length+1);
+    $('drNr').value='R'+(maxN+1);
     $('drDataAct').value=st.dd+' '+LUNI[st.lu]+' '+st.yy;
     $('drLoc').value=''; $('drS1').value=''; $('drS2').value=''; $('drS3').value='';
+    applyTpl('FILAJ');
     setSeg('drTip','t','FILAJ'); setSeg('drCls','c','CLASIFICAT');
     renderProbe(); render();
   }
 
   // ---- evenimente ----
   document.querySelectorAll('#drTip button').forEach(function(b){
-    b.onclick=function(){ cur.tip=b.dataset.t; setSeg('drTip','t',cur.tip); render(); };
+    b.onclick=function(){ cur.tip=b.dataset.t; applyTpl(cur.tip); setSeg('drTip','t',cur.tip); render(); };
   });
   document.querySelectorAll('#drCls button').forEach(function(b){
     b.onclick=function(){ cur.cls=b.dataset.c; setSeg('drCls','c',cur.cls); render(); };
@@ -3299,7 +3363,7 @@ renderHist();
     if(ix>-1) all[ix]=r; else all.push(r);
     writeAll(all); renderList(); flashOk('✅ salvat');
   };
-  $('drCopy').onclick=function(){ copyText(siteText(collect()),function(){flashOk('✅ copiat')}); };
+  $('drCopy').onclick=function(){ copyText(siteText(collect()),function(){flashOk('✅ copiat')},function(){flashOk('⚠️ nu s-a putut copia')}); };
   $('drPrint').onclick=function(){ doPrint([raportHtml(collect(),true)]); };
   $('drNew').onclick=newReport;
   $('ddPrint').onclick=function(){
