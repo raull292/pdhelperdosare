@@ -218,6 +218,9 @@
   .nav-item.active{background:linear-gradient(90deg,#173463,#122a52);color:#fff;box-shadow:inset 3px 0 0 var(--blue)}
   .nav-item .ni-ic{font-size:16px;width:20px;text-align:center}
   #sidebar .sb-foot{margin-top:auto;font-size:10.5px;color:#5f759c;padding:10px 8px;line-height:1.5}
+  /* elemente rezervate membrilor DCCO — vizibile doar când <html> are clasa dcco-ok
+     (setată de poarta Discord când printre roluri e DCCO / DCCO în teste) */
+  html:not(.dcco-ok) .dcco-only{display:none!important}
   #main{flex:1;overflow-y:auto;position:relative}
   .page{display:none}
   .page.active{display:block}
@@ -334,6 +337,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
     <button class="nav-item" data-page="mandate"><span class="ni-ic">📜</span> Mandate</button>
     <button class="nav-item" data-page="overlays"><span class="ni-ic">📡</span> Overlays</button>
     <button class="nav-item" data-page="istoric"><span class="ni-ic">🗂️</span> Istoric</button>
+    <button class="nav-item dcco-only" data-page="dcco"><span class="ni-ic">🕵️</span> DCCO</button>
     <div class="sb-sec">Aplicație</div>
     <button class="nav-item" data-page="setari"><span class="ni-ic">⚙️</span> Setări</button>
     <button class="nav-item" data-page="update"><span class="ni-ic">🔄</span> Update</button>
@@ -651,6 +655,216 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
       </div></div>
     </section>
 
+    <section class="page" id="page-dcco">
+      <div class="page-h"><h2>🕵️ D.C.C.O</h2><p>Regulamentul general și procedurile operative ale departamentului. Secțiune rezervată membrilor cu rol DCCO / DCCO în teste pe Discord.</p></div>
+      <style id="dccoCss">
+        .dcco-tabs{display:flex;gap:8px;max-width:760px;margin:0 auto 4px;padding:0 20px}
+        .dcco-tab{flex:1;padding:10px 14px;border-radius:11px;border:1px solid var(--line2);background:rgba(12,24,48,.6);color:#a9bad9;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:border-color .15s,color .15s}
+        .dcco-tab:hover{color:#fff;border-color:rgba(96,165,250,.45)}
+        .dcco-tab.active{color:#fff;background:linear-gradient(90deg,rgba(59,130,246,.28),rgba(59,130,246,.08));border-color:rgba(96,165,250,.5);box-shadow:inset 0 -2px 0 var(--gold)}
+        .dcco-view{display:none}
+        .dcco-view.active{display:block}
+        .dcr{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px;font-size:12.5px;color:#cfe0f7;line-height:1.55;padding:9px 12px;border-radius:10px;border:1px solid rgba(96,165,250,.14);background:rgba(8,16,34,.5)}
+        .dcr .dc-i{flex:0 0 22px;text-align:center}
+        .dcr b{color:#fff}
+        .dcr.ok{background:rgba(45,212,160,.06);border-color:rgba(45,212,160,.2)}
+        .dcr.ok b.kw{color:#2dd4a0}
+        .dcr.no{background:rgba(255,99,132,.06);border-color:rgba(255,99,132,.22)}
+        .dcr.no b.kw{color:#ff8fa0}
+        .dcr.warn{background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.24)}
+        .dcr.warn b.kw{color:#ffd98a}
+        .dch{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#8fa3c8;font-weight:800;margin:16px 0 8px}
+        .dcp{font-size:12.5px;color:#cfe0f7;line-height:1.55;margin:0 0 10px}
+        .dcp b{color:#fff}
+        .dcq{border-left:3px solid var(--gold);background:rgba(251,191,36,.07);border-radius:0 10px 10px 0;padding:10px 14px;margin:10px 0;font-size:13.5px;color:#ffe9b8;font-style:italic}
+        .dcmono{font-family:var(--mono);font-size:12.5px;background:#0a1830;border:1px solid var(--line2);border-radius:10px;padding:10px 14px;color:#cfe0f7;line-height:1.8;margin:0 0 10px}
+        .dcco-sign{text-align:center;color:#8ba0c4;font-size:12.5px;line-height:1.6}
+        .dcco-sign b{color:#ffd98a}
+      </style>
+      <div class="dcco-tabs">
+        <button type="button" class="dcco-tab active" data-dtab="reg">📜 Regulament general</button>
+        <button type="button" class="dcco-tab" data-dtab="proc">🕵️ Proceduri</button>
+      </div>
+
+      <div class="dcco-view active" id="dcco-reg">
+        <div class="card"><div class="cardbox">
+          <h3>📜 Regulament general D.C.C.O</h3>
+          <div class="cb-sub">Acest regulament stabilește diferite aspecte și reguli interne legate de conduita, echiparea, deplasarea și activitatea membrilor din departamentul D.C.C.O. Respectarea acestuia este <b>OBLIGATORIE</b> — orice abatere poate duce la sancțiuni grave.</div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🧥 Uniformă și echipare</h3>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Vă este <b class="kw">PERMIS</b> să folosiți orice uniformă când faceți muncă de detectiv în secție.</div></div>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Vă este <b class="kw">PERMIS</b> să folosiți uniforma oficială (<b>Detectiv Coordonator</b>) când sunteți chemați la diferite acțiuni speciale ce necesită prezența detectivilor (ex: executarea unui mandat etc).</div></div>
+          <div class="dch">Uniforma de filaj</div>
+          <p class="dcp">Sunt strict hainele de civil pe care le folosiți când ieșiți pe teren.</p>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Vă este <b class="kw">PERMIS</b> să mergeți cu aceste haine când ieșiți la filaj.</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să umblați prin secție cu aceleași haine cu care urmează să ieșiți la filaj.</div></div>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div><b class="kw">OBLIGATORIU:</b> după fiecare filaj efectuat, hainele trebuie schimbate!</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🚗 Deplasarea</h3>
+          <div class="dch">Filaje</div>
+          <p class="dcp">Se folosesc <b>DOAR mașini de civil</b>.</p>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să folosiți elicoptere personale la filaj.</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să folosiți bărci personale la filaj.</div></div>
+          <p class="dcp"><b>Plăcuțele de înmatriculare:</b> la alegerea voastră, puteți merge cu sau fără ele pe mașină.</p>
+          <div class="dch">Acțiuni speciale</div>
+          <p class="dcp">Se folosesc mașinile nemarcate din dotarea poliției (cele de la SAS). Acestea se folosesc în cazuri deosebite și necesită aprobare.</p>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să cereți conducerii gradul de SAS pentru a avea acces la ele.</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să folosiți o mașină nemarcată din dotarea poliției fără o aprobare.</div></div>
+          <p class="dcp">Nu este necesar să cereți aprobare pentru așa ceva — când se vor face genul ăsta de acțiuni, coordonatorii o să fie prezenți.</p>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🎭 Identitate și conduită</h3>
+          <p class="dcp">În momentul în care vă faceți treaba de detectiv cu uniforma oficială, trebuie să vă prezentați ca <b>DETECTIV</b>. Trebuie să aveți o conduită cât se poate de calmă și profesionistă.</p>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să mințiți persoanele cu care interacționați.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>⚖️ Caziere și pedepse</h3>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Vă este <b class="kw">PERMIS</b> să reduceți sentința persoanelor sau să solicitați unui <b>Inspector+</b> arestul preventiv.</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să lăsați persoane fără dosar penal.</div></div>
+          <div class="dch">Negocierea la interogatoriu — în funcție de informațiile oferite</div>
+          <div class="dcr ok"><div class="dc-i">✅</div><div>Oferă informații bune și ne ajută → primește <b>sentința minimă</b>.</div></div>
+          <div class="dcr no"><div class="dc-i">❌</div><div>Nu cooperează deloc → primește <b>sentința maximă</b>.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🤝 Informatori</h3>
+          <p class="dcp">Departamentul D.C.C.O are voie să recruteze informatori. Informatorii pot fi folosiți pentru:</p>
+          <div class="dcr"><div class="dc-i">➜</div><div>strângerea de informații despre diferite afaceri</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>infiltrarea în grupuri de persoane</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>observarea activităților suspecte</div></div>
+          <p class="dcp">Astfel de informații sunt furnizate de la informatori către D.C.C.O prin intermediul dovezilor <b>audio-video / foto</b>.</p>
+          <p class="dcp">Dacă găsiți o persoană ce este dornică să devină un colaborator autorizat din partea poliției, contactați un <b>coordonator</b> pentru a discuta anumite aspecte. Se pot oferi bani informatorilor.</p>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Informatorii trebuie anunțați de dinainte că au riscul să fie prinși de persoane periculoase și <b>își riscă viața</b>!</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🚨 Proceduri când sunteți chemați de colegi</h3>
+          <div class="gstep"><div class="gn">1</div><p>Vă deplasați la celulele unde se află suspectul. Colegul este <b>obligat</b> să vă ofere cât mai multe informații despre motivul pentru care suspectul a fost adus la secție.</p></div>
+          <div class="gstep"><div class="gn">2</div><p>De aici duceți suspectul la o cameră de interogatoriu și respectați <b>procedura de interogat ca la carte</b> (o găsești în tabul Proceduri).</p></div>
+          <div class="gstep"><div class="gn">3</div><p>După finalizarea interogatoriului căutați o persoană care să proceseze suspectul. Îi spuneți pentru ce este acuzat suspectul, ce obiecte ilegale a avut asupra lui și ce sentință trebuie să îi acorde!</p></div>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Dacă se face <b>regrupare</b> și aveți de făcut muncă de detectiv, nu trebuie să veniți la regrupare. Cine vrea să meargă la regrupare se schimbă în uniforma de polițist.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>👥 Martori și suspecți</h3>
+          <p class="dcp">În momentul în care este vorba de un suspect adus la secție alături de care vin și martori, trebuie să urmați o procedură standard:</p>
+          <div class="dcr"><div class="dc-i">➜</div><div>verificați filmările pe rând de la fiecare persoană prezentă (în cazul în care sunt)</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>luați fiecare martor la întrebări pe rând</div></div>
+          <p class="dcp">Martorii pot pleca după declarație, dacă se soluționează cazul.</p>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>💰 Jafuri</h3>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Vă este <b class="kw">INTERZIS</b> să interveniți la jafuri ca <b>DETECTIV</b>.</div></div>
+          <p class="dcp">Inspectorii din poliție verifică mașinile de fiecare dată de la fiecare jaf și ne transmit orice informație relevantă.</p>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>📻 Callsign-uri și identitate operațională</h3>
+          <p class="dcp">Membrii departamentului D.C.C.O folosesc <b>un singur callsign</b>.</p>
+          <div class="dcmono">Format: D-1, D-2, D-20 etc.</div>
+          <p class="dcp">Acest callsign o să fie folosit atât cu publicul (cu cetățenii, verbal când vă prezentați, pe stație etc.), cât și administrativ (când scrieți orice fel de raport pe site).</p>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Schimbarea callsign-ului se face doar cu <b>aprobarea unui coordonator</b>.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox dcco-sign">
+          Orice încălcare de regulament se sancționează ca atare!<br>
+          Pentru orice fel de întrebare sau nelămurire, așteptăm să ne contactați.<br>
+          <b>Semnat, Conducerea D.C.C.O</b>
+        </div></div>
+      </div>
+
+      <div class="dcco-view" id="dcco-proc">
+        <div class="card"><div class="cardbox">
+          <h3>🕵️ Procedurile departamentului D.C.C.O</h3>
+          <div class="cb-sub">Aceste proceduri sunt <b>obligatorii</b> de urmat, ca riscul să fiți deconspirați să fie cât se poate de minim. Nerespectarea lor poate duce la sancțiuni grave, chiar și până la demisia din departament.</div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🚶 Filaj — înainte de a pleca de la secție</h3>
+          <p class="dcp">Filajul se face <b>DOAR în civil</b>, fără niciun element din uniforma de polițist pe voi. (Vă puteți îmbrăca în detectiv și să vă dați vesta jos, respectiv arma de pe picior, cu ajutorul unui lanț.)</p>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Este <b class="kw">PERMIS</b> să fiți conectați pe stația poliției pentru a putea comunica cu colegii în cazul unei probleme.</div></div>
+          <div class="dcr ok"><div class="dc-i">🟢</div><div>Este <b class="kw">PERMIS</b> să mergeți doar cu mașini de civili (personale sau împrumutate).</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Este <b class="kw">INTERZIS</b> să aveți vestă de poliție, arme sau legitimație pe voi în timpul unui filaj (folosiți comanda <b>/vest</b> de câte ori este nevoie ca să vă asigurați).</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Este <b class="kw">INTERZIS</b> să mergeți la filat cu mașini ce aparțin departamentului de poliție.</div></div>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Când plecați la un filaj trebuie să anunțați <b>neapărat</b> pe cineva în care aveți încredere din poliție / DCCO, care poate să anunțe mai departe dacă dispăreți.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🎯 Filaj — după ce plecați de la secție</h3>
+          <p class="dcp">Treaba voastră pe teren se împarte în două:</p>
+          <div class="gstep"><div class="gn">1</div><p>Să identificați și să strângeți informații despre persoane / grupuri de persoane ce prezintă un <b>pericol ridicat</b> (multiple mașini fără numere, oameni care au arme asupra lor ș.a.m.d.).</p></div>
+          <div class="gstep"><div class="gn">2</div><p>Să identificați persoane care efectuează <b>livrări de substanțe ilegale</b> și să îi prindeți cu ajutorul poliției.</p></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🚨 Ce faceți dacă semnalați o problemă pe teren?</h3>
+          <div class="dch">1️⃣ Grup de persoane înarmate</div>
+          <p class="dcp">Dacă găsiți un grup de persoane într-o anumită zonă ce au arme, vă este recomandat să observați cât mai multe informații <b>fără să vă puneți viața în pericol</b>. În cazul în care persoanele respective vă amenință, trebuie să vă comportați ca niște civili, iar în momentul în care aveți șansa, folosiți <b>/bk 1</b> — colegii o să vină și o să vă ajute.</p>
+          <div class="dcr no"><div class="dc-i">🔴</div><div><b>Atenție:</b> dacă cineva stă cu arma îndreptată asupra voastră, este <b class="kw">INTERZIS</b> să folosiți /bk 1 fix în acel moment.</div></div>
+          <p class="dcp">Dacă poliția intervine și începe un schimb de focuri, încercați să oferiți cât mai multe informații pe stație / dispecer despre persoanele respective și încercați să părăsiți zona, ca să nu vă riscați viața.</p>
+          <div class="dch">2️⃣ Persoană care livrează</div>
+          <p class="dcp">Dacă găsiți o persoană care livrează, intrați pe <b>stația 1</b> de la poliție și începeți prin a oferi cât mai multe informații despre acea persoană în timp ce o urmăriți. Așteptați până când poliția / SAS-ul (în funcție de situație) intervine și apoi părăsiți zona.</p>
+          <p class="dcp">Poliția este obligată să imobilizeze suspectul, să îl verifice și să îl transporte la secție.</p>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Pentru identificarea unei persoane care livrează este <b class="kw">OBLIGATORIU</b> să o vedeți că <b>bate la ușă</b>.</div></div>
+          <div class="dcr warn"><div class="dc-i">📸</div><div>Pentru orice informație găsită pe teren trebuie să aveți o <b>filmare completă</b> din timpul filajului. Lipsa filmării duce la <b>invalidarea tuturor probelor</b> pe care le aveți.</div></div>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Este <b class="kw">INTERZIS</b> să interveniți la filaje în uniforma de <b>DETECTIV</b> pentru a aresta suspectul.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🗣️ Proceduri la interogatoriu</h3>
+          <p class="dcp">După ce o persoană este adusă la secție, vă prezentați la celule, cereți cât mai multe informații de la polițistul care l-a adus și apoi mergeți în camerele destinate interogatoriului.</p>
+          <p class="dcp"><b>Important:</b> luați suspectul la interogatoriu <b>înainte</b> să primească dosarul penal / amenda, pentru a-i oferi șansa să colaboreze cu noi dacă îi este redusă sentința.</p>
+          <div class="dch">Datele generale ale persoanei interogate</div>
+          <div class="dcmono">Nume Prenume:<br>CNP:<br>Număr de telefon:<br>IBAN:</div>
+          <div class="dcr warn"><div class="dc-i">📻</div><div>+ verificarea <b>stației</b>, pentru a vedea dacă este conectat la vreo frecvență!!</div></div>
+          <p class="dcp">Înainte de a discuta despre motivul pentru care a fost adus la secție, trebuie să îi adresați o întrebare foarte importantă:</p>
+          <div class="dcq">„Dorești să colaborezi cu noi pentru a ne oferi informații?"</div>
+          <p class="dcp">În funcție de răspuns, procedați în felul următor:</p>
+          <div class="dcr ok"><div class="dc-i">✅</div><div><b>Da</b> → i se poate face un interogatoriu complex, în care să i se adreseze cât mai multe întrebări.</div></div>
+          <div class="dcr no"><div class="dc-i">❌</div><div><b>Nu</b> → i se verifică doar stația / telefonul în maxim <b>10 minute</b> și apoi pleacă înapoi la procesat.</div></div>
+          <p class="dcp"><b>Explicația:</b> degeaba este cineva interogat fără să fie de acord și i se pun 100 de întrebări, dacă el nu dorește să colaboreze cu noi și ne spune 100 de minciuni.</p>
+          <div class="dch">Negocierea la interogatoriu — în funcție de informațiile oferite</div>
+          <div class="dcr ok"><div class="dc-i">✅</div><div>Oferă informații bune și ne ajută → primește <b>sentința minimă</b>.</div></div>
+          <div class="dcr no"><div class="dc-i">❌</div><div>Nu cooperează deloc → primește <b>sentința maximă</b>.</div></div>
+          <div class="dcr warn"><div class="dc-i">💸</div><div><b>Nu se mai oferă niciun ban</b> pentru informațiile oferite!</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>📱 Verificarea telefonului</h3>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div>Verificarea telefonului se face <b class="kw">STRICT</b> în ordinea de mai jos, cu <b>filmare pornită</b>. Ordinea <b>NU</b> se schimbă.</div></div>
+          <div class="gstep"><div class="gn">1</div><p><b>Setări.</b> Se verifică dacă suspectul deține două cartele SIM. Dacă există a doua cartelă → se verifică amândouă.</p></div>
+          <div class="gstep"><div class="gn">2</div><p><b>Mesaje.</b> Se verifică fiecare mesaj individual. Dacă este identificat un mesaj incriminatoriu: se apasă pe cele 3 puncte din stânga sus → se selectează „Modifică contact" → se verifică cine a trimis mesajul.</p></div>
+          <div class="gstep"><div class="gn">3</div><p><b>Apeluri.</b> Se verifică apelurile recente. Se analizează frecvența și tiparul apelurilor.</p></div>
+          <div class="gstep"><div class="gn">4</div><p><b>Galerie.</b> Se verifică fotografii și videoclipuri. Se caută indicii (poze cu măști / arme ș.a.m.d.).</p></div>
+          <p class="dcp">Orice încălcare a procedurilor se sancționează ca atare!</p>
+          <div class="dcr warn"><div class="dc-i">⚠️</div><div><b>Atenție mare:</b> toate dovezile pe care le strângeți au valabilitate <b>30 de zile</b> până în momentul în care faceți un raport cu ele. Dacă sunt atribuite unui raport, <b>nu mai expiră niciodată</b>.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🌐 Rapoarte pe site</h3>
+          <p class="dcp">Titlul raportului respectă formatul:</p>
+          <div class="dcmono">[TIPUL DE RAPORT] - [NUMELE ORGANIZAȚIEI]<br><br>Exemple:<br>JAF - NEIDENTIFICATA<br>RAPORT - CARTEL DE SINALOA</div>
+          <div class="dch">Tipuri de rapoarte</div>
+          <div class="gtool"><b>📋 RAPORT</b><span>pentru orice altă metodă de obținere de informații (interogatorii, mărturii, infiltrări, dovezi)</span></div>
+          <div class="gtool"><b>💰 JAF</b><span>raport cu ce s-a întâmplat la jaf și cine a fost prezent (persoane + mașini)</span></div>
+          <div class="gtool"><b>🚔 FLAGRANT</b><span>raport cu ce s-a întâmplat în flagrant</span></div>
+          <div class="gtool"><b>🕵️ FILAJ</b><span>raport cu ce s-a întâmplat în filaj</span></div>
+          <div class="dch">Informații folositoare în declarațiile informatorilor</div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Nume organizație și persoane</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Structura — lanț de comandă</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Locații de interes</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Activități și acțiuni</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Mod de comunicare (stația)</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Afaceri și relații</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Informații despre structura criminală: dacă ei controlează o zonă, dacă răspund la cineva etc.</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Existența altor organizații / conexiuni între organizații</div></div>
+          <div class="dcr"><div class="dc-i">➜</div><div>Dovezi / filmări, fapte, probe etc.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox">
+          <h3>🚔 Flagrante</h3>
+          <p class="dcp">La flagrante luați direct pe voi <b>doar din mașini</b> sau dacă suspectul vă dă obiectele respective. Odată ce este încătușat, confiscați <b>din meniu</b> orice obiect ilegal — <b>nu</b> îl descătușați ca să îl puneți să arunce pe jos / să vă dea itemul.</p>
+          <div class="dcr no"><div class="dc-i">🔴</div><div>Abaterile de la această procedură se sancționează conform <b class="kw">SYSTEM ABUSE</b> din regulamentul serverului.</div></div>
+          <div class="dcr warn"><div class="dc-i">📦</div><div>Orice obiect ilegal care ajunge în buzunarele voastre de la flagrante îl predați <b>doar Coordonatorilor DCCO</b>, ca să primiți recompensa în baza marfei confiscate.</div></div>
+        </div></div>
+        <div class="card"><div class="cardbox dcco-sign">
+          Orice încălcare a procedurilor se sancționează ca atare!<br>
+          Pentru orice fel de întrebare sau nelămurire, așteptăm să ne contactați.<br>
+          <b>Semnat, Conducerea D.C.C.O</b>
+        </div></div>
+      </div>
+    </section>
+
     <section class="page" id="page-setari">
       <div class="page-h"><h2>Setări</h2><p>Preferințe cosmetice — salvate local pe calculatorul tău.</p></div>
       <div class="card"><div class="cardbox">
@@ -672,6 +886,7 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         <div class="cb-sub">Aplicația e rezervată membrilor serverului de Discord. Statusul se reverifică periodic, automat.</div>
         <div class="set-row"><label>Status</label><b id="dscStatus">—</b></div>
         <div class="set-row"><label>Grad de pe server</label><b id="dscRank">—</b></div>
+        <div class="set-row"><label>Acces DCCO</label><b id="dscDcco">—</b></div>
         <div class="cb-sub" id="dscRoles" style="display:none;word-break:break-all;font-family:var(--mono);font-size:11px"></div>
         <div class="set-row"><label></label><span style="display:flex;gap:8px"><button class="btnp" id="dscRecheck">Reverifică</button><button class="btnp" id="dscLogout" style="color:#ff9aa6">Deconectează</button></span></div>
       </div></div>
@@ -2407,11 +2622,20 @@ renderHist();
   // rolurilor de pe Discord (gradul NU se mai alege manual în aplicație)
   const RANKS=["Chestor-General","Chestor","Comisar-Șef","Comisar","Sub-Comisar","Inspector-Principal","Inspector","Agent-Șef-Principal","Agent-Șef-Adjunct","Agent-Principal","Agent","Cadet"];
   function go(page){
+    // pagina DCCO se deschide doar cu rol DCCO pe Discord (clasa dcco-ok pe <html>)
+    if(page==='dcco'&&!document.documentElement.classList.contains('dcco-ok')) return;
     document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
     const m=document.getElementById('main'); if(m) m.scrollTop=0;
   }
   document.addEventListener('click',e=>{ const t=e.target.closest('[data-page]'); if(t) go(t.dataset.page); });
+  // sub-taburile paginii DCCO (Regulament general / Proceduri)
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('[data-dtab]'); if(!t) return;
+    document.querySelectorAll('.dcco-tab').forEach(b=>b.classList.toggle('active',b===t));
+    document.querySelectorAll('.dcco-view').forEach(v=>v.classList.toggle('active',v.id==='dcco-'+t.dataset.dtab));
+    const m=document.getElementById('main'); if(m) m.scrollTop=0;
+  });
   const clk=document.getElementById('abClock'), sbClk=document.getElementById('sbClock');
   function tick(){
     const t=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bucharest',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
@@ -2675,6 +2899,11 @@ renderHist();
     '1162872939943841858':'Chestor'
     // Chestor-General: același ID a fost trimis și pentru Chestor — aștept ID-ul corect
   };
+  // rolurile care deschid secțiunea DCCO (primul găsit dă eticheta afișată în Setări)
+  var DCCO_ROLES=cfg.dccoRoles||{
+    '1463968619686789224':'DCCO',
+    '1481404004532752384':'DCCO în teste'
+  };
   var KEY='phDiscord';
   var FRESH_MS=24*60*60*1000;    // sub 24h de la ultima verificare: acces direct, fără request
   var GRACE_MS=7*24*60*60*1000;  // fără internet: acceptă ultima verificare reușită, max 7 zile
@@ -2733,6 +2962,27 @@ renderHist();
     }
     if((patch.rank||patch.name)&&window.__agentSync) window.__agentSync(patch);
   }
+  // acces DCCO: aprinde/stinge clasa dcco-ok pe <html> după rolurile din cache
+  function dccoTitle(roles){
+    var ids=Object.keys(DCCO_ROLES);
+    for(var i=0;i<ids.length;i++) if((roles||[]).indexOf(ids[i])>-1) return DCCO_ROLES[ids[i]];
+    return null;
+  }
+  function refreshDcco(){
+    var c=readC();
+    var t=(c&&c.ok)?dccoTitle(c.roles):null;
+    document.documentElement.classList.toggle('dcco-ok',!!t);
+    var el=document.getElementById('dscDcco');
+    if(el) el.textContent=t?('✅ '+t):'—';
+    // dacă pagina DCCO era deschisă și accesul a dispărut, întoarce utilizatorul pe Dashboard
+    if(!t){
+      var p=document.getElementById('page-dcco');
+      if(p&&p.classList.contains('active')){
+        var d=document.querySelector('.nav-item[data-page="dashboard"]');
+        if(d) d.click();
+      }
+    }
+  }
   function updateRankUI(){
     var el=document.getElementById('dscRank'), hint=document.getElementById('dscRoles');
     if(!el) return;
@@ -2790,7 +3040,7 @@ renderHist();
       .then(function(gs){
         var inG=Array.isArray(gs)&&gs.some(function(g){return g&&g.id===GUILD_ID;});
         if(!inG){
-          writeC(null); setStatus('❌ nu ești membru pe server');
+          writeC(null); refreshDcco(); setStatus('❌ nu ești membru pe server');
           showGate('Contul tău de Discord nu e membru al serverului. Intră întâi pe serverul de Discord, apoi conectează-te din nou.',!OV);
           return;
         }
@@ -2803,9 +3053,16 @@ renderHist();
           var nm=(u&&(u.global_name||u.username))||'';
           var entry={ok:1,t:Date.now(),tok:token,te:tokenExp||0,name:nm};
           if(mem){ entry.roles=mem.roles||[]; entry.nick=mem.nick||''; }
+          else{
+            // /member a picat temporar (rate-limit / eroare API), deși userul e pe server:
+            // păstrează rolurile deja știute — altfel gradul și accesul DCCO ar dispărea
+            // pe nedrept până la următoarea verificare reușită (cache-ul e „proaspăt" 24h)
+            var old=readC();
+            if(old&&old.roles){ entry.roles=old.roles; entry.nick=old.nick||''; }
+          }
           writeC(entry);
-          if(mem) applyMember(entry.roles,entry.nick);
-          updateRankUI();
+          if(entry.roles) applyMember(entry.roles,entry.nick);
+          updateRankUI(); refreshDcco();
           setStatus('✅ verificat'+(nm?(' ca '+nm):''));
           hideGate();
         });
@@ -2842,7 +3099,7 @@ renderHist();
   if(rb)rb.onclick=function(){ var c=readC(); if(tokenAlive(c)&&c.roles)verify(c.tok,c.te); else goAuth(); };
   var lb=document.getElementById('dscLogout');
   if(lb)lb.onclick=function(){ writeC(null); location.reload(); };
-  updateRankUI();
+  updateRankUI(); refreshDcco();
 })();
 </script>
 </body>
