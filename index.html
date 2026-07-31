@@ -730,7 +730,9 @@ window.__EMBLEM='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABcc
         #dccoPrint{display:none}
         @media print{
           html.dcco-printing body{background:#fff!important}
-          html.dcco-printing #app,html.dcco-printing #login,html.dcco-printing #dgate{display:none!important}
+          /* in print se vede DOAR documentul: appbar, sidebar, login, poarta
+             Discord si orice alt element din pagina sunt ascunse complet */
+          html.dcco-printing body>*:not(#dccoPrint){display:none!important}
           html.dcco-printing #dccoPrint{display:block!important}
           #dccoPrint .dpage{page-break-after:always}
           #dccoPrint .dcpaper{box-shadow:none;border-radius:0;padding:0 4mm}
