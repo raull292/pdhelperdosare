@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, globalShortcut, session } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, globalShortcut, session, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -206,6 +206,27 @@ ipcMain.handle('cache-clear', async () => {
     await session.defaultSession.clearCodeCaches({});
     return true;
   } catch (err) { return false; }
+});
+
+// ---- export PDF (rapoartele si dosarele DCCO) ----
+// Pagina isi pregateste singura continutul de print (clasa dcco-printing +
+// #dccoPrint); aici doar alegem fisierul si generam PDF-ul cu CSS-ul de print.
+ipcMain.handle('dcco-pdf', async (e, name) => {
+  const win = BrowserWindow.fromWebContents(e.sender);
+  const safe = String(name || 'document.pdf').replace(/[\\/:*?"<>|]/g, '-');
+  try {
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      title: 'Salvează PDF',
+      defaultPath: path.join(app.getPath('documents'), safe),
+      filters: [{ name: 'PDF', extensions: ['pdf'] }]
+    });
+    if (canceled || !filePath) return { canceled: true };
+    const data = await e.sender.printToPDF({ printBackground: true, preferCSSPageSize: true });
+    fs.writeFileSync(filePath, data);
+    return { ok: true, path: filePath };
+  } catch (err) {
+    return { error: String((err && err.message) || err) };
+  }
 });
 
 // ---- auto-update din GitHub Releases (electron-updater) ----
