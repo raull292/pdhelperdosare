@@ -1,6 +1,6 @@
 {
  "source": "https://b-zone-gta-v.github.io/B-Zone-GTA-V-Wiki/server/rules/penal_code.html",
- "syncedAt": "2026-07-11 23:21 UTC",
+ "syncedAt": "2026-10-08 17:07 UTC",
  "articles": [
   {
    "id": "1.1a",
@@ -13,34 +13,34 @@
   },
   {
    "id": "1.2",
-   "name": "Conducere imprudentă",
+   "name": "Conducere imprudentă / Agresivă",
    "cap": 1,
    "f": "5.000$",
-   "pct": 3
+   "pct": 5
   },
   {
    "id": "1.3",
-   "name": "Nerespectarea marcajelor rutiere",
+   "name": "Nerespectarea marcajelor și indicatoarelor rutiere",
    "cap": 1,
    "f": "4.000$",
    "pct": 3
   },
   {
    "id": "1.4",
-   "name": "Neacordare de Prioritate",
+   "name": "Neacordare de prioritate",
    "cap": 1,
    "f": "4.000$",
    "pct": 3
   },
   {
    "id": "1.5",
-   "name": "Nerespectarea semnelor de circulatie ale Polițistului",
+   "name": "Nerespectarea semnalelor polițistului",
    "cap": 1,
    "f": "4.000$"
   },
   {
    "id": "1.6",
-   "name": "Nerespectarea semnalelor luminoase și sonore",
+   "name": "Nerespectarea semnalelor vehiculelor de urgență",
    "cap": 1,
    "f": "8.000$"
   },
@@ -52,7 +52,7 @@
   },
   {
    "id": "1.8",
-   "name": "Traversarea interzisă",
+   "name": "Traversare neregulamentară (Pietoni)",
    "cap": 1,
    "f": "1.000$"
   },
@@ -64,49 +64,51 @@
   },
   {
    "id": "1.10",
-   "name": "Folosirea telefonului în timpul condusului",
+   "name": "Folosirea telefonului mobil la volan",
    "cap": 1,
-   "f": "1.500$"
+   "f": "1.500$",
+   "pct": 2
   },
   {
    "id": "1.11",
-   "name": "Claxonarea excesivă",
+   "name": "Claxonarea excesivă și nejustificată",
    "cap": 1,
    "f": "5.000$"
   },
   {
    "id": "1.12",
-   "name": "Geamuri fumurii",
+   "name": "Foliație / Geamuri fumurii neomologate",
    "cap": 1,
    "f": "3.000$"
   },
   {
    "id": "1.13",
-   "name": "Neoane",
+   "name": "Lumini Neon sub vehicul",
    "cap": 1,
    "f": "5.000$"
   },
   {
    "id": "1.14",
-   "name": "Claxon neomologat",
+   "name": "Claxon neomologat / Muzical",
    "cap": 1,
    "f": "3.000$"
   },
   {
    "id": "1.15",
-   "name": "Xenoane",
+   "name": "Instalații de iluminat neomologate (Xenon/LED colorat)",
    "cap": 1,
    "f": "4.500$"
   },
   {
    "id": "1.16",
-   "name": "Nerespectarea culorii a semaforului",
+   "name": "Nerespectarea culorii roșii a semaforului",
    "cap": 1,
-   "f": "8.000$"
+   "f": "8.000$",
+   "pct": 5
   },
   {
    "id": "1.17",
-   "name": "Condusul pe contra-sens",
+   "name": "Conducerea pe contrasens",
    "cap": 1,
    "f": "10.000$"
   },
@@ -140,7 +142,7 @@
   },
   {
    "id": "2.4",
-   "name": "Curse ilegale",
+   "name": "Curse ilegale (Street Racing)",
    "cap": 2,
    "f": "15.000$",
    "s": [
@@ -150,7 +152,7 @@
   },
   {
    "id": "2.5",
-   "name": "Părăsirea locului accidentului sau a unei scene",
+   "name": "Părăsirea locului accidentului",
    "cap": 2,
    "f": "5.500$",
    "s": [
@@ -160,7 +162,7 @@
   },
   {
    "id": "2.6",
-   "name": "Condusul fără permis",
+   "name": "Conducerea fără permis",
    "cap": 2,
    "f": "6.000$",
    "s": [
@@ -170,12 +172,12 @@
   },
   {
    "id": "2.7",
-   "name": "Evadarea de un ofiţer cu un autovehicul",
+   "name": "Evadarea de un ofițer cu un autovehicul (Urmărire penală)",
    "cap": 2,
    "f": "7.000$",
    "s": [
-    60,
-    120
+    80,
+    150
    ]
   },
   {
@@ -186,7 +188,7 @@
   },
   {
    "id": "3.2",
-   "name": "Urmărirea unei persoane fără acord",
+   "name": "Urmărirea unei persoane fără acord (Hărțuire)",
    "cap": 3,
    "f": "7.000$",
    "s": [
@@ -216,7 +218,7 @@
   },
   {
    "id": "3.5",
-   "name": "Prostituţie",
+   "name": "Prostituţie și Proxenetism",
    "cap": 3,
    "f": "10.000$",
    "s": [
@@ -286,7 +288,7 @@
   },
   {
    "id": "3.11.1",
-   "name": "Furt auto Politie/Spital",
+   "name": "Furt auto Poliție / Spital",
    "cap": 3,
    "f": "10.000$",
    "s": [
@@ -392,9 +394,13 @@
   },
   {
    "id": "3.19",
-   "name": "Eveniment neautorizat in spațiul public",
+   "name": "Furtul de servicii sau bunuri de consum imediat",
    "cap": 3,
-   "f": "100.000$"
+   "f": "10.000$",
+   "s": [
+    30,
+    50
+   ]
   },
   {
    "id": "4.1",
@@ -448,7 +454,7 @@
   },
   {
    "id": "4.6",
-   "name": "Eşecul identificarii",
+   "name": "Eşecul identificării",
    "cap": 4,
    "f": "15.000$",
    "s": [
@@ -468,13 +474,53 @@
   },
   {
    "id": "4.8",
-   "name": "Codul Muncii",
+   "name": "Luare de mită",
+   "cap": 4,
+   "f": "25.000$",
+   "s": [
+    150,
+    300
+   ]
+  },
+  {
+   "id": "4.9",
+   "name": "Încălcarea Codului Muncii / Muncă nedeclarată",
    "cap": 4,
    "f": "15.000$"
   },
   {
-   "id": "4.9",
-   "name": "Descurajarea unui martor sau a unei victime",
+   "id": "4.9.1",
+   "name": "Transportul comercial cu depășirea limitei admise (Supraîncărcare)",
+   "cap": 4,
+   "f": "15.000$",
+   "pct": 3
+  },
+  {
+   "id": "4.9.2",
+   "name": "Efectuarea transportului comercial fără licență",
+   "cap": 4,
+   "f": "20.000$",
+   "s": [
+    30,
+    50
+   ]
+  },
+  {
+   "id": "4.9.3",
+   "name": "Tranzitarea zonelor interzise vehiculelor de mare tonaj",
+   "cap": 4,
+   "f": "10.000$",
+   "pct": 3
+  },
+  {
+   "id": "4.10",
+   "name": "Tractare neregulamentară",
+   "cap": 4,
+   "f": "15.000$"
+  },
+  {
+   "id": "4.11",
+   "name": "Influențarea sau intimidarea martorilor / victimelor",
    "cap": 4,
    "f": "10.000$",
    "s": [
@@ -483,14 +529,14 @@
    ]
   },
   {
-   "id": "4.10",
-   "name": "Limbaj vulgar",
+   "id": "4.12",
+   "name": "Limbaj vulgar / Adresare injurioasă",
    "cap": 4,
    "f": "7.000$"
   },
   {
-   "id": "4.11",
-   "name": "Abuzulul liniei de urgență",
+   "id": "4.13",
+   "name": "Apelarea abuzivă a serviciilor de urgență",
    "cap": 4,
    "f": "10.000$",
    "s": [
@@ -499,7 +545,7 @@
    ]
   },
   {
-   "id": "4.12",
+   "id": "4.14",
    "name": "Braconajul",
    "cap": 4,
    "f": "30.000$",
@@ -509,8 +555,8 @@
    ]
   },
   {
-   "id": "4.13",
-   "name": "Fals/Uz de fals",
+   "id": "4.15",
+   "name": "Fals și uz de fals",
    "cap": 4,
    "f": "15.000$",
    "s": [
@@ -519,7 +565,7 @@
    ]
   },
   {
-   "id": "4.14",
+   "id": "4.16",
    "name": "Eşecul de plată al amenzilor",
    "cap": 4,
    "s": [
@@ -528,8 +574,47 @@
    ]
   },
   {
+   "id": "4.17",
+   "name": "Uzurparea de calități oficiale",
+   "cap": 4,
+   "f": "15.000$",
+   "s": [
+    60,
+    90
+   ]
+  },
+  {
+   "id": "4.18",
+   "name": "Mărturia mincinoasă",
+   "cap": 4,
+   "f": "10.000$",
+   "s": [
+    50,
+    80
+   ]
+  },
+  {
+   "id": "4.19",
+   "name": "Abuzul în serviciu",
+   "cap": 4,
+   "f": "25.000$",
+   "s": [
+    100,
+    180
+   ]
+  },
+  {
+   "id": "4.20",
+   "name": "Neglijența în serviciu",
+   "cap": 4,
+   "s": [
+    60,
+    120
+   ]
+  },
+  {
    "id": "5.1",
-   "name": "Deţinerea sau producerea de substante ilegale",
+   "name": "Deţinerea sau cultivarea de semințe și materii prime ilegale",
    "cap": 5,
    "f": "10.000$",
    "s": [
@@ -643,6 +728,16 @@
   },
   {
    "id": "5.6",
+   "name": "Spălarea banilor (Money Laundering)",
+   "cap": 5,
+   "f": "40.000$",
+   "s": [
+    100,
+    160
+   ]
+  },
+  {
+   "id": "5.7",
    "name": "Practicarea medicinei fără licenţă",
    "cap": 5,
    "f": "20.000$",
@@ -652,10 +747,20 @@
    ]
   },
   {
-   "id": "5.7",
-   "name": "Obligaţia de identificare adecvată",
+   "id": "5.8",
+   "name": "Obligaţia de identificare profesională și deținere a licențelor",
    "cap": 5,
    "f": "10.000$"
+  },
+  {
+   "id": "5.9",
+   "name": "Traficul de droguri / substanțe ilegale",
+   "cap": 5,
+   "f": "50.000$",
+   "s": [
+    180,
+    260
+   ]
   },
   {
    "id": "6.1",
@@ -698,8 +803,8 @@
    ]
   },
   {
-   "id": "6.6",
-   "name": "Omor din culpă",
+   "id": "6.5",
+   "name": "Omor din culpă (Ucidere din culpă)",
    "cap": 6,
    "f": "10.000$",
    "s": [
@@ -708,7 +813,7 @@
    ]
   },
   {
-   "id": "6.7",
+   "id": "6.6",
    "name": "Crimă (Omucidere)",
    "cap": 6,
    "f": "14.000$",
@@ -718,8 +823,8 @@
    ]
   },
   {
-   "id": "6.8",
-   "name": "Răpire",
+   "id": "6.7",
+   "name": "Răpire și Sechestrare de persoane",
    "cap": 6,
    "f": "11.000$",
    "s": [
@@ -728,7 +833,7 @@
    ]
   },
   {
-   "id": "6.9",
+   "id": "6.8",
    "name": "Tortură",
    "cap": 6,
    "f": "20.000$",
@@ -738,13 +843,23 @@
    ]
   },
   {
-   "id": "6.10",
-   "name": "Fraudarea Creditorilor",
+   "id": "6.9",
+   "name": "Fraudarea creditorilor",
    "cap": 6,
    "f": "15.000–150.000$",
    "s": [
     200,
     500
+   ]
+  },
+  {
+   "id": "6.10",
+   "name": "Luarea de ostatici",
+   "cap": 6,
+   "f": "25.000$",
+   "s": [
+    120,
+    180
    ]
   },
   {
@@ -759,7 +874,7 @@
   },
   {
    "id": "7.2",
-   "name": "Posesia unei arme de foc de calibru mic fără permis PORT-ARMĂ",
+   "name": "Posesia unei arme de foc de calibru mic",
    "cap": 7,
    "f": "10.000$",
    "s": [
@@ -779,7 +894,7 @@
   },
   {
    "id": "7.4",
-   "name": "Posesia unei arme de foc automată",
+   "name": "Posesia unei arme de foc automate",
    "cap": 7,
    "f": "12.000$",
    "s": [
@@ -789,7 +904,7 @@
   },
   {
    "id": "7.5",
-   "name": "Posesia de explozibil",
+   "name": "Posesia de explozibil sau substanțe detonante",
    "cap": 7,
    "f": "20.000$",
    "s": [
@@ -801,6 +916,7 @@
    "id": "7.6",
    "name": "Îndreptarea unei arme de foc",
    "cap": 7,
+   "f": "10.000$",
    "s": [
     60,
     100
@@ -808,8 +924,9 @@
   },
   {
    "id": "7.7",
-   "name": "Descărcarea letală a unei arme de foc",
+   "name": "Descărcarea neautorizată / letală a unei arme de foc",
    "cap": 7,
+   "f": "15.000$",
    "s": [
     70,
     100
@@ -817,7 +934,7 @@
   },
   {
    "id": "7.8",
-   "name": "Traficul de armament sau de munitie",
+   "name": "Traficul de armament, componente sau muniție",
    "cap": 7,
    "f": "50.000$",
    "s": [
@@ -828,11 +945,12 @@
   {
    "id": "8.1",
    "name": "Terorism",
-   "cap": 8
+   "cap": 8,
+   "life": true
   },
   {
    "id": "8.2",
-   "name": "Încălcarea regimului de securitate al statului",
+   "name": "Încălcarea regimului zonelor de securitate militară / guvernamentală",
    "cap": 8,
    "f": "35.000$",
    "s": [
@@ -852,7 +970,7 @@
   },
   {
    "id": "8.4",
-   "name": "Formarea unui grup paramilitar",
+   "name": "Formarea de structuri paramilitare sau insurecționale",
    "cap": 8,
    "f": "35.000$",
    "s": [
@@ -862,7 +980,7 @@
   },
   {
    "id": "8.5",
-   "name": "Acte de incitare la violență împotriva instituțiilor guvernamentale",
+   "name": "Incitarea la violență împotriva ordinii de drept",
    "cap": 8,
    "f": "25.000$",
    "s": [
@@ -872,7 +990,7 @@
   },
   {
    "id": "8.6",
-   "name": "Falsificarea documentelor guvernamentale",
+   "name": "Falsificarea documentelor de stat clasificate",
    "cap": 8,
    "f": "20.000$",
    "s": [
@@ -882,7 +1000,7 @@
   },
   {
    "id": "8.7",
-   "name": "Spionaj",
+   "name": "Spionaj și trădare",
    "cap": 8,
    "f": "20.000$",
    "s": [
@@ -892,7 +1010,7 @@
   },
   {
    "id": "8.8",
-   "name": "Sabotaj",
+   "name": "Sabotajul infrastructurii critice",
    "cap": 8,
    "f": "35.000$",
    "s": [
@@ -902,7 +1020,7 @@
   },
   {
    "id": "8.9",
-   "name": "Constituirea unui grup infracţional organizat",
+   "name": "Constituirea unui grup infracţional organizat (Crimă Organizată)",
    "cap": 8,
    "f": "250.000–500.000$",
    "s": [
@@ -913,7 +1031,7 @@
   },
   {
    "id": "8.10",
-   "name": "Corupție",
+   "name": "Corupție și abuz în serviciu guvernamental",
    "cap": 8,
    "f": "150.000–300.000$",
    "s": [
@@ -924,7 +1042,7 @@
   },
   {
    "id": "8.11",
-   "name": "Pericol grav pentru siguranța publică",
+   "name": "Pericol grav pentru siguranța publică (Recidivă extremă)",
    "cap": 8,
    "s": [
     500,

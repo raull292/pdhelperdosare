@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '17 */6 * * *'   # every 6 hours
   workflow_dispatch:
+    inputs:
+      accept_renumber:
+        description: 'Acceptă o renumerotare a articolelor (DOAR după ce index.html a fost actualizat la noua numerotare)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,10 +25,17 @@ jobs:
         with:
           node-version: 20
 
+      # The two parsers are independent: each writes its file only when its own
+      # parse passed every sanity gate, so a wiki change that breaks one page
+      # no longer blocks the other one from syncing.
       - name: Parse wiki into penal-code.json
-        run: node scripts/sync-penal-code.mjs
+        id: penal
+        continue-on-error: true
+        run: node scripts/sync-penal-code.mjs ${{ inputs.accept_renumber && '--accept-renumber' || '' }}
 
       - name: Parse wiki into vehicles.json
+        id: vehicles
+        continue-on-error: true
         run: node scripts/sync-vehicles.mjs
 
       - name: Commit and push if the data changed
@@ -37,3 +49,10 @@ jobs:
             git commit -m "Sync penal code and vehicle data from the B-Zone wiki"
             git push
           fi
+
+      # Still turn the run red (and send the e-mail) when a parser refused the page.
+      - name: Fail the run if a parser refused the page
+        if: steps.penal.outcome == 'failure' || steps.vehicles.outcome == 'failure'
+        run: |
+          echo "::error::Cod penal: ${{ steps.penal.outcome }} | Vehicule: ${{ steps.vehicles.outcome }} - vezi logul pasului picat."
+          exit 1
