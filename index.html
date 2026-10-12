@@ -1474,9 +1474,9 @@ const A = [
   {id:"6.10",cap:6,name:"Luarea de ostatici",f:"25.000$",s:[120,180],t:"generic",hint:"a luat ostatici, condiționând eliberarea acestora de îndeplinirea unor cerințe"},
 
   {id:"7.1",cap:7,name:"Posesia unei arme albe",f:"6.500$",s:[50,80],t:"arma",hint:"deținea asupra sa o armă albă"},
-  {id:"7.2",cap:7,name:"Posesia armă foc calibru mic fără PORT-ARMĂ",title:"Posesia unei arme de foc de calibru mic",f:"10.000$",s:[75,100],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mic fără permis port-armă"},
-  {id:"7.3",cap:7,name:"Posesia unei arme de foc de calibru mare",f:"11.000$",s:[80,120],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mare"},
-  {id:"7.4",cap:7,name:"Posesia unei arme de foc automate",f:"12.000$",s:[100,140],t:"arma",hint:"deținea asupra sa o armă de foc automată",combo:"NU se cumulează cu 7.2 sau 7.3 (calibru mic/mare)."},
+  {id:"7.2",cap:7,name:"Posesia unei arme de foc de calibru mic",f:"10.000$",s:[75,100],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mic",note:"Arme de calibru mic: Pistol, Combat Pistol, SNS Pistol, Machine Pistol (TEC-9), Vintage Pistol."},
+  {id:"7.3",cap:7,name:"Posesia unei arme de foc de calibru mare",f:"11.000$",s:[80,120],t:"arma",hint:"deținea asupra sa o armă de foc de calibru mare",note:"Arme de calibru mare: Navy Revolver, Heavy Revolver, Double Action Revolver, Gadget Pistol, Shotgun (Pump / Sawed-Off)."},
+  {id:"7.4",cap:7,name:"Posesia unei arme de foc automate",f:"12.000$",s:[100,140],t:"arma",hint:"deținea asupra sa o armă de foc automată",combo:"NU se cumulează cu 7.2 sau 7.3 (calibru mic/mare).",note:"Arme automate: Assault Rifle (AK-47), Carbine Rifle (M4), Micro SMG, SMG, Combat PDW, Sniper Rifle."},
   {id:"7.5",cap:7,name:"Posesia de explozibil",title:"Posesia de explozibil sau substanțe detonante",f:"20.000$",s:[150,250],t:"arma",hint:"deținea asupra sa materiale explozibile"},
   {id:"7.6",cap:7,name:"Îndreptarea unei arme de foc",f:"10.000$",s:[60,100],t:"generic",hint:"a îndreptat o armă de foc asupra unei persoane/obiect"},
   {id:"7.7",cap:7,name:"Descărcarea letală a unei arme de foc",title:"Descărcarea neautorizată / letală a unei arme de foc",f:"15.000$",s:[70,100],t:"generic",hint:"a descărcat o armă de foc în afara unei situații de legitimă apărare"},
@@ -1645,7 +1645,7 @@ function norm(s){return String(s).toLowerCase()
 function renderList(filter){
   filter=filter||"";
   const q=norm(filter.trim());
-  const matched=A.filter(a=>!q||norm(a.name).includes(q)||a.id.toLowerCase().includes(q)||norm("cap "+a.cap).includes(q)||("cap"+a.cap).includes(q));
+  const matched=A.filter(a=>!q||norm(a.name).includes(q)||a.id.toLowerCase().includes(q)||norm("cap "+a.cap).includes(q)||("cap"+a.cap).includes(q)||(a.note&&norm(a.note).includes(q)));
   if(!matched.length){listEl.innerHTML='<div class="nomatch">Niciun rezultat pentru „'+esc(filter)+'”.</div>';return;}
   let html="",lastCap=null;
   matched.forEach(a=>{
